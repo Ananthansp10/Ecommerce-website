@@ -1,0 +1,128 @@
+<nav class="bg-black py-4">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between items-center">
+      
+      <!-- Left side (Logo) -->
+      <div class="flex-shrink-0 pe-9">
+        <a href="/" class="text-teal-400 font-bold text-2xl">Mob N Access</a>
+      </div>
+
+      <!-- Center (Navigation Links) -->
+      <div class="hidden md:flex space-x-8 pe-10">
+        <a href="/product/productlist" class="text-teal-400 hover:text-white text-lg font-medium">Shop by Category</a>
+        <a href="/product/offerSection" class="text-teal-400 hover:text-white text-lg font-medium">Offers</a>
+        <a href="#" class="text-teal-400 hover:text-white text-lg font-medium">Contact</a>
+      </div>
+
+      <!-- Right side (Icons for Desktop) -->
+      <div class="hidden md:flex space-x-4 items-center">
+        <!-- Search Icon -->
+        <a href="/product/productSearch" class="text-white"><i class="fa-solid fa-magnifying-glass"></i></a>
+
+        <!-- Wishlist Icon -->
+        <a href="/product/wishlist" class="text-white"><i class="fa-solid fa-heart"></i></a>
+
+        <!-- Cart Icon -->
+        <a href="/product/cartPage" class="text-white"><i class="fa-solid fa-cart-shopping"></i>
+          <span class="inline-block bg-white text-center text-black text-xs font-semibold ms-1 pe-0.5 w-4 h-4 rounded-full">1</span>
+        </a>
+
+        <!-- Space for better visual gap -->
+        <div class="border-l border-gray-600 h-6 mx-2"></div>
+
+        <!-- User Logo and Name -->
+        {{#if user}}
+        <div class="flex items-center text-white">
+          {{#if userprofile}}
+          <a href="/users/userdetails"><img src="{{userprofile}}" alt="User Logo" class="w-8 h-8 rounded-full mr-2"></a>
+          {{else}}
+          <a href="/users/userdetails"><img src="https://tse3.mm.bing.net/th?id=OIP.lkVN1WDlcV2jQCq-9LT7-wHaIJ&pid=Api&P=0&h=180" alt="Default Logo" class="w-8 h-8 rounded-full mr-2"></a>
+          {{/if}}
+          <span class="font-medium">{{user.name}}</span> <!-- Replace 'Username' with dynamic username if needed -->
+        </div>
+
+        <!-- Logout Button with Icon -->
+        <a href="/users/logout" class="text-white flex items-center hover:text-red-500">
+          <i class="fa-solid fa-sign-out-alt mr-1"></i> <!-- Logout Icon -->
+          Logout
+        </a>
+        {{else}}
+
+        <!-- Sign In Button -->
+        <a href="/users/login" class="bg-teal-500 text-white px-4 py-2 rounded-md font-semibold hover:bg-teal-600 transition duration-200">Sign In</a>
+
+        {{/if}}
+        
+      </div>
+
+      <!-- Mobile Menu Button (Hamburger) -->
+      <div class="-mr-2 flex md:hidden">
+        <button id="mobile-menu-button" type="button" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white" aria-controls="mobile-menu" aria-expanded="false">
+          <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Menu -->
+  <div class="md:hidden hidden" id="mobile-menu">
+    <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+      <!-- Mobile Nav Links -->
+      <a href="/product/productlist" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Shop by Category</a>
+      <a href="#" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Offers</a>
+      <a href="#" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Contact</a>
+
+      <!-- Space for better visual gap -->
+      <div class="border-t border-gray-600 my-2"></div>
+
+      <!-- Mobile Icons (Search, Cart, Profile) -->
+      <div class="flex space-x-4 items-center mt-4">
+        <!-- Search Icon -->
+        <a href="/product/productSearch" class="text-white ms-3"><i class="fa-solid fa-magnifying-glass"></i></a>
+
+        <!-- Wishlist Icon -->
+        <a href="" class="text-white"><i class="fa-solid fa-heart"></i></a>
+
+        <!-- Cart Icon -->
+        <a href="" class="text-white"><i class="fa-solid fa-cart-shopping"></i>
+          <span class="inline-block bg-white text-black text-xs font-semibold px-2 py-0.5 rounded-full">1</span>
+        </a>
+
+        <!-- User Logo and Name -->
+        {{#if user}}
+        <div class="flex items-center text-white">
+           {{#if userprofile}}
+            <a href="/users/userdetails"><img src="{{userprofile}}" alt="User Logo" class="w-8 h-8 rounded-full mr-2"></a>
+        {{else}}
+             <a href="/users/userdetails"><img src="https://tse3.mm.bing.net/th?id=OIP.lkVN1WDlcV2jQCq-9LT7-wHaIJ&pid=Api&P=0&h=180" alt="Default Logo" class="w-8 h-8 rounded-full mr-2"></a>
+        {{/if}}
+          <span class="font-medium">{{user.name}}</span>
+        </div>
+
+        <!-- Logout Button with Icon -->
+        <a href="/users/logout" class="text-white flex items-center hover:text-red-500">
+          <i class="fa-solid fa-sign-out-alt mr-1"></i> <!-- Logout Icon -->
+          Logout
+        </a>
+
+        {{else}}
+
+        <!-- Sign In Button -->
+        <a href="/users/login" class="bg-teal-500 text-white px-4 py-2 rounded-md font-semibold hover:bg-teal-600 transition duration-200">Sign In</a>
+
+        {{/if}}
+      </div>
+    </div>
+  </div>
+</nav>
+
+<script>
+  const menuButton = document.getElementById('mobile-menu-button');
+  const mobileMenu = document.getElementById('mobile-menu');
+
+  menuButton.addEventListener('click', () => {
+    mobileMenu.classList.toggle('hidden');
+  });
+</script>

@@ -1,0 +1,81 @@
+<div class="p-4 md:p-8 bg-gray-200 max-w-5xl mx-auto">
+    <h2 class="text-2xl md:text-3xl font-bold text-gray-700 mb-4 md:mb-6">Add New Coupon</h2>
+
+    <!-- Add New Coupon Form -->
+    <form class="space-y-4 md:space-y-6 mb-6 md:mb-10">
+        <!-- Coupon Title -->
+        <div>
+            <label for="couponTitle" class="block text-sm font-medium text-gray-700">Coupon Title</label>
+            <input type="text" id="couponTitle" placeholder="e.g. Summer Sale" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
+        </div>
+
+        <!-- Coupon Description -->
+        <div>
+            <label for="couponDescription" class="block text-sm font-medium text-gray-700">Coupon Description</label>
+            <textarea id="couponDescription" rows="3" placeholder="e.g. Get 20% off on all electronics" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+        </div>
+
+        <!-- Coupon Code -->
+        <div>
+            <label for="couponCode" class="block text-sm font-medium text-gray-700">Coupon Code</label>
+            <input type="text" id="couponCode" placeholder="e.g. SUMMER20" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
+        </div>
+
+        <!-- Expiry Date -->
+        <div class="flex flex-wrap -mx-2">
+            <!-- Expiry From -->
+            <div class="w-full md:w-1/2 px-2 mb-4 md:mb-0">
+                <label for="expiryFrom" class="block text-sm font-medium text-gray-700">Expiry From</label>
+                <input type="date" id="expiryFrom" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
+            </div>
+            <!-- Expiry To -->
+            <div class="w-full md:w-1/2 px-2">
+                <label for="expiryTo" class="block text-sm font-medium text-gray-700">Expiry To</label>
+                <input type="date" id="expiryTo" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
+            </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="text-right">
+            <button type="submit" class="bg-blue-500 text-white px-6 py-2 rounded-full hover:bg-blue-600">Add Coupon</button>
+        </div>
+    </form>
+
+    <!-- Existing Coupons Section -->
+    <h2 class="text-xl md:text-2xl font-bold text-gray-700 mb-4">Existing Coupons</h2>
+    <div class="overflow-x-auto">
+        <table class="min-w-full bg-white border border-gray-300">
+            <thead>
+                <tr class="bg-gray-200">
+                    <th class="px-2 py-2 md:px-4 text-left text-xs md:text-sm text-gray-600">Coupon Title</th>
+                    <th class="px-2 py-2 md:px-4 text-left text-xs md:text-sm text-gray-600">Coupon Code</th>
+                    <th class="px-2 py-2 md:px-4 text-left text-xs md:text-sm text-gray-600">Expiry</th>
+                    <th class="px-2 py-2 md:px-4 text-left text-xs md:text-sm text-gray-600">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="border-t border-gray-300">
+                    <td class="px-2 py-2 md:px-4">Summer Sale</td>
+                    <td class="px-2 py-2 md:px-4">SUMMER20</td>
+                    <td class="px-2 py-2 md:px-4">01-06-2024 to 30-06-2024</td>
+                    <td class="px-2 py-2 md:px-4 flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2">
+                        <button class="bg-green-500 text-white px-2 py-1 md:px-3 rounded-full hover:bg-green-600">Use</button>
+                        <button class="bg-yellow-500 text-white px-2 py-1 md:px-3 rounded-full hover:bg-yellow-600">Edit</button>
+                        <button class="bg-red-500 text-white px-2 py-1 md:px-3 rounded-full hover:bg-red-600">Delete</button>
+                    </td>
+                </tr>
+                <!-- More Coupon Rows -->
+                <tr class="border-t border-gray-300">
+                    <td class="px-2 py-2 md:px-4">New Year Sale</td>
+                    <td class="px-2 py-2 md:px-4">NY2024</td>
+                    <td class="px-2 py-2 md:px-4">01-01-2024 to 10-01-2024</td>
+                    <td class="px-2 py-2 md:px-4 flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2">
+                        <button class="bg-green-500 text-white px-2 py-1 md:px-3 rounded-full hover:bg-green-600">Use</button>
+                        <button class="bg-yellow-500 text-white px-2 py-1 md:px-3 rounded-full hover:bg-yellow-600">Edit</button>
+                        <button class="bg-red-500 text-white px-2 py-1 md:px-3 rounded-full hover:bg-red-600">Delete</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mob N Access</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer"/>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body class="bg-gray-100">
+    
+    <!-- Include Admin Navbar Partial -->
+    {{#if admin}}
+    {{> admin-navbar}}
+    {{else}}
+    {{#if adminLog}}
+    {{> admin-navbar}}
+    {{else}}
+     {{>navbar}}
+    {{/if}}
+    {{/if}}
+    
+    {{#if admin}}
+    <!-- Mobile Menu Toggle -->
+    <div class="md:hidden p-4 flex justify-between items-center bg-gray-200">
+        <h2 class="text-lg font-bold">Admin Dashboard</h2>
+        <button id="menu-toggle" class="text-gray-700">
+            <i class="fas fa-bars"></i>
+        </button>
+    </div>
+    {{/if}}
+    
+    {{#if admin}}
+    <div class="flex relative">
+        <!-- Include Sidebar Partial -->
+        {{> admin-sidebar}}
+
+        <!-- Main Content Area: This is where the page content will be injected -->
+        <main class="flex-1 bg-gray-50 p-8">
+            {{{body}}} <!-- Content for each specific page -->
+        </main>
+    </div>
+    {{else}}
+    <main>
+        {{{body}}}
+    </main>
+    {{/if}}
+    <!-- Include Footer Partial -->
+    {{#if admin}}
+    {{> admin-footer}}
+    {{else}}
+    {{>footer}}
+    {{/if}}
+
+    <!-- JavaScript for Toggle Menu -->
+    <script>
+        const menuToggle = document.getElementById('menu-toggle');
+        const sidebar = document.getElementById('sidebar');
+
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('hidden');
+            sidebar.classList.toggle('-translate-x-full');
+        });
+    </script>
+</body>
+</html>

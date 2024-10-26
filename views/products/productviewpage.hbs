@@ -1,0 +1,172 @@
+<div class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 mt-7">
+  <!-- Breadcrumb -->
+  <nav class="text-sm mb-6">
+    <a href="/" class="text-gray-500 hover:text-gray-900">Home</a> 
+    <span class="mx-2">/</span>
+    <a href="#" class="text-gray-500 hover:text-gray-900">Mobiles</a>
+    <span class="mx-2">/</span>
+    <span class="text-gray-700">{{product.name}}</span>
+  </nav>
+
+  <!-- Responsive Layout: Single column on mobile, two columns on larger screens -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <!-- Product Images Section -->
+    <div class="relative">
+      <!-- Main Image with Zoom -->
+      <div class="relative overflow-hidden w-full mb-4">
+        <img id="mainImage" 
+             class="w-full h-auto sm:h-96 object-cover rounded-lg shadow-md transition-transform duration-300"
+             src="{{product.images.[0]}}" 
+             alt="Main Product Image"
+             onmouseover="zoomIn(event)" 
+             onmousemove="moveZoom(event)"
+             onmouseout="zoomOut()">
+        <!-- Zoom Lens -->
+        <div id="zoomLens" class="absolute hidden bg-white opacity-25 border rounded-full"></div>
+      </div>
+
+      <!-- Thumbnails -->
+      <div class="grid grid-cols-4 gap-4">
+        <img onclick="changeImage(this.src)" class="cursor-pointer w-full h-20 object-cover rounded-lg shadow-sm" src="{{product.images.[0]}}" alt="Mobile Thumbnail 1">
+        <img onclick="changeImage(this.src)" class="cursor-pointer w-full h-20 object-cover rounded-lg shadow-sm" src="{{product.images.[1]}}" alt="Mobile Thumbnail 2">
+        <img onclick="changeImage(this.src)" class="cursor-pointer w-full h-20 object-cover rounded-lg shadow-sm" src="{{product.images.[2]}}" alt="Mobile Thumbnail 3">
+        {{#if product.images.[3]}}
+        <img onclick="changeImage(this.src)" class="cursor-pointer w-full h-20 object-cover rounded-lg shadow-sm" src="{{product.images.[3]}}" alt="Mobile Thumbnail 4">
+        {{/if}}
+      </div>
+    </div>
+
+    <!-- Product Details Section -->
+    <div>
+      <!-- Product Title and Rating -->
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">{{product.name}}</h1>
+      <div class="flex items-center mb-4">
+        <!-- Product Rating (Stars) -->
+        <div class="flex items-center text-yellow-500 mr-2">
+          <i class="fa-solid fa-star"></i>
+          <i class="fa-solid fa-star"></i>
+          <i class="fa-solid fa-star"></i>
+          <i class="fa-solid fa-star-half-alt"></i>
+          <i class="fa-solid fa-star text-gray-300"></i>
+        </div>
+        <span class="text-gray-600">(25 reviews)</span> <!-- Dynamic reviews count -->
+      </div>
+
+      <!-- Stock Status -->
+      <div class="mb-4">
+        <span class="text-green-600 font-semibold">In Stock</span>
+        <span class="text-gray-600">({{product.stock}} items available)</span>
+        {{#if product.isOut}}
+        <span class="text-red-600 font-semibold">Out of Stock</span>
+        {{/if}}
+      </div>
+
+      <!-- Product Price -->
+      <div class="text-2xl font-semibold text-green-600 mb-4">RS: {{product.price}}</div>
+
+      <!-- Product Description -->
+      <p class="text-gray-600 mb-6">{{product.description}}</p>
+
+      <!-- Available Colors Section (with color swatches) -->
+      <div class="mb-6">
+        <h3 class="text-sm font-medium text-gray-700">Available Colors</h3>
+        <div class="flex items-center space-x-4 mt-2">
+          <img class="cursor-pointer w-10 h-10 rounded-full border-2 border-gray-300 hover:border-indigo-500" src="{{colours.[0].[0]}}" alt="Black Color">
+          <img class="cursor-pointer w-10 h-10 rounded-full border-2 border-gray-300 hover:border-indigo-500" src="{{colours.[1].[0]}}" alt="Red Color">
+          <img class="cursor-pointer w-10 h-10 rounded-full border-2 border-gray-300 hover:border-indigo-500" src="{{colours.[2].[0]}}" alt="Green Color">
+          <img class="cursor-pointer w-10 h-10 rounded-full border-2 border-gray-300 hover:border-indigo-500" src="{{colours.[3].[0]}}" alt="Blue Color">
+        </div>
+      </div>
+
+      <!-- Storage Capacity Section -->
+      {{#if product.isMobile}}
+      <div class="mb-6">
+        <h3 class="text-sm font-medium text-gray-700">Storage Capacity</h3>
+        <div class="flex items-center space-x-4 mt-2">
+          <button class="px-4 py-2 text-sm font-medium border rounded-lg hover:bg-indigo-500 hover:text-white focus:outline-none">64 GB</button>
+          <button class="px-4 py-2 text-sm font-medium border rounded-lg hover:bg-indigo-500 hover:text-white focus:outline-none">128 GB</button>
+          <button class="px-4 py-2 text-sm font-medium border rounded-lg hover:bg-indigo-500 hover:text-white focus:outline-none">256 GB</button>
+        </div>
+      </div>
+      {{/if}}
+
+      <!-- Add to Cart / Buy Now Buttons -->
+      <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mb-6">
+        {{#if product.inStock }}
+          <button class="flex-1 bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-500 focus:outline-none">Add to Cart</button>
+          <button class="flex-1 bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-500 focus:outline-none">Buy Now</button>
+        {{/if}}
+        {{#if product.isOut}}
+          <button class="flex-1 bg-gray-400 text-white py-3 rounded-lg font-semibold cursor-not-allowed">Out of Stock</button>
+        {{/if}}
+      </div>
+
+      <!-- Wishlist Button -->
+      <button class="text-gray-500 hover:text-red-500 flex items-center">
+        <i class="fa-solid fa-heart mr-2"></i> Add to Wishlist
+      </button>
+    </div>
+  </div>
+
+  <!-- Additional Product Information Section -->
+  <div class="mt-12">
+    <h2 class="text-2xl font-semibold mb-4">Mobile Specifications</h2>
+    <p class="text-gray-600">
+      The phone comes with a 5.00-inch touchscreen display offering a resolution of 720x1280 pixels. <br> 
+      General Mobile GM 4G is powered by a 1.2GHz quad-core Qualcomm Snapdragon 410 processor and comes with 2GB of RAM. <br> 
+      The General Mobile GM 4G runs Android 5.1.1 and is powered by a 2500mAh non-removable battery.
+    </p>
+  </div>
+</div>
+
+<!-- Zoom Script -->
+<script>
+  let zoomLens = document.getElementById('zoomLens');
+  
+  function zoomIn(event) {
+    let image = event.target;
+    zoomLens.style.width = '100px';
+    zoomLens.style.height = '100px';
+    zoomLens.style.display = 'block';
+    image.style.transform = 'scale(1.5)';
+    image.style.transition = 'transform 0.3s ease-in-out';
+  }
+
+  function moveZoom(event) {
+    let image = event.target;
+    let rect = image.getBoundingClientRect();
+    let x = event.clientX - rect.left - (zoomLens.offsetWidth / 2);
+    let y = event.clientY - rect.top - (zoomLens.offsetHeight / 2);
+
+    if (x > 0 && x < (rect.width - zoomLens.offsetWidth)) {
+      zoomLens.style.left = x + 'px';
+    }
+
+    if (y > 0 && y < (rect.height - zoomLens.offsetHeight)) {
+      zoomLens.style.top = y + 'px';
+    }
+  }
+
+  function zoomOut() {
+    zoomLens.style.display = 'none';
+    let image = document.getElementById('mainImage');
+    image.style.transform = 'scale(1)';
+  }
+
+  function changeImage(src) {
+    let mainImage = document.getElementById('mainImage');
+    mainImage.src = src;
+    mainImage.style.transform = 'scale(1)';
+  }
+</script>
+
+<!-- Styling for zoom lens -->
+<style>
+  #zoomLens {
+    position: absolute;
+    pointer-events: none;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+    display: none;
+  }
+</style>

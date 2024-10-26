@@ -1,0 +1,146 @@
+<section style="overflow-y:auto; max-height: 80vh;">
+    <div class="p-8 bg-gray-300">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-3xl font-bold text-gray-700">Products</h2>
+            <div class="flex items-center space-x-4">
+                <select id="categoryFilter" class="p-2 border rounded" onchange="findProductByCategory(this)">
+                    <option value="">All Categories</option>
+                    <option value="mobile">Mobiles</option>
+                    <option value="accessory">Accessories</option>
+                </select>
+                <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-500" onclick="showcategories()">
+                    Categories
+                </button>
+                <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-500" onclick="addProducts()">
+                    <i class="fas fa-plus"></i> Add Products
+                </button>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="min-w-full bg-white shadow-md rounded-lg">
+                <thead class="bg-gray-50">
+                    <tr class="text-left text-gray-500 font-semibold uppercase text-sm">
+                        <th class="py-3 px-4">Product</th>
+                        <th class="py-3 px-4">Image</th>
+                        <th class="py-3 px-4">Description</th>
+                        <th class="py-3 px-4">Price</th>
+                        <th class="py-3 px-4">Stock</th>
+                        <th class="py-3 px-4">Category</th>
+                        <th class="py-3 px-4">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="productTableBody">
+                    {{#each products}}
+                    <tr class="border-b border-gray-200">
+                        <td class="py-3 px-4">{{this.name}}</td>
+                        <td class="py-3 px-4">
+                            <img src="{{this.images.[0]}}" alt="Product Image" class="w-16 h-16 rounded"/>
+                        </td>
+                        <td class="py-3 px-4" style="max-width: 250px;">{{this.description}}</td>
+                        <td class="py-3 px-4">{{this.price}}</td>
+                        <td class="py-3 px-4">{{this.stock}}</td>
+                        <td class="py-3 px-4">
+                            <span class="bg-green-100 text-green-600 px-2 py-1 rounded">{{this.catType}}</span>
+                        </td>
+                        <td class="py-3 px-4">
+                            <button class="bg-yellow-400 text-white px-3 py-1 rounded hover:bg-yellow-500 mr-2" onclick="editProduct('{{this._id}}')">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600" onclick="deleteProduct('{{this._id}}')">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </td>
+                    </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<script>
+    document.getElementById('categoryFilter').addEventListener('change', function() {
+        const selectedCategory = this.value;
+        filterProducts(selectedCategory);
+    });
+
+    function filterProducts(category) {
+        const rows = document.querySelectorAll('#productTableBody tr');
+        rows.forEach(row => {
+            const productCategory = row.querySelector('td:nth-child(6) span').innerText;
+            if (category === '' || productCategory === category) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    function addProducts() {
+        window.location.href = '/admin/addProducts';
+    }
+
+    function editProduct(Id) {
+        window.location.href = `/admin/editProducts/${Id}`;
+    }
+
+    function deleteProduct(Id) {
+    // SweetAlert confirmation
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "Want to delete this product",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Proceed with deletion if confirmed
+            fetch(`/admin/deleteProduct/${Id}`, {
+                method: "POST"
+            }).then((response) => {
+                if (response.ok) {
+                    // Success alert after successful deletion
+                    Swal.fire(
+                        'Deleted!',
+                        'Your product has been deleted.',
+                        'success'
+                    ).then(() => {
+                        // Redirect after the alert
+                        window.location.href = '/admin/products';
+                    });
+                } else {
+                    // Error alert if deletion fails
+                    Swal.fire(
+                        'Error!',
+                        'Your product could not be deleted.',
+                        'error'
+                    );
+                }
+            }).catch((error) => {
+                // Handle network errors or fetch issues
+                Swal.fire(
+                    'Error!',
+                    'Something went wrong. Please try again later.',
+                    'error'
+                );
+            });
+        } else {
+            // If user cancels, just reload the page
+            window.location.reload();
+        }
+    });
+}
+
+
+    function findProductByCategory(value){
+      window.location.href=`/admin/productcategory/${value.value}`
+    }
+
+    function showcategories(){
+        window.location.href=`/admin/category`
+    }
+</script>

@@ -1,0 +1,61 @@
+<section>
+  <div class="min-h-screen bg-white flex items-center justify-center  py-12 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-md w-full space-y-3">
+    <!-- Mob N Access Heading -->
+    <h1 class="text-center ps-7 font-extrabold text-2xl tracking-tight login-heading">
+      Mob N Access
+    </h1>
+
+    <!-- Sign-in Section -->
+    <div class="bg-gray-300 py-8 px-4 mb-10 shadow sm:rounded-lg sm:px-10">
+      <h2 class="text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
+        Sign in to your account
+      </h2>
+      
+      <form class="space-y-6 mt-6" action="/users/login" method="POST">
+        <!-- Email Input -->
+        <div>
+          <p class="font-medium text-red-500">{{message}}</p>
+          <label for="email" class="block text-sm font-medium leading-6 text-black">
+            Email address
+          </label>
+          <div class="mt-2">
+            <input id="email" name="email" type="email" autocomplete="email" required class="block w-full rounded-md border-gray-300 py-2 text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+          </div>
+        </div>
+
+        <!-- Password Input -->
+        <div>
+          <div class="flex justify-between">
+            <label for="password" class="block text-sm font-medium leading-6 text-gray-900">
+              Password
+            </label>
+            <div class="text-sm">
+              <a href="/users/forgottenPassword" class="font-medium text-indigo-600 hover:text-indigo-500">
+                Forgot password?
+              </a>
+            </div>
+          </div>
+          <div class="mt-2">
+            <input id="password" name="password" type="password" autocomplete="current-password" required class="block w-full rounded-md border-gray-300 py-2 text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+          </div>
+        </div>
+
+        <!-- Sign-in Button -->
+        <div>
+          <button type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            Sign in
+          </button>
+        </div>
+      </form>
+
+      <p class="mt-6 text-center text-sm text-black">
+        Create New Account?
+        <a href="/users/signup" class="font-semibold text-indigo-600 hover:text-indigo-500">
+          Signup?
+        </a>
+      </p>
+    </div>
+  </div>
+</div>
+</section>

@@ -1,0 +1,108 @@
+<div class="p-4 md:p-8 bg-gray-200 max-w-4xl mx-auto">
+    <h2 class="text-2xl md:text-3xl font-bold text-gray-700 mb-4 md:mb-6">Add New Product</h2>
+
+    <form class="space-y-4 md:space-y-6" action="/admin/addProducts" method="post" enctype="multipart/form-data">
+        <!-- Product Name -->
+        <div>
+            <label for="product-name" class="block text-sm font-medium text-gray-700">Product Name</label>
+            <input type="text" name="name" id="product-name" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Enter product name" />
+        </div>
+
+        <!-- Category -->
+        <div>
+            <label for="category" class="block text-sm font-medium text-gray-700">Category</label>
+            <select name="catType" id="category" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                <option value="">Select category</option>
+                <option value="mobile">Mobile</option>
+                <option value="accessory">Accessory</option>
+            </select>
+        </div>
+
+        <!-- Product Images (Four Images Upload) -->
+        <div>
+    <label class="block text-sm font-medium text-gray-700">Product Images (Upload up to 4 images)</label>
+
+    <!-- Image 1 -->
+    <div class="mt-1">
+        <label for="product-image-1" class="block text-sm font-medium text-gray-700">Image 1</label>
+        <input type="file" name="images" id="product-image-1" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" accept="image/*" onchange="updateImagePreview(this, 'image-preview-1')" />
+        <img id="image-preview-1" src="{{product.images.[0]}}" class="mt-2 max-w-xs w-32 h-100" alt="Image Preview" />
+    </div>
+
+    <!-- Image 2 -->
+    <div class="mt-1">
+        <label for="product-image-2" class="block text-sm font-medium text-gray-700">Image 2</label>
+        <input type="file" name="images" id="product-image-2" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" accept="image/*" onchange="updateImagePreview(this, 'image-preview-2')" />
+        <img id="image-preview-2" src="{{product.images.[1]}}" class="mt-2 max-w-xs w-32 h-100" alt="Image Preview" />
+    </div>
+
+    <!-- Image 3 -->
+    <div class="mt-1">
+        <label for="product-image-3" class="block text-sm font-medium text-gray-700">Image 3</label>
+        <input type="file" name="images" id="product-image-3" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" accept="image/*" onchange="updateImagePreview(this, 'image-preview-3')" />
+        <img id="image-preview-3" src="{{product.images.[2]}}" class="mt-2 max-w-xs w-32 h-100" alt="Image Preview" />
+    </div>
+
+    <!-- Image 4 -->
+    <div class="mt-1">
+        <label for="product-image-4" class="block text-sm font-medium text-gray-700">Image 4</label>
+        <input type="file" name="images" id="product-image-4" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" accept="image/*" onchange="updateImagePreview(this, 'image-preview-4')" />
+        <img id="image-preview-4" src="{{product.images.[3]}}" class="mt-2 max-w-xs w-32 h-100" alt="Image Preview" />
+    </div>
+</div>
+
+        <!-- Price and Stock (Two Columns on Larger Screens) -->
+        <div class="flex flex-wrap -mx-2">
+            <!-- Price -->
+            <div class="w-full md:w-1/2 px-2 mb-4 md:mb-0">
+                <label for="price" class="block text-sm font-medium text-gray-700">Price</label>
+                <input type="text" name="price" id="price" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Enter product price" />
+            </div>
+
+            <!-- Stock -->
+            <div class="w-full md:w-1/2 px-2">
+                <label for="stock" class="block text-sm font-medium text-gray-700">Stock</label>
+                <input type="number" name="stock" id="stock" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Enter available stock" />
+            </div>
+        </div>
+
+        <!-- Color -->
+        <div>
+            <label for="color" class="block text-sm font-medium text-gray-700">Color</label>
+            <input type="text" name="colour" id="color" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Enter product color" />
+        </div>
+
+        <!-- Description -->
+        <div>
+            <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
+            <textarea id="description" max name="description" rows="4" wrap="hard" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Enter product description"></textarea>
+        </div>
+
+        <!-- Buttons -->
+        <div class="flex justify-end space-x-2 md:space-x-4">
+            <button type="reset" class="bg-gray-500 text-white px-3 py-2 md:px-4 rounded hover:bg-gray-600">Reset</button>
+            <button type="submit" class="bg-blue-600 text-white px-3 py-2 md:px-4 rounded hover:bg-blue-500">
+                <i class="fas fa-plus"></i> Add Product
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+    function updateImagePreview(input, imgId) {
+        const file = input.files[0];
+        const img = document.getElementById(imgId);
+        
+        if (file) {
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                img.src = e.target.result; 
+            }
+
+            reader.readAsDataURL(file); 
+        } else {
+            img.classList.add('hidden'); 
+        }
+    }
+</script>

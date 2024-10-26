@@ -1,0 +1,55 @@
+<div class="p-8 bg-gray-200 max-w-6xl mx-auto">
+    <h2 class="text-3xl font-bold text-gray-700 mb-6">Order List</h2>
+
+    <!-- Order List Table -->
+    <div class="overflow-x-auto">
+        <table class="min-w-full bg-white border border-gray-200">
+            <thead>
+                <tr class="bg-gray-100 border-b border-gray-200 text-left text-gray-600 uppercase text-sm leading-normal">
+                    <th class="py-3 px-6">Order ID</th>
+                    <th class="py-3 px-6">Customer Name</th>
+                    <th class="py-3 px-6">Product</th>
+                    <th class="py-3 px-6">Quantity</th>
+                    <th class="py-3 px-6">Total Price</th>
+                    <th class="py-3 px-6">Status</th>
+                    <th class="py-3 px-6 text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="text-gray-600 text-sm font-light">
+                <!-- Order Row -->
+                <tr class="border-b border-gray-200 hover:bg-gray-50">
+                    <td class="py-3 px-6">ORD12345</td>
+                    <td class="py-3 px-6">John Doe</td>
+                    <td class="py-3 px-6">Samsung Mobile</td>
+                    <td class="py-3 px-6">2</td>
+                    <td class="py-3 px-6">Rs. 1,00,000</td>
+                    <td class="py-3 px-6">
+                        <span class="bg-green-200 text-green-600 py-1 px-3 rounded-full text-xs">Shipped</span>
+                    </td>
+                    <td class="py-3 px-6 text-center">
+                        <button class="bg-blue-500 text-white py-1 px-3 rounded-full hover:bg-blue-600 mr-2">Edit</button>
+                        <button class="bg-red-500 text-white py-1 px-3 rounded-full hover:bg-red-600">Delete</button>
+                    </td>
+                </tr>
+
+                <!-- Another Order Row -->
+                <tr class="border-b border-gray-200 hover:bg-gray-50">
+                    <td class="py-3 px-6">ORD12346</td>
+                    <td class="py-3 px-6">Jane Smith</td>
+                    <td class="py-3 px-6">iPhone 13</td>
+                    <td class="py-3 px-6">1</td>
+                    <td class="py-3 px-6">Rs. 85,000</td>
+                    <td class="py-3 px-6">
+                        <span class="bg-yellow-200 text-yellow-600 py-1 px-3 rounded-full text-xs">Processing</span>
+                    </td>
+                    <td class="py-3 px-6 text-center">
+                        <button class="bg-blue-500 text-white py-1 px-3 rounded-full hover:bg-blue-600 mr-2">Edit</button>
+                        <button class="bg-red-500 text-white py-1 px-3 rounded-full hover:bg-red-600">Delete</button>
+                    </td>
+                </tr>
+
+                <!-- Add more rows as needed -->
+            </tbody>
+        </table>
+    </div>
+</div>

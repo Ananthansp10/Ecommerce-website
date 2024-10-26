@@ -1,0 +1,146 @@
+<div class="mb-4 flex justify-end">
+  <button class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded" onclick="addcategory()">
+    Add Category
+  </button>
+</div>
+
+<div class="overflow-x-auto">
+  <table class="min-w-full bg-white border border-gray-300">
+    <thead>
+      <tr class="w-full bg-gray-100 border-b">
+        <th class="py-2 px-4 text-left text-sm font-medium text-gray-600">Category NO:</th>
+        <th class="py-2 px-4 text-left text-sm font-medium text-gray-600">Category Name</th>
+         <th class="py-2 px-4 text-left text-sm font-medium text-gray-600">Category Image</th>
+        <th class="py-2 px-4 text-left text-sm font-medium text-gray-600">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each category}}
+      <tr class="border-b">
+         <td class="py-2 px-4 text-sm text-gray-700">{{this.key}}</td>
+        <td class="py-2 px-4 text-sm text-gray-700">{{this.name}}</td>
+         <td class="py-2 px-4 text-sm text-gray-700"><img class="w-100 h-40" src={{this.image.[0]}} alt=""></td>
+        <td class="py-2 px-4 text-sm">
+          <button class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-3 rounded mr-2" onclick="editCategory('{{this._id}}')">Edit</button>
+          {{#if this.isBlock}}
+          <button class="bg-green-500 hover:bg-green-600 text-white font-bold py-1 px-3 rounded mr-2" onclick="blockCategory('{{this._id}}',false)">Unblock</button>
+          {{else}}
+           <button class="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-3 rounded mr-2" onclick="blockCategory('{{this._id}}',true)">Block</button>
+           {{/if}}
+          <button class="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-3 rounded" onclick="deleteCategory('{{this._id}}')">Delete</button>
+        </td>
+      </tr>
+      {{/each}}
+    </tbody>
+  </table>
+</div>
+
+<script>
+    function addcategory(){
+        window.location.href='/admin/addCategory'
+    }
+
+    function editCategory(catId){
+      window.location.href=`/admin/editcategory/${catId}`
+    }
+
+    function blockCategory(catId, value) {
+    const action = value ? 'Block' : 'Unblock';
+    
+    // SweetAlert confirmation
+    Swal.fire({
+        title: `Are you sure?`,
+        text: `Want to ${action} this category.`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: `Yes, ${action} it!`,
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // If confirmed, proceed with the fetch request
+            fetch(`/admin/blockcategory/${catId}/${value}`, {
+                method: "POST"
+            }).then((response) => {
+                if (response.ok) {
+                    // Success alert after blocking/unblocking
+                    Swal.fire(
+                        `${action}ed!`,
+                        `The category has been ${action.toLowerCase()}ed.`,
+                        'success'
+                    ).then(() => {
+                        // Reload the page after success alert
+                        location.reload();
+                    });
+                } else {
+                    // Error alert if something went wrong
+                    Swal.fire(
+                        'Error!',
+                        `The category could not be ${action.toLowerCase()}ed.`,
+                        'error'
+                    );
+                }
+            }).catch((error) => {
+                // Handle any network or fetch errors
+                Swal.fire(
+                    'Error!',
+                    'Something went wrong. Please try again later.',
+                    'error'
+                );
+            });
+        }
+    });
+}
+
+function deleteCategory(catId) {
+    // SweetAlert confirmation dialog
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "Do you really want to delete this category? This action cannot be undone.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // If confirmed, proceed with the deletion request
+            fetch(`/admin/deletecategory/${catId}`, {
+                method: "POST"
+            }).then((response) => {
+                if (response.ok) {
+                    // Success alert after deletion
+                    Swal.fire(
+                        'Deleted!',
+                        'The category has been deleted.',
+                        'success'
+                    ).then(() => {
+                        // Reload the page after the success alert
+                        location.reload();
+                    });
+                } else {
+                    // Error alert if deletion fails
+                    Swal.fire(
+                        'Error!',
+                        'The category could not be deleted. Please try again.',
+                        'error'
+                    );
+                }
+            }).catch((error) => {
+                // Handle any network or fetch errors
+                Swal.fire(
+                    'Error!',
+                    'Something went wrong. Please try again later.',
+                    'error'
+                );
+            });
+        } else {
+            // If cancelled, reload the page
+            location.reload();
+        }
+    });
+}
+
+</script>
