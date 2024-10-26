@@ -239,9 +239,10 @@ module.exports={
       let userprofile
       if(req.session.user){
       userprofile=await userhelper.findUserProfile(req.session.user._id);
+      req.session.user.image=userprofile;
       }
       if(userprofile){
-      res.render('users/index', { user: req.session.user, products: plainProducts,userprofile });
+      res.render('users/index', { user: req.session.user, products: plainProducts});
       }
       else{
         res.render('users/index', { user: req.session.user, products: plainProducts});
