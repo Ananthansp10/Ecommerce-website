@@ -1,21 +1,12 @@
 const express=require('express');
 const router=express.Router();
 const upload=require('../config/cloudinary');
-const adminhelper=require('../helpers/adminhelpers')
-const admincontroller=require('../controllers/adminController')
+const adminhelper=require('../helpers/adminhelpers');
+const admincontroller=require('../controllers/adminController');
 
-function adminLogin(req,res,next){
-    if(req.session.adminLoggedIn){
-        next();
-    }
-    else{
-        res.redirect('/admin/login')
-    }
-}
+router.get('/',admincontroller.adminLogin,admincontroller.adminDashboardSection)
 
-router.get('/',adminLogin,admincontroller.adminDashboardSection)
-
-router.get('/customers',admincontroller.customerPage)
+router.get('/customers',admincontroller.adminLogin,admincontroller.customerPage)
 
 router.post('/blockuser/:id/:status',admincontroller.userControl)
 
@@ -23,7 +14,7 @@ router.get('/login',admincontroller.adminLoginPage)
 
 router.post('/login',admincontroller.adminLoginSubmission)
 
-router.get('/products',adminLogin,admincontroller.adminProductPage)
+router.get('/products',admincontroller.adminLogin,admincontroller.adminProductPage)
 
 router.get('/addProducts',admincontroller.adminAddProductPage)
 

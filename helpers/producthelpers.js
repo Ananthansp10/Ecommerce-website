@@ -23,8 +23,9 @@ module.exports={
 
    productByCat:(cat)=>{
     return new Promise((resolve,reject)=>{
-        product.find({category:cat,visiblity:true}).then((products)=>{
-            resolve(products)
+        product.find({catType:cat,visiblity:true}).populate({path:'category',match:{isBlock:false}}).then((products)=>{
+            const filteredProducts=products.filter((products)=>products.category!==null)
+            resolve(filteredProducts)
         })
     })
    },

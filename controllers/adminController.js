@@ -1,6 +1,14 @@
 const adminhelper=require('../helpers/adminhelpers')
 
 module.exports={
+    adminLogin:(req,res,next)=>{
+        if(req.session.adminLoggedIn){
+            next();
+        }
+        else{
+            res.redirect('/admin/login')
+        }
+    },
     adminDashboardSection:async(req,res)=>{
         try {
             const usersCount=await adminhelper.getUserCount()
@@ -13,6 +21,7 @@ module.exports={
     customerPage:async(req,res)=>{
         try {
             const user = await adminhelper.getUser();
+            console.log(user)
             const userplainObj = user.map(data => {
                 const status = data.status; 
                 return {

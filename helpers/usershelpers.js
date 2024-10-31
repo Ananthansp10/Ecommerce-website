@@ -130,7 +130,9 @@ module.exports={
             googleId:userDetails.id,
             name:userDetails.displayName,
             email:userDetails.emails[0].value,
-            image:userDetails.photos[0].value
+            image:userDetails.photos[0].value,
+            verified:true,
+            status:"Unblock"
         }
         return new Promise(async(resolve,reject)=>{
             const userDetail=await user.collection.findOne({email:userDetails.emails[0].value})

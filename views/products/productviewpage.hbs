@@ -27,9 +27,15 @@
 
       <!-- Thumbnails -->
       <div class="grid grid-cols-4 gap-4">
+        {{#if product.images.[0]}}
         <img onclick="changeImage(this.src)" class="cursor-pointer w-full h-20 object-cover rounded-lg shadow-sm" src="{{product.images.[0]}}" alt="Mobile Thumbnail 1">
+        {{/if}}
+         {{#if product.images.[1]}}
         <img onclick="changeImage(this.src)" class="cursor-pointer w-full h-20 object-cover rounded-lg shadow-sm" src="{{product.images.[1]}}" alt="Mobile Thumbnail 2">
+        {{/if}}
+         {{#if product.images.[2]}}
         <img onclick="changeImage(this.src)" class="cursor-pointer w-full h-20 object-cover rounded-lg shadow-sm" src="{{product.images.[2]}}" alt="Mobile Thumbnail 3">
+        {{/if}}
         {{#if product.images.[3]}}
         <img onclick="changeImage(this.src)" class="cursor-pointer w-full h-20 object-cover rounded-lg shadow-sm" src="{{product.images.[3]}}" alt="Mobile Thumbnail 4">
         {{/if}}
@@ -71,10 +77,18 @@
       <div class="mb-6">
         <h3 class="text-sm font-medium text-gray-700">Available Colors</h3>
         <div class="flex items-center space-x-4 mt-2">
+          {{#if colours.[0].[0]}}
           <img class="cursor-pointer w-10 h-10 rounded-full border-2 border-gray-300 hover:border-indigo-500" src="{{colours.[0].[0]}}" alt="Black Color">
+          {{/if}}
+          {{#if colours.[1].[0]}}
           <img class="cursor-pointer w-10 h-10 rounded-full border-2 border-gray-300 hover:border-indigo-500" src="{{colours.[1].[0]}}" alt="Red Color">
+          {{/if}}
+          {{#if colours.[2].[0]}}
           <img class="cursor-pointer w-10 h-10 rounded-full border-2 border-gray-300 hover:border-indigo-500" src="{{colours.[2].[0]}}" alt="Green Color">
+          {{/if}}
+          {{#if colours.[3].[0]}}
           <img class="cursor-pointer w-10 h-10 rounded-full border-2 border-gray-300 hover:border-indigo-500" src="{{colours.[3].[0]}}" alt="Blue Color">
+          {{/if}}
         </div>
       </div>
 

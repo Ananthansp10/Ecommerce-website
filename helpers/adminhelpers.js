@@ -2,6 +2,7 @@ const product=require('../databaseSchemas/productSchema');
 const Admin=require('../databaseSchemas/adminSchema');
 const user=require('../databaseSchemas/usersSchemas');
 const category=require('../databaseSchemas/categorySchema');
+const googleAuth=require('../databaseSchemas/googleAuthSchemas');
 const mongoose = require('mongoose');
 const { ObjectId } = mongoose.Types; 
 module.exports={
@@ -91,23 +92,34 @@ module.exports={
     },
 
     getUser:()=>{
+        let userArray=[];
         return new Promise((resolve,reject)=>{
             user.find({}).then((data)=>{
-               resolve(data)
+                googleAuth.find({}).then((googleData)=>{
+                    userArray=[...data,...googleData]
+                    resolve(userArray)
+                })
             })
         })
     },
 
     blockUser:(userId,status)=>{
-        return new Promise((resolve,reject)=>{
+        return new Promise(async(resolve,reject)=>{
+            const findUser=await user.findOne({_id:new ObjectId(userId)})
+            if(findUser){
             user.updateOne({_id:new ObjectId(userId)},{$set:{status:status}}).then((data)=>{
                 resolve()
             })
+        }else{
+            await googleAuth.updateOne({_id:new ObjectId(userId)},{$set:{status:status}}).then((data)=>{
+                console.log(data)
+                resolve()
+            }) 
+        }
         })
     },
 
     productByCategory:(cat)=>{
-        //cat=cat.charAt(0).toUpperCase()+cat.splice(1)
         return new Promise((resolve,reject)=>{
            product.find({catType:cat,visiblity:true}).then((data)=>{
             console.log(data)

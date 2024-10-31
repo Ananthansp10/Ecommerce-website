@@ -66,6 +66,7 @@ router.post('/userdetails',upload.single('image'),usercontroller.addUserDetails)
 router.get('/auth/google', passport.authenticate('google', {
     scope: ['profile', 'email']
 }))
+
 //route for ggogle authentication verification
 router.get('/auth/google/callback',
     passport.authenticate('google', { failureRedirect: '/users/signup' }),
