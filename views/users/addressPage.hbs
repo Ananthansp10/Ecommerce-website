@@ -1,0 +1,117 @@
+<body class="bg-gray-100">
+
+  <!-- Main Container -->
+  {{#if data}}
+  <div class="max-w-7xl mx-auto px-4 py-12">
+
+    <!-- Heading Section -->
+    <div class="mb-8 text-center">
+      <h2 class="text-3xl font-semibold text-gray-800">Your Address Book</h2>
+      <p class="text-gray-600 mt-2">Manage your addresses with ease. Add, edit, or delete your addresses below.</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <!-- Add New Address Button -->
+      <div class="col-span-1 flex justify-center items-start">
+        <button onclick="addNewAddress()" class="w-full max-w-xs py-4 px-6 bg-blue-600 text-white font-semibold rounded-lg shadow-lg transform hover:scale-105 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75">
+          <span class="text-lg">Add New Address</span>
+        </button>
+      </div>
+
+      <!-- Existing Address Cards -->
+      <div class="col-span-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {{#each data}}
+        <div class="bg-white p-6 rounded-lg shadow-xl transform hover:scale-105 transition duration-300 ease-in-out">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-xl font-semibold text-gray-800">Address {{this.key}}</p>
+              <p class="text-gray-600">{{this.address1}}</p>
+              <p class="text-gray-600">{{this.address2}}</p>
+            </div>
+          </div>
+          <div class="flex justify-between items-center mt-4">
+            <button class="py-2 px-4 bg-yellow-400 text-white rounded-md shadow-md hover:bg-yellow-500 transition duration-200" onclick="editAddress('{{this.userId}}','{{this.addressId}}')">
+              Edit
+            </button>
+            <button onclick="deleteAddress('{{this.userId}}','{{this.addressId}}')" class="py-2 px-4 bg-red-600 text-white rounded-md shadow-md hover:bg-red-700 transition duration-200">
+              Delete
+            </button>
+          </div>
+        </div>
+        {{/each}}
+      </div>
+    </div>
+  </div>
+  {{else}}
+   <div class="flex justify-center items-center min-h-screen bg-gray-100">
+  <div class="text-center p-6 bg-white shadow-lg rounded-lg max-w-lg mx-auto">
+    <svg class="w-16 h-16 mx-auto text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 2L10 2L10 14L6 14L12 18L18 14L14 14L14 2Z"/>
+    </svg>
+    <h2 class="text-xl font-semibold text-gray-800 mt-4">No Address Found</h2>
+    <p class="text-gray-500 mt-2">You currently don't have any saved addresses. Please add a new address.</p>
+    <a href="/users/addaddress" class="mt-6 inline-block bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75">
+      Add Address
+    </a>
+  </div>
+</div>
+{{/if}}
+
+  <script>
+    function addNewAddress() {
+      location.href='/users/addaddress'
+    }
+
+    function editAddress(userId,addressId){
+     location.href=`/users/editaddress/${userId}/${addressId}`
+    }
+
+   function deleteAddress(userId, addressId) {
+    const url = `/users/deleteaddress/${userId}/${addressId}`;
+    
+    // SweetAlert2 confirmation dialog
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "Want to delete this Address!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, delete it!',
+        cancelButtonText: 'No, cancel!',
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Send the request if confirmed
+            fetch(url, {
+                method: "POST"
+            }).then((response) => {
+                if (response.ok) {
+                    // Show success alert and redirect
+                    Swal.fire(
+                        'Deleted!',
+                        'The address has been deleted successfully.',
+                        'success'
+                    ).then(() => {
+                        location.href = '/users/address';
+                    });
+                } else {
+                    // Show failure alert
+                    Swal.fire(
+                        'Failed!',
+                        'There was an issue deleting the address.',
+                        'error'
+                    );
+                }
+            }).catch((error) => {
+                console.error('Error:', error);
+                Swal.fire(
+                    'Error!',
+                    'Something went wrong.',
+                    'error'
+                );
+            });
+        }
+    });
+}
+
+  </script>
+
+</body>

@@ -99,5 +99,77 @@ module.exports={
         } catch (error) {
             res.status(500).send('Error rendering cart page');
         }
-    }
+    },
+
+    searchProducts:async(req,res)=>{
+        try {
+           const item=req.params.item
+           req.session.product=item
+           var searchProducts=await producthelpers.getSearchProducts(item)
+           var plainProduct=searchProducts.map((data)=>{
+            return{
+                name:data.name,
+                description:data.description,
+                image:data.images,
+                price:data.price,
+                _id:data._id
+            }
+           })
+            res.render('products/productSearchPage',{user:req.session.user,products:plainProduct,item:req.session.product})
+        } catch (error) {
+          res.status(500).send('Error occured')  
+        }
+    },
+
+    sortProductByPrice:async(req,res)=>{
+        try {
+            var products=await producthelpers.sortProductByPrice(req.params.value)
+            const plainProducts = products.map(product => ({
+                _id: product._id,
+                name: product.name,
+                description: product.description,
+                price: product.price,
+                images: product.images
+            }));
+            res.render('products/productlist',{products:plainProducts,user:req.session.user})
+        } catch (error) {
+            res.status(500).send('Error occured')
+        }
+    },
+
+    sortSearchProductByPrice:async(req,res)=>{
+        try {
+            const item=req.params.item
+            req.session.product=item
+            var sortSearchProducts=await producthelpers.sortSearchProducts(req.params.value,item)
+            var plainProduct=sortSearchProducts.map((data)=>{
+             return{
+                _id:data._id,
+                 name:data.name,
+                 description:data.description,
+                 image:data.images,
+                 price:data.price
+             }
+            })
+            res.render('products/productSearchPage',{products:plainProduct,user:req.session.user,item:req.session.product})
+         } catch (error) {
+           res.status(500).send('Error occured')  
+         }
+     },
+
+     filterProducts:async(req,res)=>{
+        try {
+           const filteredProducts=await producthelpers.filterProducts(req.params.cat,req.params.price)
+           const plainProducts = filteredProducts.map(product => ({
+            _id: product._id,
+            name: product.name,
+            description: product.description,
+            price: product.price,
+            images: product.images
+        }));
+           res.render('products/productlist',{user:req.session.user,products:plainProducts})
+        } catch (error) {
+            res.status(500).send("Error occured page not rendering")
+        }
+     }
 }

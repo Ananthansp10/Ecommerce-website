@@ -4,13 +4,11 @@
             <h2 class="text-3xl font-bold text-gray-700">Products</h2>
             <div class="flex items-center space-x-4">
                 <select id="categoryFilter" class="p-2 border rounded" onchange="findProductByCategory(this)">
-                    <option value="">All Categories</option>
+                    <option value="">Select Categories</option>
+                    <option value="all">All</option>
                     <option value="mobile">Mobiles</option>
                     <option value="accessory">Accessories</option>
                 </select>
-                <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-500" onclick="showcategories()">
-                    Categories
-                </button>
                 <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-500" onclick="addProducts()">
                     <i class="fas fa-plus"></i> Add Products
                 </button>
@@ -138,9 +136,5 @@
 
     function findProductByCategory(value){
       window.location.href=`/admin/productcategory/${value.value}`
-    }
-
-    function showcategories(){
-        window.location.href=`/admin/category`
     }
 </script>

@@ -21,7 +21,6 @@ module.exports={
     customerPage:async(req,res)=>{
         try {
             const user = await adminhelper.getUser();
-            console.log(user)
             const userplainObj = user.map(data => {
                 const status = data.status; 
                 return {
@@ -104,15 +103,17 @@ module.exports={
 
     adminProductSubmission:async(req,res)=>{
         try {
-            const { name, catType, price, stock, colour, description } = req.body;
+            const{ name, catType, price, stock, colour, description } = req.body;
+            const newprice=parseInt(price)
+            const newstock=parseInt(stock)
             const imageUrls = req.files.map(file => file.path);
             const findCatId=await adminhelper.getCatId(catType)
             const newProduct = {
                 name,
                 catType,
                 category:findCatId,
-                price,
-                stock,
+                price:newprice,
+                stock:newstock,
                 colour,
                 description,
                 images: imageUrls,
@@ -126,6 +127,7 @@ module.exports={
                 res.status(400).send('Failed to add product');
             }
         } catch (error) {
+            console.log(error)
             res.status(500).send('Error adding product');
         }
     },
@@ -147,8 +149,8 @@ module.exports={
             };
         
             const categoryOption = {
-                isMobile: productDetails[0].category === "mobile",
-                isAccessories: productDetails[0].category === "accessories"
+                isMobile: productDetails[0].catType === "mobile",
+                isAccessories: productDetails[0].catType === "accessories"
             };
             
             res.render('admin/editProductPage', { admin: true, product: productObj, categoryOption });
@@ -231,7 +233,6 @@ module.exports={
         categoryPage:async(req,res)=>{
             try {
                 const category= await adminhelper.findCategory()
-                console.log(category)
                 const plainObj=category.map((cat,index)=>({
                     _id:cat._id,
                     name:cat.name,

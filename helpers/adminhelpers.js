@@ -46,7 +46,7 @@ module.exports={
         if(images.length==4){
             const editproduct={
                 name:data.name,
-                category:data.category,
+                catType:data.catType,
                 price:data.price,
                 stock:data.stock,
                 colour:data.colour,
@@ -112,7 +112,6 @@ module.exports={
             })
         }else{
             await googleAuth.updateOne({_id:new ObjectId(userId)},{$set:{status:status}}).then((data)=>{
-                console.log(data)
                 resolve()
             }) 
         }
@@ -121,10 +120,16 @@ module.exports={
 
     productByCategory:(cat)=>{
         return new Promise((resolve,reject)=>{
-           product.find({catType:cat,visiblity:true}).then((data)=>{
-            console.log(data)
-             resolve(data)
-           })
+           if(cat=="all"){
+            product.find({visiblity:true}).then((data)=>{
+                 resolve(data)
+               })
+           }
+           else{
+            product.find({catType:cat,visiblity:true}).then((data)=>{
+                 resolve(data)
+               })
+           }
         })
     },
 
@@ -135,10 +140,16 @@ module.exports={
             visiblity:true,
             isBlock:false
         }
-        return new Promise((resolve,reject)=>{
+        return new Promise(async(resolve,reject)=>{
+            const findCategory=await category.collection.findOne({name:catName,visiblity:true})
+            if(!findCategory){
             category.collection.insertOne(categoryObj).then(()=>{
                 resolve()
             })
+        }else{
+            console.log("product already have")
+            resolve()
+        }
         })
     },
 

@@ -16,6 +16,14 @@ function userCheck(req,res,next){
       res.redirect('/')
     }
   }
+
+  function isAuthenticated(req, res, next) {
+    if (req.session.user) {
+       next(); 
+    } else {
+      res.redirect('/users/login');
+    }
+  }
 //route for login
 
 router.get('/login',userCheck,usercontroller.loginsection)
@@ -58,9 +66,29 @@ router.post('/resetPassword',usercontroller.resetPasswordSubmission)
 //route for user logout
 router.get('/logout',usercontroller.logoutSection)
 
-router.get('/userdetails',usercontroller.userDetailsPage)
+router.get('/userdetails',isAuthenticated,usercontroller.userDetailsPage)
 
-router.post('/userdetails',upload.single('image'),usercontroller.addUserDetails)
+router.get('/adduserdetails',usercontroller.addUserDetailsPage)
+
+router.post('/adduserdetails',upload.single('image'),usercontroller.addUserDetails)
+
+router.get('/edituserdetails',usercontroller.editUserDetailPage)
+
+router.post('/edituserdetails/:userId',upload.single('image'),usercontroller.updateUserDetails)
+
+router.get('/address',usercontroller.addressPage)
+
+router.get('/addaddress',usercontroller.addAddressPage)
+
+router.post('/addaddress',usercontroller.addAddress)
+
+router.get('/editaddress/:userId/:addressId',usercontroller.editAddressPage)
+
+router.post('/editaddress/:userId/:addressId',usercontroller.editAddress)
+
+router.post('/deleteaddress/:userId/:addressId',usercontroller.deleteAddress)
+
+router.get('/addtocart/:productId',usercontroller.addToCart)
 
 //route for google authentication
 router.get('/auth/google', passport.authenticate('google', {

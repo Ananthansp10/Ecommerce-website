@@ -26,7 +26,7 @@ router.post('/editProducts/:id',upload.array('images', 4),admincontroller.adminE
 
 router.post('/deleteProduct/:id',admincontroller.adminDeleteProduct)
 
-router.get('/category',admincontroller.categoryPage)
+router.get('/productcategory/:value',admincontroller.productByCategory)
 
 router.get('/orderlist',admincontroller.adminOrderListPage)
 
@@ -34,7 +34,7 @@ router.get('/orderedit',admincontroller.adminOrderEditPage)
 
 router.get('/coupon',admincontroller.couponPage)
 
-router.get('/productcategory/:value',admincontroller.productByCategory)
+router.get('/category',admincontroller.categoryPage)
 
 router.get('/addCategory',admincontroller.addcategoryPage)
 

@@ -7,7 +7,10 @@ const OTPschema=require('../databaseSchemas/otpSchema');
 const { promise } = require('bcrypt/promises');
 const otpSchema = require('../databaseSchemas/otpSchema');
 const googleAuthSchema=require('../databaseSchemas/googleAuthSchemas');
-const userDetail=require('../databaseSchemas/userDetailSchema')
+const userDetail=require('../databaseSchemas/userDetailSchema');
+const addressDetail=require('../databaseSchemas/addressSchema');
+const product=require('../databaseSchemas/productSchema');
+const cartDetail=require("../databaseSchemas/cartSchema")
 const mongoose=require('mongoose')
 const { ObjectId } = mongoose.Types;
 module.exports={
@@ -196,14 +199,9 @@ module.exports={
         return new Promise((resolve,reject)=>{
             const userData=new userDetail({
                 name:data.name,
+                email:data.email,
                 phoneNumber:data.phoneNumber,
-                location:data.location,
-                houseNumber:data.houseNumber,
-                pincode:data.pincode,
-                city:data.city,
-                state:data.state,
-                country:data.country,
-                addressType:data.addressType,
+                gender:data.gender,
                 image:data.image,
                 userId:data.userId 
             })
@@ -225,6 +223,146 @@ module.exports={
                 }
             })
         })
-    }
+    },
+
+    getuserData:(userId)=>{
+        return new Promise((resolve,reject)=>{
+            userDetail.findOne({userId:new ObjectId(userId)}).then((data)=>{
+                resolve(data)
+            })
+        })
+    },
+
+    editUserDetails:(userId)=>{
+        return new Promise((resolve,reject)=>{
+           userDetail.findOne({userId:new ObjectId(userId)}).then((data)=>{
+           resolve(data)
+           })
+        })
+    },
+
+    updateUserDetails:(userId,data)=>{
+        return new Promise((resolve,reject)=>{
+            userDetail.updateOne({userId:new ObjectId(userId)},{$set:data}).then(()=>{
+                resolve()
+            })
+        })
+    },
+
+    addAddress:(userId,data)=>{
+        return new Promise(async(resolve,reject)=>{
+            const userAddress=await addressDetail.findOne({userId:new ObjectId(userId)})
+            if(userAddress){
+                userAddress.address.push(data)
+                await userAddress.save().then(()=>{
+                    resolve()
+                })
+            }else{
+            const dataObj=new addressDetail({
+                userId,
+                address:[data]
+            })
+            dataObj.save().then(()=>{
+                resolve()
+            })
+        }
+        })
+    },
+
+    findUserAddress:(userId)=>{
+        return new Promise(async(resolve,reject)=>{
+           const data=await addressDetail.findOne({userId:new ObjectId(userId)})
+           if(data){
+            resolve(data.address)
+           }else{
+            resolve()
+           }
+        })
+    },
+
+    getAddress:(userId,addressId)=>{
+        return new Promise((resolve,reject)=>{
+            addressDetail.aggregate([
+                {
+                    $match:{userId:new ObjectId(userId)}
+                },
+                {
+                    $unwind:"$address"
+                },
+                {
+                    $match:{'address._id':new ObjectId(addressId)}
+                }
+            ]).then((data)=>{
+                resolve(data[0].address)
+            })
+        })
+    },
     
+    editAddress:(userId,addressId,data)=>{
+        return new Promise((resolve,reject)=>{
+           addressDetail.updateOne({userId:new ObjectId(userId)},{
+            $set:{
+                "address.$[elem].addressType":data.addressTpe,
+                "address.$[elem].addressLine1":data.addressLine1,
+                "address.$[elem].addressLine2":data.addressLine2,
+                "address.$[elem].city":data.city,
+                "address.$[elem].state":data.state,
+                "address.$[elem].country":data.country,
+                "address.$[elem].pincode":data.pincode,
+                "address.$[elem].landmark":data.landmark
+            },
+           },
+           {
+            arrayFilters:[{"elem._id":new ObjectId(addressId)}]
+           }
+          ).then(()=>{
+            resolve()
+          }).catch((err)=>{
+            console.log(err)
+          })
+        })
+    },
+
+    deleteAddress:(userId,addressId)=>{
+        return new Promise((resolve,reject)=>{
+            addressDetail.updateOne({userId:new ObjectId(userId)},{$pull:{address:{_id:new ObjectId(addressId)}}}).then((data)=>{
+                if(data.acknowledged){
+                    resolve({status:true})
+                }else{
+                    resolve({status:false})
+                }
+            })
+        })
+    },
+
+    getProductDetails:(productId)=>{
+        return new Promise((resolve,reject)=>{
+            product.findOne({_id:new ObjectId(productId)}).then((data)=>{
+                resolve(data)
+            })
+        })
+    },
+
+    addToCart:(data)=>{
+        console.log(data)
+        return new Promise(async(resolve,reject)=>{
+           const cartUser=await cartDetail.findOne({userId:new ObjectId(data.userId)})
+           if(cartUser){
+            const obj={
+                productId:data.products[0].productId,
+                quantity:data.products[0].quantity,
+                price:data.products[0].price,
+                image:data.products[0].image
+            }
+            cartDetail.updateOne({userId:new ObjectId(data.userId)},{$push:{products:obj}}).then(()=>{
+                resolve()
+            })
+           }else{
+           const cartObj=new cartDetail(data)
+           cartObj.save().then(()=>{
+             resolve()
+           })
+        }
+        })
+    }
 }

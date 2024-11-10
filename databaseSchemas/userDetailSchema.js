@@ -6,40 +6,20 @@ const userDetailSchema=new Schema({
         type:String,
         required:true
     },
+    email:{
+        type:String,
+        required:true
+    },
     phoneNumber:{
         type:Number,
         required:true
     },
-    addressType:{
-        type:String,
-        required:true
-    },
-    location:{
-        type:String,
-        required:true
-    },
-    houseNumber:{
-        type:String,
-        required:true
-    },
-    pincode:{
-        type:Number,
-        required:true
-    },
-    state:{
-        type:String,
-        required:true
-    },
-    city:{
-        type:String,
-        required:true
-    },
-    country:{
-        type:String,
-        required:true
-    },
     image:{
         type:String,
+    },
+    gender:{
+        type:String,
+        required:true
     },
     userId:{
         type: Schema.Types.ObjectId,

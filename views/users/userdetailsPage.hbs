@@ -1,155 +1,136 @@
-<div class="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-lg mt-10">
-    <h2 class="text-2xl font-semibold mb-4">User Details</h2>
+<body class="bg-gray-100">
 
-    <!-- Form Start -->
-    <form action="/users/userdetails" method="POST" enctype="multipart/form-data">
-        <!-- User Name -->
-        <div class="mb-4">
-            <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
-            <input type="text" id="name" name="name" placeholder="Enter your name" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+  <div class="flex min-h-screen">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-gray-800 text-white p-4 md:block hidden flex-shrink-0">
+      <h2 class="text-2xl font-semibold mb-6">Dashboard</h2>
+      <nav>
+        <ul>
+          {{#if userdata.available}}
+          <li><a href="/users/adduserdetails" class="block py-2 px-4 rounded hover:bg-gray-700 flex items-center">
+  <i class="fas fa-user-plus mr-2"></i> Add User Details
+</a></li>
+{{else}}
+<li><a href="/users/edituserdetails" class="block py-2 px-4 rounded hover:bg-gray-700 flex items-center">
+  <i class="fas fa-user-plus mr-2"></i> Edit User Details
+</a></li>
+{{/if}}
+
+<li><a href="/product/cartpage" class="block py-2 px-4 rounded hover:bg-gray-700 flex items-center">
+  <i class="fas fa-shopping-cart mr-2"></i> Cart
+</a></li>
+
+<li><a href="/users/address" class="block py-2 px-4 rounded hover:bg-gray-700 flex items-center">
+  <i class="fas fa-map-marker-alt mr-2"></i> Add Address
+</a></li>
+
+<li><a href="/product/wishlist" class="block py-2 px-4 rounded hover:bg-gray-700 flex items-center">
+  <i class="fas fa-heart mr-2"></i> Wishlist
+</a></li>
+
+<li><a href="" class="block py-2 px-4 rounded hover:bg-gray-700 flex items-center">
+  <i class="fas fa-box-open mr-2"></i> My Orders
+</a></li>
+
+<li><a href="/product/offerSection" class="block py-2 px-4 rounded hover:bg-gray-700 flex items-center">
+  <i class="fas fa-ticket-alt mr-2"></i> Coupon
+</a></li>
+
+<li><a href="#" class="block py-2 px-4 rounded hover:bg-gray-700 flex items-center">
+  <i class="fas fa-wallet mr-2"></i> Wallet
+</a></li>
+
+<li><a href="/users/resetPassword" class="block py-2 px-4 rounded hover:bg-gray-700 flex items-center">
+  <i class="fas fa-key mr-2"></i> Reset Password
+</a></li>
+
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="flex-1 p-6">
+      <!-- Mobile Sidebar Toggle -->
+      <div class="md:hidden flex justify-end">
+        <button id="menu-toggle" class="text-gray-800 bg-gray-200 p-2 rounded">
+          Menu
+        </button>
+      </div>
+
+      <!-- Sidebar for Mobile -->
+      <aside id="mobile-sidebar" class="absolute inset-y-0 left-0 w-64 bg-gray-800 text-white p-4 transform -translate-x-full transition-transform duration-300 md:hidden">
+        <h2 class="text-2xl font-semibold mb-6">Dashboard</h2>
+        <nav>
+          <ul>
+          {{#if userdata.available}}
+          <li><a href="/users/adduserdetails" class="block py-2 px-4 rounded hover:bg-gray-700 flex items-center">
+  <i class="fas fa-user-plus mr-2"></i> Add User Details
+</a></li>
+{{else}}
+<li><a href="/users/edituserdetails" class="block py-2 px-4 rounded hover:bg-gray-700 flex items-center">
+  <i class="fas fa-user-plus mr-2"></i> Edit User Details
+</a></li>
+{{/if}}
+
+<li><a href="/product/cartpage" class="block py-2 px-4 rounded hover:bg-gray-700 flex items-center">
+  <i class="fas fa-shopping-cart mr-2"></i> Cart
+</a></li>
+
+<li><a href="/users/address" class="block py-2 px-4 rounded hover:bg-gray-700 flex items-center">
+  <i class="fas fa-map-marker-alt mr-2"></i> Add Address
+</a></li>
+
+<li><a href="/product/wishlist" class="block py-2 px-4 rounded hover:bg-gray-700 flex items-center">
+  <i class="fas fa-heart mr-2"></i> Wishlist
+</a></li>
+
+<li><a href="#" class="block py-2 px-4 rounded hover:bg-gray-700 flex items-center">
+  <i class="fas fa-box-open mr-2"></i> My Orders
+</a></li>
+
+<li><a href="#" class="block py-2 px-4 rounded hover:bg-gray-700 flex items-center">
+  <i class="fas fa-ticket-alt mr-2"></i> Coupon
+</a></li>
+
+<li><a href="#" class="block py-2 px-4 rounded hover:bg-gray-700 flex items-center">
+  <i class="fas fa-wallet mr-2"></i> Wallet
+</a></li>
+
+<li><a href="/users/resetPassword" class="block py-2 px-4 rounded hover:bg-gray-700 flex items-center">
+  <i class="fas fa-key mr-2"></i> Reset Password
+</a></li>
+
+          </ul>
+        </nav>
+      </aside>
+
+      <!-- User Details Section -->
+      <div class="bg-white shadow-md rounded-lg p-6 mt-4">
+        <h2 class="text-2xl font-semibold mb-4">User Details</h2>
+        <div class="flex flex-col md:flex-row items-center">
+          <!-- Profile Photo -->
+          <div class="w-24 h-24 bg-gray-200 rounded-full overflow-hidden mb-4 md:mb-0 md:mr-6">
+            <img src="{{userdata.image}}" alt="Profile" class="object-cover w-full h-full">
+          </div>
+          <!-- User Info -->
+          <div class="flex-1">
+            <p class="font-semibold text-gray-800">Name:</p>
+            <p class="mb-4 text-gray-600">{{userdata.name}}</p>
+            
+            <p class="font-semibold text-gray-800">Email:</p>
+            <p class="text-gray-600">{{userdata.email}}</p>
+          </div>
         </div>
+      </div>
+    </div>
+  </div>
 
-        <!-- Phone Number -->
-        <div class="mb-4">
-            <label for="phone" class="block text-sm font-medium text-gray-700">Phone Number</label>
-            <input type="text" id="phone" name="phone" placeholder="Enter your phone number" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
-        </div>
+  <script>
+    const menuToggle = document.getElementById('menu-toggle');
+    const mobileSidebar = document.getElementById('mobile-sidebar');
+    menuToggle.addEventListener('click', () => {
+      mobileSidebar.classList.toggle('-translate-x-full');
+    });
+  </script>
 
-        <!-- Image Upload -->
-        <div class="mb-6">
-            <label for="image-upload" class="block text-sm font-medium text-gray-700">Profile Picture</label>
-            <div class="mt-1 flex items-center">
-                <input type="file"  id="image-upload" name="image" class="hidden" accept="image/*" onchange="previewImage(event)" required>
-                <label for="image-upload" class="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 cursor-pointer">
-                    Upload Image
-                </label>
-            </div>
-            <div class="mt-4">
-                <img id="image-preview" class="w-32 h-32 rounded-full object-cover" src="https://via.placeholder.com/150" alt="Profile Image">
-            </div>
-        </div>
-
-        <!-- Address Section -->
-        <div id="addresses">
-            <div class="mb-4">
-                <h3 class="text-lg font-semibold mb-2">Address</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- Address Type Dropdown -->
-                    <div>
-                        <label for="address-type" class="block text-sm font-medium text-gray-700">Address Type</label>
-                        <select id="address-type" name="addressType" class="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
-                            <option value="">Choose Address Type</option>
-                            <option value="permanent">Permanent</option>
-                            <option value="temporary">Temporary</option>
-                        </select>
-                    </div>
-
-                    <!-- Location -->
-                    <div>
-                        <label for="location" class="block text-sm font-medium text-gray-700">Location</label>
-                        <input type="text" name="location" id="location" placeholder="Location" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
-                    </div>
-
-                    <!-- House Number -->
-                    <div>
-                        <label for="houseNumber" class="block text-sm font-medium text-gray-700">House Number</label>
-                        <input type="text" name="houseNumber" id="houseNumber" placeholder="House Number" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
-                    </div>
-
-                    <!-- Pincode -->
-                    <div>
-                        <label for="pincode" class="block text-sm font-medium text-gray-700">Pincode</label>
-                        <input type="text" name="pincode" id="pincode" placeholder="Pincode" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
-                    </div>
-
-                    <!-- City -->
-                    <div>
-                        <label for="city" class="block text-sm font-medium text-gray-700">City</label>
-                        <input type="text" name="city" id="city" placeholder="City" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
-                    </div>
-
-                    <!-- State -->
-                    <div>
-                        <label for="state" class="block text-sm font-medium text-gray-700">State</label>
-                        <input type="text" name="state" id="state" placeholder="State" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
-                    </div>
-
-                    <!-- Country -->
-                    <div>
-                        <label for="country" class="block text-sm font-medium text-gray-700">Country</label>
-                        <input type="text" name="country" id="country" placeholder="Country" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Add Multiple Addresses -->
-        <div id="additional-addresses"></div>
-        <button type="button" class="mt-2 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500" onclick="addAddress()">Add Another Address</button>
-
-        <!-- Save Button -->
-        <div class="mt-6">
-            <button type="submit" class="w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                Save
-            </button>
-        </div>
-    </form>
-    <!-- Form End -->
-</div>
-
-<script>
-    // Function to preview the uploaded image
-    function previewImage(event) {
-        const reader = new FileReader();
-        reader.onload = function(){
-            const output = document.getElementById('image-preview');
-            output.src = reader.result;
-        }
-        reader.readAsDataURL(event.target.files[0]);
-    }
-
-    // Function to add additional address fields
-    function addAddress() {
-        const addressContainer = document.getElementById('additional-addresses');
-        const newAddressFields = `
-            <div class="mb-4">
-                <h3 class="text-lg font-semibold mb-2">Additional Address</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Address Type</label>
-                        <select name="addressType[]" class="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
-                            <option value="">Choose Address Type</option>
-                            <option value="permanent">Permanent</option>
-                            <option value="temporary">Temporary</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Location</label>
-                        <input type="text" name="location[]" placeholder="Location" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">House Number</label>
-                        <input type="text" name="houseNumber[]" placeholder="House Number" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Pincode</label>
-                        <input type="text" name="pincode[]" placeholder="Pincode" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">City</label>
-                        <input type="text" name="city[]" placeholder="City" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">State</label>
-                        <input type="text" name="state[]" placeholder="State" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Country</label>
-                        <input type="text" name="country[]" placeholder="Country" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
-                    </div>
-                </div>
-            </div>
-        `;
-        addressContainer.insertAdjacentHTML('beforeend', newAddressFields);
-    }
-</script>
+</body>

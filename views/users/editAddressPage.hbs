@@ -1,0 +1,74 @@
+<body class="bg-gray-100 py-12">
+
+  <!-- Main Container -->
+  <div class="max-w-2xl mx-auto bg-white shadow-md rounded-lg p-8 mt-9 mb-9">
+    
+    <!-- Heading Section -->
+    <h2 class="text-2xl font-semibold text-gray-800 text-center mb-8">Add New Address</h2>
+
+    <!-- Add Address Form -->
+    <form action="/users/editaddress/{{data.userId}}/{{data.addressId}}" method="POST" class="space-y-6">
+
+      <!-- Address Type -->
+      <div>
+        <label for="address-type" class="block text-sm font-medium text-gray-600">Address Type</label>
+        <select id="address-type" name="addressType" class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-200 focus:outline-none" required>
+          <option value="" disabled selected>Select address type</option>
+          <option value="permanent" {{#if data.isPermanent}}selected{{/if}}>Permanent Address</option>
+          <option value="temporary" {{#if data.isTemporary}}selected{{/if}}>Temporary Address</option>
+        </select>
+      </div>
+
+      <!-- Address Line 1 -->
+      <div>
+        <label for="address-line1" class="block text-sm font-medium text-gray-600">Address Line 1</label>
+        <input type="text" id="address-line1" name="addressLine1" value="{{data.addressLine1}}" class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-200 focus:outline-none" placeholder="House number, Street, Colony" required>
+      </div>
+
+      <!-- Address Line 2 -->
+      <div>
+        <label for="address-line2" class="block text-sm font-medium text-gray-600">Address Line 2</label>
+        <input type="text" id="address-line2" name="addressLine2" value="{{data.addressLine2}}" class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-200 focus:outline-none" placeholder="Area, Landmark (Optional)">
+      </div>
+
+      <!-- City -->
+      <div>
+        <label for="city" class="block text-sm font-medium text-gray-600">City</label>
+        <input type="text" id="city" name="city" value="{{data.city}}" class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-200 focus:outline-none" placeholder="Enter your city" required>
+      </div>
+
+      <!-- State -->
+      <div>
+        <label for="state" class="block text-sm font-medium text-gray-600">State</label>
+        <input type="text" id="state" name="state" value="{{data.state}}" class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-200 focus:outline-none" placeholder="Enter your state" required>
+      </div>
+
+      <!-- Country -->
+      <div>
+        <label for="country" class="block text-sm font-medium text-gray-600">Country</label>
+        <input type="text" id="country" name="country" value="{{data.country}}" class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-200 focus:outline-none" placeholder="Enter your country" required>
+      </div>
+
+      <!-- Pincode -->
+      <div>
+        <label for="pincode" class="block text-sm font-medium text-gray-600">Pincode</label>
+        <input type="text" id="pincode" name="pincode" value="{{data.pincode}}" class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-200 focus:outline-none" placeholder="Enter your pincode" required>
+      </div>
+
+      <!-- Landmark -->
+      <div>
+        <label for="landmark" class="block text-sm font-medium text-gray-600">Landmark</label>
+        <input type="text" id="landmark" name="landmark" value="{{data.landmark}}" class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-200 focus:outline-none" placeholder="Enter a nearby landmark" />
+      </div>
+
+      <!-- Submit Button -->
+      <div class="pt-4">
+        <button type="submit" class="w-full py-3 px-4 bg-blue-600 text-white font-semibold rounded-md shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75">
+          Add Address
+        </button>
+      </div>
+
+    </form>
+  </div>
+
+</body>
