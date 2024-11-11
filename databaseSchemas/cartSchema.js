@@ -11,7 +11,7 @@ const cartSchema=new Schema({
         {
             productId:{
                 type:mongoose.Types.ObjectId,
-                ref:'product',
+                ref:'Product',
                 required:true
             },
             quantity:{
@@ -23,34 +23,34 @@ const cartSchema=new Schema({
                 type:Number,
                 required:true
             },
-            totalPrice:{
-                type:Number,
-                required:true,
-                default:function(){
-                    return this.quantity*this.price;
-                }
-            },
+            // totalPrice:{
+            //     type:Number,
+            //     required:true,
+            //     default:function(){
+            //         return this.quantity*this.price;
+            //     }
+            // },
             image:[{
                 type:String,
                 required:true
             }]
         }
     ],
-    totalValue:{
-        type:Number,
-        required:true,
-        default:0
-    },
+    // totalValue:{
+    //     type:Number,
+    //     required:true,
+    //     default:0
+    // },
 })
 
-cartSchema.pre('save', function (next) {
-    let total = 0;
-    this.products.forEach(product => {
-        total += product.totalPrice;
-    });
-    this.totalValue = total;
-    next();
-});
+// cartSchema.pre('save', function (next) {
+//     let total = 0;
+//     this.products.forEach(product => {
+//         total += product.totalPrice;
+//     });
+//     this.totalValue = total;
+//     next();
+// });
 
 const cart=mongoose.model("cart",cartSchema)
 

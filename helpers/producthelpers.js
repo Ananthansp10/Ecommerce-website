@@ -1,4 +1,5 @@
-const product=require('../databaseSchemas/productSchema')
+const product=require('../databaseSchemas/productSchema');
+const cartDetail=require('../databaseSchemas/cartSchema');
 const mongoose = require('mongoose');
 const { ObjectId } = mongoose.Types; 
 module.exports={
@@ -119,6 +120,58 @@ module.exports={
                 resolve(data)
             })
         }
+    })
+   },
+
+   getCartLength:(userId)=>{
+    return new Promise(async(resolve,reject)=>{
+        const cartUser=await cartDetail.findOne({userId:new ObjectId(userId)})
+        if(cartUser){
+            cartDetail.findOne({userId:new ObjectId(userId)}).then((data)=>{
+                resolve(data.products.length)
+            })
+        }else{
+            resolve()
+        }
+    })
+   },
+
+   getCartProducts:(userId)=>{
+    return new Promise((resolve,reject)=>{
+        cartDetail.aggregate([{
+            $match:{
+                userId:new ObjectId(userId)
+            }
+           },
+            {
+                $unwind:"$products"
+            },
+            {
+                $lookup:{
+                    from:"products",
+                    localField:"products.productId",
+                    foreignField:"_id",
+                    as:"productDetails"
+                }
+            },
+            {
+                $unwind:"$productDetails"
+            },
+            {
+                $project:{
+                    productId:'$productDetails._id',
+                    productName:'$productDetails.name',
+                    category:'$productDetails.catType',
+                    price:'$productDetails.price',
+                    images:'$productDetails.images',
+                    description:'$productDetails.description',
+                    stock:'$productDetails.stock',
+                    quantity:'$products.quantity'
+                }
+            }
+        ]).then((data)=>{
+            resolve(data)
+        })
     })
    }
 }

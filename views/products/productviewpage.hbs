@@ -172,6 +172,73 @@
     mainImage.src = src;
     mainImage.style.transform = 'scale(1)';
   }
+
+  function addToCart(productId) {
+  fetch(`/users/addtocart/${productId}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+  .then(response => {
+    if (response.ok) {
+      return response.json();
+    } else {
+      return response.text();
+    }
+  })
+  .then(data => {
+    if (typeof data === 'string') {
+      Swal.fire({
+        title: 'Please log in!',
+        text: 'You need to log in to add products to your cart.',
+        icon: 'info',
+        confirmButtonText: 'Go to Login',
+        allowOutsideClick: false,
+        showCancelButton: true,
+        cancelButtonText: 'Cancel'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          location.href = '/users/login';
+        }
+      });
+    } else if (data.status) {
+      // Product successfully added
+      Swal.fire({
+        title: 'Success!',
+        text: 'Product added to cart successfully!',
+        icon: 'success',
+        confirmButtonText: 'Continue Shopping',
+        showCancelButton: true,
+        cancelButtonText: 'Go to Cart'
+      }).then((result) => {
+        if (result.dismiss === Swal.DismissReason.cancel) {
+          location.href = '/product/cartPage';
+        } else {
+          location.href = '/';
+        }
+      });
+    } else {
+      // Failed to add product
+      Swal.fire({
+        title: 'Error!',
+        text: 'Failed to add product to cart.',
+        icon: 'error',
+        confirmButtonText: 'Try Again',
+        timer: 2000
+      });
+    }
+  })
+  .catch(error => {
+    console.log('Error adding to cart:', error);
+    Swal.fire({
+      title: 'Oops!',
+      text: 'Something went wrong. Please try again.',
+      icon: 'error',
+      confirmButtonText: 'OK'
+    });
+  });
+}
 </script>
 
 <!-- Styling for zoom lens -->

@@ -344,25 +344,57 @@ module.exports={
     },
 
     addToCart:(data)=>{
-        console.log(data)
         return new Promise(async(resolve,reject)=>{
            const cartUser=await cartDetail.findOne({userId:new ObjectId(data.userId)})
-           if(cartUser){
-            const obj={
-                productId:data.products[0].productId,
-                quantity:data.products[0].quantity,
-                price:data.products[0].price,
-                image:data.products[0].image
+           if (cartUser) {
+            const productExists = cartUser.products.some((prod) => 
+                prod.productId.equals(data.products[0].productId)
+            );
+            if (productExists) {
+               cartDetail.updateOne({userId:new ObjectId(data.userId),"products.productId":new ObjectId(data.products[0].productId)},{$inc:{"products.$.quantity":1}}).then((data)=>{
+               resolve()
+               })
+            } else {
+                const obj={
+                    productId:data.products[0].productId,
+                    quantity:data.products[0].quantity,
+                    price:data.products[0].price,
+                    image:data.products[0].image
+                }
+                cartDetail.updateOne({userId:new ObjectId(data.userId)},{$push:{products:obj}}).then(()=>{
+                    resolve()
+                })
             }
-            cartDetail.updateOne({userId:new ObjectId(data.userId)},{$push:{products:obj}}).then(()=>{
-                resolve()
-            })
-           }else{
-           const cartObj=new cartDetail(data)
+        } else {
+            const cartObj=new cartDetail(data)
            cartObj.save().then(()=>{
              resolve()
            })
         }
+        })
+    },
+
+    deleteCartProduct:(userId,productId)=>{
+        return new Promise((resolve,reject)=>{
+            cartDetail.updateOne({userId:new ObjectId(userId)},{$pull:{products:{productId:new ObjectId(productId)}}}).then((data)=>{
+                if(data.acknowledged){
+                    resolve({status:true})
+                }else{
+                    resolve({status:false})
+                }
+            })
+        })
+    },
+
+    updateProductQuantity:(userId,productId,value)=>{
+        return new Promise((resolve,reject)=>{
+           cartDetail.updateOne({userId:new ObjectId(userId),'products.productId':new ObjectId(productId)},{$inc:{'products.$.quantity':value}}).then((data)=>{
+            if(data.acknowledged){
+                resolve({status:true})
+            }else{
+                resolve({status:false})
+            }
+           })
         })
     }
 }

@@ -1,59 +1,51 @@
+{{#if data}}
 <div class="container mx-auto px-4 py-8">
     <!-- Cart Section -->
     <div class="flex flex-col lg:flex-row justify-between space-y-6 lg:space-y-0 lg:space-x-8">
         <!-- Product List -->
-        <div class="lg:w-3/4 bg-white p-6 rounded-lg shadow-lg">
+        <div class="lg:w-3/4 bg-white p-6 rounded-lg shadow-lg overflow-y-scroll max-h-screen">
             <h2 class="text-2xl font-semibold mb-6">Your Cart</h2>
 
             <!-- Cart Item -->
+            {{#each data}}
             <div class="flex justify-between items-center border-b pb-4 mb-4">
-                <img src="/images/phone1.jpg" alt="Product Image" class="w-24 h-24 object-cover rounded-lg">
+                <img src="{{this.images.[0]}}" alt="Product Image" class="w-24 h-24 object-cover rounded-lg">
                 <div class="flex-1 ml-4">
-                    <h3 class="text-lg font-semibold">Product Name</h3>
-                    <p class="text-gray-600">Category: Mobile</p>
-                    <div class="flex items-center mt-2">
+                    <h3 class="text-lg font-semibold">{{this.productName}}</h3>
+                    <p class="text-gray-600">Category:{{this.category}}</p>
+                     <p class="text-gray-600">Price:{{this.price}}</p>
+                    <p class="text-gray-600">Quantity:{{this.quantity}}</p>
+                    <p class="text-gray-500 mt-1">Description:{{this.description}}</p>
+                    {{#if this.inStock}}
+                    <p class="text-green-600 font-medium mt-1">In Stock</p>
+                    {{/if}}
+                    {{#if this.limitedStock}}
+                    <p class="text-yellow-600 font-medium mt-1">Limited Stock</p>
+                    {{/if}}
+                    {{#if this.outofStock}}
+                    <p class="text-red-600 font-medium mt-1">Out Of Stock</p>
+                    {{/if}}
+                    <div class="flex items-center mt-4">
                         <!-- Quantity Controls -->
-                        <div class="flex items-center">
-                            <button class="px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-600 rounded-l-lg">
-                                <i class="fas fa-arrow-down"></i>
+                        <div class="flex items-center border rounded-lg overflow-hidden">
+                            {{#if this.isQuantityGreaterThanOne}}
+                            <button onclick="updateQuantity('{{this.productId}}',-1)" class="px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-600 rounded-l-lg transition-colors duration-200">
+                                <i class="fas fa-minus"></i>
                             </button>
-                            <input type="number" value="1" min="1" class="w-12 text-center p-2 border-t border-b">
-                            <button class="px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-600 rounded-r-lg">
-                                <i class="fas fa-arrow-up"></i>
+                            {{/if}}
+                            <input type="number" value="{{this.quantity}}" min="1" class="w-12 ml-3 text-center p-2 border-t border-b">
+                            <button onclick="updateQuantity('{{this.productId}}',1)" class="px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-600 rounded-r-lg transition-colors duration-200">
+                                <i class="fas fa-plus"></i>
                             </button>
                         </div>
-                        <span class="text-lg ml-4">$99.99</span>
+                        <span class="text-lg ml-4 font-semibold">Total : RS {{this.totalPrice}}</span>
                     </div>
                 </div>
-                <button class="text-red-500 hover:text-red-700">
+                <button onclick="deleteCartProduct('{{this.productId}}')" class="text-red-500 hover:text-red-700">
                     <i class="fas fa-trash"></i>
                 </button>
             </div>
-
-            <!-- Another Cart Item -->
-            <div class="flex justify-between items-center border-b pb-4 mb-4">
-                <img src="/images/phone2.jpg" alt="Product Image" class="w-24 h-24 object-cover rounded-lg">
-                <div class="flex-1 ml-4">
-                    <h3 class="text-lg font-semibold">Product Name</h3>
-                    <p class="text-gray-600">Category: Accessories</p>
-                    <div class="flex items-center mt-2">
-                        <!-- Quantity Controls -->
-                        <div class="flex items-center">
-                            <button class="px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-600 rounded-l-lg">
-                                <i class="fas fa-arrow-down"></i>
-                            </button>
-                            <input type="number" value="1" min="1" class="w-12 text-center p-2 border-t border-b">
-                            <button class="px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-600 rounded-r-lg">
-                                <i class="fas fa-arrow-up"></i>
-                            </button>
-                        </div>
-                        <span class="text-lg ml-4">$49.99</span>
-                    </div>
-                </div>
-                <button class="text-red-500 hover:text-red-700">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </div>
+            {{/each}}
 
             <div class="text-right mt-4">
                 <a class="text-blue-500 hover:underline" href="/">Continue Shopping</a>
@@ -65,22 +57,96 @@
             <h2 class="text-xl font-semibold mb-6">Order Summary</h2>
             <div class="flex justify-between mb-2">
                 <span class="text-gray-700">Subtotal</span>
-                <span class="text-gray-700">$149.98</span>
+                <span class="text-gray-700">RS.{{subTotal}}</span>
             </div>
             <div class="flex justify-between mb-2">
                 <span class="text-gray-700">Shipping</span>
-                <span class="text-gray-700">$10.00</span>
+                <span class="text-gray-700">RS.100</span>
             </div>
             <div class="flex justify-between mb-4">
                 <span class="text-gray-700">Tax</span>
-                <span class="text-gray-700">$5.00</span>
+                <span class="text-gray-700">RS.50</span>
             </div>
             <hr class="mb-4">
             <div class="flex justify-between text-lg font-semibold mb-6">
                 <span>Total</span>
-                <span>$164.98</span>
+                <span>{{totalAmount}}</span>
             </div>
             <button class="bg-blue-500 text-white py-2 px-4 w-full rounded-lg hover:bg-blue-600 transition-all">Proceed to Checkout</button>
         </div>
     </div>
 </div>
+{{else}}
+<div class="container mx-auto px-4 py-8">
+    <div class="flex justify-center items-center min-h-screen">
+        <div class="text-center bg-white p-8 rounded-lg shadow-lg w-full sm:w-2/3 md:w-1/2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-20 h-20 text-gray-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 3L21 21M21 3L3 21"></path>
+            </svg>
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4">No Products in Your Cart</h2>
+            <p class="text-gray-600 mb-4">It seems your cart is empty. Start adding products to your cart to proceed.</p>
+            <a href="/" class="text-blue-500 hover:underline">Continue Shopping</a>
+        </div>
+    </div>
+</div>
+{{/if}}
+
+<script>
+    function deleteCartProduct(productId) {
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "Do you really want to remove this product from your cart?",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/users/deletecartproduct/${productId}`, {
+                method: "POST"
+            })
+            .then(response => {
+                if (response.status) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Deleted!',
+                        text: 'Product deleted from cart successfully.',
+                        confirmButtonText: 'OK'
+                    }).then(()=>{
+                        location.reload();
+                    })
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Failed!',
+                        text: 'Product could not be deleted from the cart.',
+                        confirmButtonText: 'Try Again'
+                    })
+                }
+            })
+            .catch((error) => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'An unexpected error occurred.',
+                    confirmButtonText: 'Close'
+                });
+                console.error('Error:', error);
+            });
+        }
+    });
+}
+    function updateQuantity(productId,value){
+        fetch(`/users/updateproductquantity/${productId}/${value}`,{
+            method:"POST"
+        }).then((response)=>{
+            if(response.status){
+                location.reload();
+            }else{
+                location.reload();
+            }
+        })
+    }
+</script>

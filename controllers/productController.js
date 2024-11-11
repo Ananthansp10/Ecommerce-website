@@ -9,7 +9,8 @@ module.exports={
                 name: product.name,
                 description: product.description,
                 price: product.price,
-                images: product.images
+                images: product.images,
+                isDisabled:product.stock==0
             }));
             res.render('products/productlist', { user: req.session.user, products: plainProducts });
         } catch (error) {
@@ -93,9 +94,34 @@ module.exports={
         }
     },
 
-    cartPage:(req,res)=>{
+    cartPage:async(req,res)=>{
         try {
-            res.render('users/cartPage', { user: req.session.user });
+            const cartProducts=await producthelpers.getCartProducts(req.session.user._id)
+            let totalAmount=150
+            let subTotal=0
+            let total=cartProducts.map((data)=>{
+                let value=data.price*data.quantity
+                totalAmount+=value
+                subTotal+=value
+            })
+            const plainObj=cartProducts.map((data)=>{
+                return{
+                    _id:data._id,
+                    productId:data.productId,
+                    productName:data.productName,
+                    description:data.description,
+                    category:data.category,
+                    price:data.price,
+                    quantity:data.quantity,
+                    images:data.images,
+                    inStock:data.stock>5,
+                    limitedStock:data.stock<=5 && data.stock>=1,
+                    outofStock:data.stock==0,
+                    totalPrice:data.price*data.quantity,
+                    isQuantityGreaterThanOne:data.quantity>1
+                }
+            })
+            res.render('users/cartPage', { user: req.session.user,data:plainObj,totalAmount,subTotal});
         } catch (error) {
             res.status(500).send('Error rendering cart page');
         }
@@ -112,7 +138,8 @@ module.exports={
                 description:data.description,
                 image:data.images,
                 price:data.price,
-                _id:data._id
+                _id:data._id,
+                isDisabled:data.stock==0
             }
            })
             res.render('products/productSearchPage',{user:req.session.user,products:plainProduct,item:req.session.product})
@@ -148,7 +175,8 @@ module.exports={
                  name:data.name,
                  description:data.description,
                  image:data.images,
-                 price:data.price
+                 price:data.price,
+                 isDisabled:data.stock==0
              }
             })
             res.render('products/productSearchPage',{products:plainProduct,user:req.session.user,item:req.session.product})
@@ -165,7 +193,8 @@ module.exports={
             name: product.name,
             description: product.description,
             price: product.price,
-            images: product.images
+            images: product.images,
+            isDisabled:product.stock==0
         }));
            res.render('products/productlist',{user:req.session.user,products:plainProducts})
         } catch (error) {

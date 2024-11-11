@@ -243,7 +243,11 @@ module.exports={
 
    userHomePage:async(req, res) => {
     try {
-      const products = await producthelper.getProducts();
+      let cartLength=0;
+      const products = await producthelper.getProducts()
+      if(req.session.user){
+      cartLength=await producthelper.getCartLength(req.session.user._id)
+      }
       const plainProducts = products.map(product => ({
           _id: product._id,
           name: product.name,
@@ -257,10 +261,10 @@ module.exports={
       req.session.user.image=userprofile;
       }
       if(userprofile){
-      res.render('users/index', { user: req.session.user, products: plainProducts});
+      res.render('users/index', { user: req.session.user, products: plainProducts,cartLength});
       }
       else{
-        res.render('users/index', { user: req.session.user, products: plainProducts});
+        res.render('users/index', { user: req.session.user, products: plainProducts,cartLength});
       }
   } catch (error) {
       console.error("Error in userHomePage:", error);
@@ -459,7 +463,6 @@ module.exports={
         return res.status(401).json({ status: false, message: 'Please login to add products to the cart.' });
       }
         userhelper.getProductDetails(req.params.productId).then((productDetails)=>{
-          console.log(productDetails)
           const productObj={
             productId:productDetails._id,
             quantity:1,
@@ -476,6 +479,34 @@ module.exports={
         }).catch(error => {
         res.status(500).json({ status: false, message: 'Failed to add product to cart.' });
       });
+    } catch (error) {
+      res.status(500).send("Error occured")
+    }
+  },
+
+  deleteCartProduct:(req,res)=>{
+    try {
+      userhelper.deleteCartProduct(req.session.user._id,req.params.productId).then((response)=>{
+        if(response.status){
+          res.json({status:true})
+        }else{
+          res.json({status:false})
+        }
+      })
+    } catch (error) {
+      res.status(500).send("Error occured")
+    }
+  },
+
+  updateProductQuantity:(req,res)=>{
+    try {
+      userhelper.updateProductQuantity(req.session.user._id,req.params.productId,req.params.value).then((response)=>{
+        if(response.status){
+          res.json({status:true})
+        }else{
+          res.json({status:false})
+        }
+    })
     } catch (error) {
       res.status(500).send("Error occured")
     }

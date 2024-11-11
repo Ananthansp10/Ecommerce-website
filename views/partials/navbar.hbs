@@ -39,7 +39,9 @@
 
         <!-- Cart Icon -->
         <a href="/product/cartPage" class="text-white"><i class="fa-solid fa-cart-shopping"></i>
-          <span class="inline-block bg-white text-center text-black text-xs font-semibold ms-1 pe-0.5 w-4 h-4 rounded-full">1</span>
+        {{#if cartLength}}
+          <span class="inline-block bg-white text-center text-black text-xs font-semibold ms-1 pe-0.5 w-4 h-4 rounded-full">{{cartLength}}</span>
+          {{/if}}
         </a>
 
         <!-- Space for better visual gap -->
@@ -102,7 +104,9 @@
 
         <!-- Cart Icon -->
         <a href="" class="text-white"><i class="fa-solid fa-cart-shopping"></i>
-          <span class="inline-block bg-white text-black text-xs font-semibold px-2 py-0.5 rounded-full">1</span>
+        {{#if cartLength}}
+          <span class="inline-block bg-white text-black text-xs font-semibold px-2 py-0.5 rounded-full">{{cartLength}}</span>
+          {{/if}}
         </a>
 
         <!-- User Logo and Name -->

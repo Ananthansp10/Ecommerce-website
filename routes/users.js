@@ -90,6 +90,10 @@ router.post('/deleteaddress/:userId/:addressId',usercontroller.deleteAddress)
 
 router.get('/addtocart/:productId',usercontroller.addToCart)
 
+router.post('/deletecartproduct/:productId',usercontroller.deleteCartProduct)
+
+router.post('/updateproductquantity/:productId/:value',usercontroller.updateProductQuantity)
+
 //route for google authentication
 router.get('/auth/google', passport.authenticate('google', {
     scope: ['profile', 'email']
