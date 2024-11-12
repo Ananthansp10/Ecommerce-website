@@ -192,9 +192,12 @@
         cancelButtonText: 'Go to Cart'
       }).then((result) => {
         if (result.dismiss === Swal.DismissReason.cancel) {
-          location.href = '/product/cartPage';
+          //location.href = '/product/cartPage';
         } else {
-          location.href = '/';
+          //location.href = '/';
+          var count=document.getElementById("cartCount").innerText
+          count=parseInt(count) || 0
+          document.getElementById("cartCount").innerText=count+1
         }
       });
     } else {

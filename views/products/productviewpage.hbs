@@ -60,9 +60,19 @@
 
       <!-- Stock Status -->
       <div class="mb-4">
+        {{#if product.inStock}}
         <span class="text-green-600 font-semibold">In Stock</span>
+        {{/if}}
+         {{#if product.limitedStock}}
+        <span class="text-yellow-600 font-semibold">LimitedStock</span>
+        {{/if}}
+        {{#if product.inStock}}
         <span class="text-gray-600">({{product.stock}} items available)</span>
-        {{#if product.isOut}}
+        {{/if}}
+        {{#if product.limitedStock}}
+        <span class="text-gray-600">({{product.stock}} items available)</span>
+        {{/if}}
+        {{#if product.outofStock}}
         <span class="text-red-600 font-semibold">Out of Stock</span>
         {{/if}}
       </div>
@@ -110,8 +120,12 @@
           <button class="flex-1 bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-500 focus:outline-none">Add to Cart</button>
           <button class="flex-1 bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-500 focus:outline-none">Buy Now</button>
         {{/if}}
-        {{#if product.isOut}}
-          <button class="flex-1 bg-gray-400 text-white py-3 rounded-lg font-semibold cursor-not-allowed">Out of Stock</button>
+        {{#if product.limitedStock}}
+          <button class="flex-1 bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-500 focus:outline-none">Add to Cart</button>
+          <button class="flex-1 bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-500 focus:outline-none">Buy Now</button>
+        {{/if}}
+        {{#if product.outOfStock}}
+          <button onclick="showOutOfStock()" class="flex-1 bg-gray-400 text-white py-3 rounded-lg font-semibold cursor-not-allowed">Out of Stock</button>
         {{/if}}
       </div>
 
@@ -173,6 +187,16 @@
     mainImage.style.transform = 'scale(1)';
   }
 
+   function showOutOfStock(){
+    Swal.fire({
+    icon: 'error',
+    title: 'Out Of Stock',
+    text: 'This product is currently out of stock.',
+    confirmButtonText: 'OK',
+    confirmButtonColor: '#d33'
+  });
+  }
+
   function addToCart(productId) {
   fetch(`/users/addtocart/${productId}`, {
     method: 'GET',
@@ -215,7 +239,10 @@
         if (result.dismiss === Swal.DismissReason.cancel) {
           location.href = '/product/cartPage';
         } else {
-          location.href = '/';
+          //location.href = '/';
+          var count=document.getElementById("cartCount").innerText
+          count=parseInt(count) || 0
+          document.getElementById("cartCount").innerText=count+1
         }
       });
     } else {

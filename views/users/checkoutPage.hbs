@@ -1,0 +1,177 @@
+<div class="container mx-auto p-4 md:p-8 space-y-8">
+  
+  <!-- Product Details Section -->
+  <section class="bg-white p-6 rounded-lg shadow-lg space-y-4">
+    <h2 class="text-xl font-semibold mb-4">Checkout</h2>
+    <div class="space-y-4">
+      <!-- Product 1 -->
+      {{#each data}}
+      <div class="flex items-center justify-between border-b pb-4">
+        <img src="{{this.images.[0]}}" alt="Product Image" class="w-16 h-16 rounded object-cover">
+        <div class="flex-1 ml-4">
+          <h3 class="text-lg font-semibold">{{this.productName}}</h3>
+          <p class="text-sm text-gray-500">Price: RS.{{this.price}}</p>
+          <p class="text-sm text-gray-500">Quantity: {{this.quantity}}</p>
+        </div>
+        <div class="text-right">
+          <p class="text-lg font-semibold">Total: RS.{{this.totalPrice}}</p>
+        </div>
+      </div>
+      {{/each}}
+
+      <!-- Order Summary with Subtotal, Shipping, Tax -->
+      <div class="pt-4">
+        <div class="flex justify-between">
+          <p class="text-lg font-bold">Subtotal</p>
+          <p class="text-lg font-bold">RS.{{subTotal}}</p>
+        </div>
+        <div class="flex justify-between">
+          <p class="text-lg font-bold">Shipping</p>
+          <p class="text-lg font-bold">RS.100</p>
+        </div>
+        <div class="flex justify-between">
+          <p class="text-lg font-bold">Tax</p>
+          <p class="text-lg font-bold">RS.50</p>
+        </div>
+        <div class="flex justify-between text-lg font-bold pt-4 border-t mt-4">
+          <p>Total Price</p>
+          <p>RS.{{totalAmount}}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Address Selection Section -->
+  <section class="bg-white p-6 rounded-lg shadow-lg space-y-4">
+    <h2 class="text-xl font-semibold mb-4">Select Delivery Address</h2>
+    <div class="space-y-4">
+      {{#each address}}
+      <label class="block p-4 border rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+        <input type="radio" id="address" name="address" value="{{this.cartId}}" class="mr-4">
+        <div>
+          <p class="font-semibold">Address {{this.key}}</p>
+          <p class="text-sm text-gray-600">Address Type:{{this.addressType}}</p>
+          <p class="text-sm text-gray-600">{{this.addressLine1}}</p>
+          <p class="text-sm text-gray-600">{{this.addessLine2}}</p>
+          <p class="text-sm text-gray-600">{{this.landmark}}</p>
+          <p class="text-sm text-gray-600">{{this.city}}</p>
+          <p class="text-sm text-gray-600">{{this.pincode}}</p>
+          <p class="text-sm text-gray-600">{{this.state}}</p>
+          <p class="text-sm text-gray-600">{{this.country}}</p>
+        </div>
+      </label>
+      {{/each}}
+    </div>
+
+    <!-- Add New Address Button -->
+    <button id="add-address-btn" class="mt-4 w-full text-blue-500 font-semibold underline">+ Add New Address</button>
+
+    <!-- Add Address Form (Hidden initially) -->
+    <div id="add-address-form" class="space-y-4 mt-4 hidden">
+      <form action="/users/addAddressFromCart" method="POST" class="space-y-6">
+
+      <!-- Address Type -->
+      <div>
+        <label for="address-type" class="block text-sm font-medium text-gray-600">Address Type</label>
+        <select id="address-type" name="addressType" class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-200 focus:outline-none" required>
+          <option value="" disabled selected>Select address type</option>
+          <option value="permanent">Permanent Address</option>
+          <option value="temporary">Temporary Address</option>
+        </select>
+      </div>
+
+      <!-- Address Line 1 -->
+      <div>
+        <label for="address-line1" class="block text-sm font-medium text-gray-600">Address Line 1</label>
+        <input type="text" id="address-line1" name="addressLine1" class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-200 focus:outline-none" placeholder="House number, Street, Colony" required>
+      </div>
+
+      <!-- Address Line 2 -->
+      <div>
+        <label for="address-line2" class="block text-sm font-medium text-gray-600">Address Line 2</label>
+        <input type="text" id="address-line2" name="addressLine2" class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-200 focus:outline-none" placeholder="Area, Landmark (Optional)">
+      </div>
+
+      <!-- City -->
+      <div>
+        <label for="city" class="block text-sm font-medium text-gray-600">City</label>
+        <input type="text" id="city" name="city" class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-200 focus:outline-none" placeholder="Enter your city" required>
+      </div>
+
+      <!-- State -->
+      <div>
+        <label for="state" class="block text-sm font-medium text-gray-600">State</label>
+        <input type="text" id="state" name="state" class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-200 focus:outline-none" placeholder="Enter your state" required>
+      </div>
+
+      <!-- Country -->
+      <div>
+        <label for="country" class="block text-sm font-medium text-gray-600">Country</label>
+        <input type="text" id="country" name="country" class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-200 focus:outline-none" placeholder="Enter your country" required>
+      </div>
+
+      <!-- Pincode -->
+      <div>
+        <label for="pincode" class="block text-sm font-medium text-gray-600">Pincode</label>
+        <input type="text" id="pincode" name="pincode" class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-200 focus:outline-none" placeholder="Enter your pincode" required>
+      </div>
+
+      <!-- Landmark -->
+      <div>
+        <label for="landmark" class="block text-sm font-medium text-gray-600">Landmark</label>
+        <input type="text" id="landmark" name="landmark" class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-200 focus:outline-none" placeholder="Enter a nearby landmark" />
+      </div>
+
+      <!-- Submit Button -->
+      <div class="pt-4">
+        <button type="submit" class="w-full py-3 px-4 bg-blue-600 text-white font-semibold rounded-md shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75">
+          Add Address
+        </button>
+      </div>
+    </form>
+    </div>
+  </section>
+
+  <!-- Payment Method Section -->
+  <section class="bg-white p-6 rounded-lg shadow-lg space-y-4">
+    <h2 class="text-xl font-semibold mb-4">Payment Method</h2>
+    <div class="space-y-4">
+      <label class="flex items-center space-x-2">
+        <input type="radio" name="payment" class="form-radio h-5 w-5 text-blue-600">
+        <span>Cash on Delivery</span>
+      </label>
+      <label class="flex items-center space-x-2">
+        <input type="radio" name="payment" class="form-radio h-5 w-5 text-blue-600">
+        <span>Online Payment</span>
+      </label>
+      <label class="flex items-center space-x-2">
+        <input type="radio" name="payment" class="form-radio h-5 w-5 text-blue-600">
+        <span>Wallet</span>
+      </label>
+    </div>
+  </section>
+
+  <!-- Place Order Button -->
+  <button onclick="placeOrder()" class="w-full bg-green-500 text-white p-3 rounded-lg font-semibold hover:bg-green-600 transition duration-150">Place Order</button>
+
+</div>
+
+<!-- Script for toggling address form -->
+<script>
+  document.getElementById('add-address-btn').addEventListener('click', function() {
+    const form = document.getElementById('add-address-form');
+    form.classList.toggle('hidden');
+  });
+
+  function placeOrder(){
+    const selectedAddress = document.querySelector('input[name="address"]:checked');
+  
+  if (selectedAddress) {
+    // Retrieve the value of the selected radio button
+    const address = selectedAddress.value;
+    alert(`Selected Address ID: ${address}`);
+  } else {
+    alert('Please select an address.');
+  }
+}
+</script>

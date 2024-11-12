@@ -396,5 +396,13 @@ module.exports={
             }
            })
         })
+    },
+
+    getAllAddress:(userId)=>{
+        return new Promise((resolve,reject)=>{
+            addressDetail.findOne({userId:new ObjectId(userId)}).then((data)=>{
+                resolve(data.address)
+            })
+        })
     }
 }

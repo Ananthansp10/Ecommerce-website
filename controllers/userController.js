@@ -397,6 +397,28 @@ module.exports={
     }
   },
 
+  addAddressFromCart:(req,res)=>{
+    try {
+      const{addressType,addressLine1,addressLine2,city,state,country,pincode,landmark}=req.body
+      const userId=req.session.user._id
+      const addressObj={
+        addressType,
+        addressLine1,
+        addressLine2,
+        city,
+        state,
+        country,
+        pincode,
+        landmark,
+      }
+      userhelper.addAddress(userId,addressObj).then(()=>{
+        res.redirect('/users/checkout')
+      })
+    } catch (error) {
+      res.status(500).send("Error occured")
+    }
+  },
+
   editAddressPage:async(req,res)=>{
     try {
       const address=await userhelper.getAddress(req.params.userId,req.params.addressId)
@@ -509,6 +531,55 @@ module.exports={
     })
     } catch (error) {
       res.status(500).send("Error occured")
+    }
+  },
+
+  checkOutPage:async(req,res)=>{
+    try {
+      let cartLength=0;
+            if(req.session.user){
+                cartLength=await producthelper.getCartLength(req.session.user._id)
+            }
+            const cartProducts=await producthelper.getCartProducts(req.session.user._id)
+            const addresses=await userhelper.getAllAddress(req.session.user._id)
+            const plainAddress=addresses.map((data,index)=>{
+              return{
+                addressId:data._id,
+                addressType:data.addressType,
+                addressLine1:data.addressLine1,
+                addressLine2:data.addressLine2,
+                city:data.city,
+                state:data.state,
+                country:data.country,
+                pincode:data.pincode,
+                landmark:data.landmark,
+                key:index+1
+              }
+            })
+            let totalAmount=150
+            let subTotal=0
+            let total=cartProducts.map((data)=>{
+                let value=data.price*data.quantity
+                totalAmount+=value
+                subTotal+=value
+            })
+            const plainObj=cartProducts.map((data)=>{
+                return{
+                    cartId:data._id,
+                    productId:data.productId,
+                    productName:data.productName,
+                    description:data.description,
+                    category:data.category,
+                    price:data.price,
+                    quantity:data.quantity,
+                    images:data.images,
+                    totalPrice:data.price*data.quantity,
+                }
+            })
+            console.log(plainObj)
+            res.render('users/checkoutPage', { user: req.session.user,data:plainObj,totalAmount,subTotal,cartLength,address:plainAddress});
+    } catch (error) {
+      res.status(500).send("Error occured page not rendering")
     }
   }
 }
