@@ -10,7 +10,8 @@ const googleAuthSchema=require('../databaseSchemas/googleAuthSchemas');
 const userDetail=require('../databaseSchemas/userDetailSchema');
 const addressDetail=require('../databaseSchemas/addressSchema');
 const product=require('../databaseSchemas/productSchema');
-const cartDetail=require("../databaseSchemas/cartSchema")
+const cartDetail=require("../databaseSchemas/cartSchema");
+const orderDetail=require('../databaseSchemas/orderSchema');
 const mongoose=require('mongoose')
 const { ObjectId } = mongoose.Types;
 module.exports={
@@ -403,6 +404,25 @@ module.exports={
             addressDetail.findOne({userId:new ObjectId(userId)}).then((data)=>{
                 resolve(data.address)
             })
+        })
+    },
+
+    placeCartOrder:(data)=>{
+        return new Promise((resolve,reject)=>{
+            if(data.paymentMethod=="Cash On Delivery"){
+                const order=new orderDetail(data)
+                order.save().then(()=>{
+                    resolve({status:true})
+                })
+            }
+        })
+    },
+
+    getOrders:(userId)=>{
+        return new Promise((resolve,reject)=>{
+           orderDetail.findOne({userId:new ObjectId(userId)}).populate('cartId').then((data)=>{
+            console.log(data)
+           })
         })
     }
 }

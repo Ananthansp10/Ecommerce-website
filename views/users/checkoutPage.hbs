@@ -1,5 +1,4 @@
 <div class="container mx-auto p-4 md:p-8 space-y-8">
-  
   <!-- Product Details Section -->
   <section class="bg-white p-6 rounded-lg shadow-lg space-y-4">
     <h2 class="text-xl font-semibold mb-4">Checkout</h2>
@@ -35,7 +34,7 @@
         </div>
         <div class="flex justify-between text-lg font-bold pt-4 border-t mt-4">
           <p>Total Price</p>
-          <p>RS.{{totalAmount}}</p>
+          <p id="total">RS.{{totalAmount}}</p>
         </div>
       </div>
     </div>
@@ -47,7 +46,7 @@
     <div class="space-y-4">
       {{#each address}}
       <label class="block p-4 border rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
-        <input type="radio" id="address" name="address" value="{{this.cartId}}" class="mr-4">
+        <input type="radio" id="address" name="address" value="{{this.addressId}}" class="mr-4">
         <div>
           <p class="font-semibold">Address {{this.key}}</p>
           <p class="text-sm text-gray-600">Address Type:{{this.addressType}}</p>
@@ -137,24 +136,73 @@
     <h2 class="text-xl font-semibold mb-4">Payment Method</h2>
     <div class="space-y-4">
       <label class="flex items-center space-x-2">
-        <input type="radio" name="payment" class="form-radio h-5 w-5 text-blue-600">
+        <input type="radio" name="payment" value="Cash On Delivery" class="form-radio h-5 w-5 text-blue-600">
         <span>Cash on Delivery</span>
       </label>
       <label class="flex items-center space-x-2">
-        <input type="radio" name="payment" class="form-radio h-5 w-5 text-blue-600">
+        <input type="radio" name="payment" value="Online" class="form-radio h-5 w-5 text-blue-600">
         <span>Online Payment</span>
       </label>
       <label class="flex items-center space-x-2">
-        <input type="radio" name="payment" class="form-radio h-5 w-5 text-blue-600">
+        <input type="radio" name="payment" value="Wallet" class="form-radio h-5 w-5 text-blue-600">
         <span>Wallet</span>
       </label>
     </div>
   </section>
 
   <!-- Place Order Button -->
-  <button onclick="placeOrder()" class="w-full bg-green-500 text-white p-3 rounded-lg font-semibold hover:bg-green-600 transition duration-150">Place Order</button>
-
+  <div class="mt-5 mb-7">
+  <button onclick="placeOrder('{{data.[0].cartId}}',{{totalAmount}})" class="w-full bg-green-500 text-white p-3 rounded-lg font-semibold hover:bg-green-600 transition duration-150">Place Order</button>
 </div>
+
+<!-- Modal for Order Confirmation -->
+<div id="orderSuccessModal" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden">
+  <div class="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full text-center">
+    
+    <!-- Spinner Animation -->
+    <div id="spinner" class="text-blue-500 text-5xl mb-4 animate-spin">
+      <span class="spinner">&#x21bb;</span>
+    </div>
+    
+    <!-- Checkmark Animation (hidden initially) -->
+    <div id="checkmark" class="text-green-500 text-5xl mb-4 hidden">
+      <span>✔</span>
+    </div>
+    
+    <!-- Modal Text Content -->
+    <h3 class="text-xl font-semibold mb-4">Order Placed Successfully!</h3>
+    <p class="text-gray-700 mb-4">Your order has been placed. Thank you for shopping with us.</p>
+    <button onclick="redirectToOrders()" class="w-full py-3 px-4 bg-blue-600 text-white font-semibold rounded-md shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75">
+      View Orders
+    </button>
+  </div>
+</div>
+
+<!-- Add CSS for Spinner and Checkmark Animation -->
+<style>
+  .spinner {
+    display: inline-block;
+    font-size: 3rem;
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  @keyframes checkmark-animation {
+    0% { opacity: 0; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1.2); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+
+  .checkmark {
+    display: inline-block;
+    font-size: 3rem;
+    animation: checkmark-animation 0.5s ease forwards;
+  }
+</style>
 
 <!-- Script for toggling address form -->
 <script>
@@ -163,15 +211,80 @@
     form.classList.toggle('hidden');
   });
 
-  function placeOrder(){
+  function placeOrder(cartId,totalAmount){
     const selectedAddress = document.querySelector('input[name="address"]:checked');
-  
-  if (selectedAddress) {
-    // Retrieve the value of the selected radio button
-    const address = selectedAddress.value;
-    alert(`Selected Address ID: ${address}`);
+    const paymentMethod=document.querySelector('input[name="payment"]:checked');
+    if (selectedAddress && paymentMethod) {
+     const addressId = selectedAddress.value
+     const payment=paymentMethod.value
+     fetch('/users/placecartorder',{
+      method:"POST",
+      headers: {
+      'Content-Type': 'application/json'
+      },
+      body:JSON.stringify({
+      addressId,
+      cartId,
+      totalAmount,
+      payment
+      })
+     }).then((response)=>{
+      {{!-- if(response.status){
+        Swal.fire({
+        icon: 'success',
+        title: 'Order Placed Successfully!',
+        text: 'Thank you for your purchase. Your order placed.',
+        confirmButtonText: 'OK'
+      });
+      } --}}
+      showOrderSuccessModal();
+      //location.href='/users/ordersuccess'
+     })
   } else {
-    alert('Please select an address.');
+    if(!selectedAddress){
+      Swal.fire({
+    icon: 'warning',
+    title: 'No Address Selected',
+    text: 'Please select an address to place order.',
+    confirmButtonText: 'OK'
+  });
+    }if(!paymentMethod){
+      Swal.fire({
+    icon: 'warning',
+    title: 'Payment Method is not Selected',
+    text: 'Please select a payment method to place order.',
+    confirmButtonText: 'OK'
+  });
+    }if(!selectedAddress && !paymentMethod){
+      Swal.fire({
+    icon: 'warning',
+    title: 'No Address and Payment method selected',
+    text: 'Please select ddress and payment method to place order.',
+    confirmButtonText: 'OK'
+  });
+    }
   }
 }
+
+ function showOrderSuccessModal() {
+    const modal = document.getElementById('orderSuccessModal');
+    const spinner = document.getElementById('spinner');
+    const checkmark = document.getElementById('checkmark');
+
+    // Show modal and spinner
+    modal.classList.remove('hidden');
+    spinner.classList.remove('hidden');
+    checkmark.classList.add('hidden');
+
+    // After 2 seconds, hide spinner and show checkmark
+    setTimeout(() => {
+      spinner.classList.add('hidden');
+      checkmark.classList.remove('hidden');
+    }, 2000); // 2000ms = 2 seconds
+  }
+
+  function redirectToOrders() {
+    // Redirect to the orders page
+    window.location.href = '/users/orders';
+  }
 </script>

@@ -98,6 +98,11 @@ router.get('/checkout',usercontroller.checkOutPage)
 
 router.post('/addAddressFromCart',usercontroller.addAddressFromCart)
 
+router.post('/placecartorder',usercontroller.placeCartOrder)
+
+router.get('/orders',usercontroller.orderPage)
+
+
 //route for google authentication
 router.get('/auth/google', passport.authenticate('google', {
     scope: ['profile', 'email']

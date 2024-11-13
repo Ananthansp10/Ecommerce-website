@@ -13,9 +13,13 @@ const productRouter=require('./routes/product');
 
 const app = express();
 
+app.use(express.json());
+
+
 require('dotenv').config();
 
 app.use(express.urlencoded({extended:true}));
+
 
 app.use(express.static('public'));
 

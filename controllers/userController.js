@@ -581,5 +581,46 @@ module.exports={
     } catch (error) {
       res.status(500).send("Error occured page not rendering")
     }
+  },
+
+  placeCartOrder:(req,res)=>{
+    try {
+      const{addressId,cartId,totalAmount,payment}=req.body
+      const userId=req.session.user._id
+      const orderObj={
+        userId:userId,
+        cartId:cartId,
+        addressId:addressId,
+        totalPrice:totalAmount,
+        paymentMethod:payment,
+        orderStatus:"Placed"
+      }
+      userhelper.placeCartOrder(orderObj).then((response)=>{
+        if(response.status){
+          res.json({status:true})
+        }
+      })
+    } catch (error) {
+      res.status(500).send("Error occured")
+    }
+  },
+
+  orderPage:async(req,res)=>{
+    try {
+      const orders=await userhelper.getOrders(req.session.user._id)
+      const plainObj=orders.map((data,index)=>{
+        return{
+          productId:data.productDetails._id,
+          productName:data.productDetails.name,
+          price:data.productDetails.price,
+          images:data.productDetails.images,
+          key:index+1,
+          orderStatus:data.orderStatus
+        }
+      })
+      res.render('users/orderPage',{user:req.session.user,data:plainObj})
+    } catch (error) {
+      res.status(500).send("Error occured page not rendering")
+    }
   }
 }
