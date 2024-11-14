@@ -3,6 +3,7 @@ const Admin=require('../databaseSchemas/adminSchema');
 const user=require('../databaseSchemas/usersSchemas');
 const category=require('../databaseSchemas/categorySchema');
 const googleAuth=require('../databaseSchemas/googleAuthSchemas');
+const orderDetail=require('../databaseSchemas/orderSchema');
 const mongoose = require('mongoose');
 const { ObjectId } = mongoose.Types; 
 module.exports={
@@ -217,6 +218,108 @@ module.exports={
             user.find({}).then((data)=>{
                 resolve(data.length)
             })
+        })
+    },
+
+    findOrders:()=>{
+        return new Promise((resolve,reject)=>{
+           orderDetail.aggregate([{
+            $lookup:{
+                from:"users",
+                localField:"userId",
+                foreignField:"_id",
+                as:"userDetails"
+            }
+           },
+           {
+            $unwind:"$userDetails"
+           },
+           {
+            $unwind:"$orderedProducts"
+           },
+           {
+            $group: {
+              _id: "$_id",                         
+              userId:{ $first: "$userId" },         
+              userName:{ $first: "$userDetails.name" },
+              totalPrice:{ $first: "$totalPrice" },   
+              orderDate:{ $first: "$orderedProducts.orderedDate"},
+              orderStatus:{ $first: "$orderedProducts.orderStatus"},      
+            }
+          },
+          {
+            $project: {
+              orderId: "$_id",                   
+              userId: 1,                          
+              userName: 1,                       
+              totalPrice: 1,                                    
+              orderDate: 1, 
+              orderStatus:1                                      
+            }
+          }
+        ]).then((data)=>{
+            resolve(data)
+        })
+        })
+    },
+
+    getOrderUserDetails:(orderId)=>{
+        return new Promise((resolve,reject)=>{
+            orderDetail.aggregate([{
+                $match:{
+                    _id:new ObjectId(orderId)
+                }
+            },
+            {
+                $lookup:{
+                    from:"userdetails",
+                    localField:"userId",
+                    foreignField:"userId",
+                    as:"userDetails"
+                }
+            },
+            {
+                $unwind:"$userDetails"
+            },
+            {
+                $project:{
+                    userName:"$userDetails.name",
+                    email:"$userDetail.email",
+                    number:"$userDetails.phoneNumber",
+                    address1:"$address.addressLine1",
+                    address2:"$address.addressLine2",
+                    city:"$address.city",
+                    state:"$address.state",
+                    country:"$address.country",
+                    pincode:"$address.pincode",
+                    landmark:"$address.landmark"
+                }
+            }
+           ]).then((data)=>{
+            resolve(data)
+           })
+        })
+    },
+
+    getorderSummary:(orderId)=>{
+        return new Promise((resolve,reject)=>{
+            orderDetail.aggregate([{
+                $match:{
+                    _id:new ObjectId(orderId)
+                }
+            },
+            {
+                $unwind:"$orderedProducts"
+            },
+            {
+                $project:{
+                    orderDate:"$orderedProducts.orderedDate",
+                    totalPrice:"$totalPrice"
+                }
+            }
+           ]).then((data)=>{
+            resolve(data)
+           })
         })
     }
 }

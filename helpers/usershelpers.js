@@ -402,7 +402,11 @@ module.exports={
     getAllAddress:(userId)=>{
         return new Promise((resolve,reject)=>{
             addressDetail.findOne({userId:new ObjectId(userId)}).then((data)=>{
+                if(data){
                 resolve(data.address)
+                }else{
+                    resolve(0)
+                }
             })
         })
     },
@@ -491,6 +495,51 @@ module.exports={
         return new Promise((resolve,reject)=>{
             orderDetail.findOne({_id:new ObjectId(orderId)}).lean().then((data)=>{
                 resolve(data.address)
+            })
+        })
+    },
+
+    trackOrderDetails:(orderId,productId)=>{
+        return new Promise((resolve,reject)=>{
+            orderDetail.aggregate([{
+                $match:{
+                    _id:new ObjectId(orderId),
+                }
+            },
+            {
+                $unwind:"$orderedProducts"
+            },
+            {
+                $match:{"orderedProducts.productId":new ObjectId(productId)}
+            },
+            {
+                $project:{
+                    orderStatus:"$orderedProducts.orderStatus",
+                    orderDate:"$orderedProducts.orderedDate"
+                }
+            }
+        ]).then((data)=>{
+            resolve(data)
+        })
+        })
+    },
+
+    cartOrderCancel:(productId,orderId)=>{
+        return new Promise((resolve,reject)=>{
+            orderDetail.updateOne({_id:new ObjectId(orderId)},{$pull:{orderedProducts:{productId:new ObjectId(productId)}}}).then((data)=>{
+               if(data.acknowledged){
+                orderDetail.findOne({_id:new ObjectId(orderId)}).then((data)=>{
+                    if(data.orderedProducts.length==0){
+                        orderDetail.deleteOne({_id:new ObjectId(orderId)}).then(()=>{
+                            resolve({status:true})
+                        })
+                    }else{
+                        resolve({status:true})
+                    }
+                })
+               }else{
+                resolve({status:false})
+               }
             })
         })
     }

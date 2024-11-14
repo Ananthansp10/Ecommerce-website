@@ -32,7 +32,7 @@
             <button onclick="viewOrderDetails('{{this.productId}}','{{this.orderId}}')" class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75">
               View Order Details
             </button>
-            <button onclick="cancelOrder('{{this.productId}}')" class="px-4 py-2 bg-red-600 text-white font-semibold rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-75">
+            <button onclick="cancelOrder('{{this.productId}}','{{this.orderId}}')" class="px-4 py-2 bg-red-600 text-white font-semibold rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-75">
               Cancel Order
             </button>
           </td>
@@ -66,9 +66,45 @@
   function viewOrderDetails(productId,orderId) {
     window.location.href =`/users/vieworder/${productId}/${orderId}`;
   }
-  function cancelOrder(orderId) {
-    if (confirm("Are you sure you want to cancel this order?")) {
-      window.location.href = `/order/cancel/${orderId}`;
+  function cancelOrder(productId, orderId) {
+  Swal.fire({
+    title: 'Are you sure?',
+    text: "Do you want to cancel this order?",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Yes, cancel it!'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      fetch(`/users/cartordercancel/${productId}/${orderId}`, {
+        method: "POST"
+      }).then((response) => {
+        if (response.status){
+          Swal.fire(
+            'Cancelled!',
+            'Your order has been cancelled.',
+            'success'
+          ).then(() => {
+            location.reload();
+          });
+        } else {
+          Swal.fire(
+            'Error!',
+            'Product could not be removed.',
+            'error'
+          ).then(()=>{
+            location.reload();
+          })
+        }
+      }).catch((error) => {
+        Swal.fire(
+          'Error!',
+          'There was an error processing your request.',
+          'error'
+        );
+      });
     }
-  }
+  });
+}
 </script>

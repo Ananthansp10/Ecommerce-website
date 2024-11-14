@@ -543,41 +543,65 @@ module.exports={
             }
             const cartProducts=await producthelper.getCartProducts(req.session.user._id)
             const addresses=await userhelper.getAllAddress(req.session.user._id)
-            const plainAddress=addresses.map((data,index)=>{
-              return{
-                addressId:data._id,
-                addressType:data.addressType,
-                addressLine1:data.addressLine1,
-                addressLine2:data.addressLine2,
-                city:data.city,
-                state:data.state,
-                country:data.country,
-                pincode:data.pincode,
-                landmark:data.landmark,
-                key:index+1
-              }
-            })
-            let totalAmount=150
-            let subTotal=0
-            let total=cartProducts.map((data)=>{
-                let value=data.price*data.quantity
-                totalAmount+=value
-                subTotal+=value
-            })
-            const plainObj=cartProducts.map((data)=>{
+            if(addresses!=0){
+              const plainAddress=addresses.map((data,index)=>{
                 return{
-                    cartId:data._id,
-                    productId:data.productId,
-                    productName:data.productName,
-                    description:data.description,
-                    category:data.category,
-                    price:data.price,
-                    quantity:data.quantity,
-                    images:data.images,
-                    totalPrice:data.price*data.quantity,
+                  addressId:data._id,
+                  addressType:data.addressType,
+                  addressLine1:data.addressLine1,
+                  addressLine2:data.addressLine2,
+                  city:data.city,
+                  state:data.state,
+                  country:data.country,
+                  pincode:data.pincode,
+                  landmark:data.landmark,
+                  key:index+1
                 }
-            })
-            res.render('users/checkoutPage', { user: req.session.user,data:plainObj,totalAmount,subTotal,cartLength,address:plainAddress});
+              })
+              let totalAmount=150
+              let subTotal=0
+              let total=cartProducts.map((data)=>{
+                  let value=data.price*data.quantity
+                  totalAmount+=value
+                  subTotal+=value
+              })
+              const plainObj=cartProducts.map((data)=>{
+                  return{
+                      cartId:data._id,
+                      productId:data.productId,
+                      productName:data.productName,
+                      description:data.description,
+                      category:data.category,
+                      price:data.price,
+                      quantity:data.quantity,
+                      images:data.images,
+                      totalPrice:data.price*data.quantity,
+                  }
+              })
+              res.render('users/checkoutPage', { user: req.session.user,data:plainObj,totalAmount,subTotal,cartLength,address:plainAddress});
+            }else{
+              let totalAmount=150
+              let subTotal=0
+              let total=cartProducts.map((data)=>{
+                  let value=data.price*data.quantity
+                  totalAmount+=value
+                  subTotal+=value
+              })
+              const plainObj=cartProducts.map((data)=>{
+                  return{
+                      cartId:data._id,
+                      productId:data.productId,
+                      productName:data.productName,
+                      description:data.description,
+                      category:data.category,
+                      price:data.price,
+                      quantity:data.quantity,
+                      images:data.images,
+                      totalPrice:data.price*data.quantity,
+                  }
+              })
+              res.render('users/checkoutPage', { user: req.session.user,data:plainObj,totalAmount,subTotal,cartLength});
+            }
     } catch (error) {
       res.status(500).send("Error occured page not rendering")
     }
@@ -676,9 +700,34 @@ module.exports={
         orderedDate:orderProducts[0].orderedDate
       }
       const orderAddress=await userhelper.getOrderSingleProductAddress(req.params.orderId)
-      res.render('users/orderviewPage',{user:req.session.user,data:orderProductsObj,address:orderAddress})
+      const orderTrackDetails=await userhelper.trackOrderDetails(req.params.orderId,req.params.productId)
+      const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
+      const date = new Date(orderTrackDetails[0].orderDate).toLocaleDateString('en-GB', options);
+      const orderTrackObj={
+        status:orderTrackDetails[0].orderStatus,
+        date:date,
+        isPlaced:orderTrackDetails[0].orderStatus=="Placed",
+        isShipped:orderTrackDetails[0].orderStatus=="Shipped",
+        isOutForDelivery:orderTrackDetails[0].orderStatus=="Arrived",
+        isDelivered:orderTrackDetails[0].orderStatus=="Delivered"
+      }
+      res.render('users/orderviewPage',{user:req.session.user,data:orderProductsObj,address:orderAddress,trackDetails:orderTrackObj,orderId:req.params.orderId})
     } catch (error) {
       res.status(500).send("Error occured page not rendering")
+    }
+  },
+
+  cartOrderCancel:(req,res)=>{
+    try {
+      userhelper.cartOrderCancel(req.params.productId,req.params.orderId).then((response)=>{
+        if(response.status){
+          res.json({status:true})
+        }else{
+          res.json({status:false})
+        }
+      })
+    } catch (error) {
+      res.status(500).send("Error occured")
     }
   }
 }

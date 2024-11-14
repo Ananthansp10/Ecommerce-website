@@ -185,19 +185,63 @@ module.exports={
         }
     },
 
-    adminOrderListPage:(req,res)=>{
+    adminOrderListPage:async(req,res)=>{
         try {
-            res.render('admin/orderlistPage', { admin: true });
+            const orders=await adminhelper.findOrders()
+            const orderObj=orders.map((data,index)=>{
+                const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
+                const date = new Date(data.orderDate).toLocaleDateString('en-GB', options);
+                return{
+                    orderId:data.orderId,
+                    userName:data.userName,
+                    userId:data.userId,
+                    orderStatus:data.orderStatus,
+                    orderDate:date,
+                    totalPrice:data.totalPrice,
+                    key:index+1
+                }
+            })
+            res.render('admin/orderlistPage',{admin: true,data:orderObj});
         } catch (error) {
             res.status(500).send('Error rendering order list page');
         }
     },
 
-    adminOrderEditPage:(req,res)=>{
+    adminOrderViewPage:async(req,res)=>{
         try {
-            res.render('admin/ordereditPage', { admin: true });
+            const orderUserDetails=await adminhelper.getOrderUserDetails(req.params.orderId)
+            if(orderUserDetails.length!=0){
+                const orderUserDetailsObj={
+                    userName:orderUserDetails[0].userName,
+                    email:orderUserDetails[0].email,
+                    number:orderUserDetails[0].number,
+                    address1:orderUserDetails[0].address1,
+                    address2:orderUserDetails[0].address2,
+                    city:orderUserDetails[0].city,
+                    state:orderUserDetails[0].state,
+                    country:orderUserDetails[0].country,
+                    pincode:orderUserDetails[0].pincode,
+                    landmark:orderUserDetails[0].landmark
+                }
+                const orderSummary=await adminhelper.getorderSummary(req.params.orderId)
+                const orderCount=orderSummary.length;
+                const totalAmount=orderSummary[0].totalPrice
+                const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
+                const date = new Date(orderSummary[0].orderDate).toLocaleDateString('en-GB', options);
+                const orderDate=date
+                res.render('admin/orderviewPage',{admin:true,userdata:orderUserDetailsObj,orderCount,totalAmount,orderDate});
+            }else{
+                const orderSummary=await adminhelper.getorderSummary(req.params.orderId)
+                const orderCount=orderSummary.length;
+                const totalAmount=orderSummary[0].totalPrice
+                const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
+                const date = new Date(orderSummary[0].orderDate).toLocaleDateString('en-GB', options);
+                const orderDate=date
+                res.render('admin/orderviewPage',{admin:true,orderCount,totalAmount,orderDate});
+            }
         } catch (error) {
-            res.status(500).send('Error rendering order edit page');
+            console.log(error)
+            res.status(500).send('Error rendering order view page');
         }
     },
 

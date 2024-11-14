@@ -30,7 +30,7 @@ router.get('/productcategory/:value',admincontroller.productByCategory)
 
 router.get('/orderlist',admincontroller.adminOrderListPage)
 
-router.get('/orderedit',admincontroller.adminOrderEditPage)
+router.get('/orderview/:orderId',admincontroller.adminOrderViewPage)
 
 router.get('/coupon',admincontroller.couponPage)
 

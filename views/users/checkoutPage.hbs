@@ -44,6 +44,7 @@
   <section class="bg-white p-6 rounded-lg shadow-lg space-y-4">
     <h2 class="text-xl font-semibold mb-4">Select Delivery Address</h2>
     <div class="space-y-4">
+      {{#if address}}
       {{#each address}}
       <label class="block p-4 border rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
         <input type="radio" id="address" name="address" value="{{this.addressId}}" class="mr-4">
@@ -60,6 +61,7 @@
         </div>
       </label>
       {{/each}}
+      {{/if}}
     </div>
 
     <!-- Add New Address Button -->

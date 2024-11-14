@@ -40,9 +40,36 @@
     <h2 class="text-xl font-semibold mb-4 text-gray-700">Order Tracking</h2>
 
     <!-- Tracking Steps -->
+    {{#if trackDetails.isPlaced}}
     <div class="flex items-center space-x-4 mb-6">
       <div class="flex items-center">
         <div class="w-8 h-8 flex items-center justify-center bg-blue-600 text-white font-semibold rounded-full">1</div>
+        <span class="ml-2 text-gray-700">Order Placed</span>
+      </div>
+      <div class="h-0.5 bg-blue-600 flex-1"></div>
+      
+      <div class="flex items-center">
+        <div class="w-8 h-8 flex items-center justify-center bg-gray-300 text-gray-500 font-semibold rounded-full">2</div>
+        <span class="ml-2 text-gray-700">Shipped</span>
+      </div>
+      <div class="h-0.5  bg-gray-300 flex-1"></div>
+
+      <div class="flex items-center">
+        <div class="w-8 h-8 flex items-center justify-center  bg-gray-300 text-gray-500 font-semibold rounded-full">3</div>
+        <span class="ml-2 text-gray-700">Out for Delivery</span>
+      </div>
+      <div class="h-0.5 bg-gray-300 flex-1"></div>
+
+      <div class="flex items-center">
+        <div class="w-8 h-8 flex items-center justify-center bg-gray-300 text-gray-500 font-semibold rounded-full">4</div>
+        <span class="ml-2 text-gray-500">Delivered</span>
+      </div>
+    </div>
+    {{/if}}
+    {{#if trackDetails.isShipped}}
+    <div class="flex items-center space-x-4 mb-6">
+      <div class="flex items-center">
+        <div class="w-8 h-8 flex items-center justify-center bg-gray-300 text-gray-500 font-semibold rounded-full">1</div>
         <span class="ml-2 text-gray-700">Order Placed</span>
       </div>
       <div class="h-0.5 bg-blue-600 flex-1"></div>
@@ -54,7 +81,7 @@
       <div class="h-0.5 bg-blue-600 flex-1"></div>
 
       <div class="flex items-center">
-        <div class="w-8 h-8 flex items-center justify-center bg-blue-600 text-white font-semibold rounded-full">3</div>
+        <div class="w-8 h-8 flex items-center justify-center  bg-gray-300 text-gray-500 font-semibold rounded-full">3</div>
         <span class="ml-2 text-gray-700">Out for Delivery</span>
       </div>
       <div class="h-0.5 bg-gray-300 flex-1"></div>
@@ -64,31 +91,84 @@
         <span class="ml-2 text-gray-500">Delivered</span>
       </div>
     </div>
+    {{/if}}
+    {{#if trackDetails.isOutForDelivery}}
+    <div class="flex items-center space-x-4 mb-6">
+      <div class="flex items-center">
+        <div class="w-8 h-8 flex items-center justify-center bg-gray-300 text-gray-500 font-semibold rounded-full">1</div>
+        <span class="ml-2 text-gray-700">Order Placed</span>
+      </div>
+      <div class="h-0.5 bg-blue-600 flex-1"></div>
+      
+      <div class="flex items-center">
+        <div class="w-8 h-8 flex items-center justify-center bg-gray-300 text-gray-500 font-semibold rounded-full">2</div>
+        <span class="ml-2 text-gray-700">Shipped</span>
+      </div>
+      <div class="h-0.5 bg-blue-600 flex-1"></div>
+
+      <div class="flex items-center">
+        <div class="w-8 h-8 flex items-center justify-center bg-blue-600 text-white font-semibold rounded-full">3</div>
+        <span class="ml-2 text-gray-700">Out for Delivery</span>
+      </div>
+      <div class="h-0.5 bg-blue-600 flex-1"></div>
+
+      <div class="flex items-center">
+        <div class="w-8 h-8 flex items-center justify-center bg-gray-300 text-gray-500 font-semibold rounded-full">4</div>
+        <span class="ml-2 text-gray-500">Delivered</span>
+      </div>
+    </div>
+    {{/if}}
+    {{#if trackDetails.isDelivered}}
+    <div class="flex items-center space-x-4 mb-6">
+      <div class="flex items-center">
+        <div class="w-8 h-8 flex items-center justify-center bg-gray-300 text-gray-500 font-semibold rounded-full">1</div>
+        <span class="ml-2 text-gray-700">Order Placed</span>
+      </div>
+      <div class="h-0.5 bg-blue-600 flex-1"></div>
+      
+      <div class="flex items-center">
+        <div class="w-8 h-8 flex items-center justify-center bg-gray-300 text-gray-500 font-semibold rounded-full">2</div>
+        <span class="ml-2 text-gray-700">Shipped</span>
+      </div>
+      <div class="h-0.5 bg-blue-600 flex-1"></div>
+
+      <div class="flex items-center">
+        <div class="w-8 h-8 flex items-center justify-center bg-gray-300 text-gray-500 font-semibold rounded-full">3</div>
+        <span class="ml-2 text-gray-700">Out for Delivery</span>
+      </div>
+      <div class="h-0.5 bg-blue-600 flex-1"></div>
+
+      <div class="flex items-center">
+        <div class="w-8 h-8 flex items-center justify-center bg-blue-600 text-white font-semibold rounded-full">4</div>
+        <span class="ml-2 text-gray-500">Delivered</span>
+      </div>
+    </div>
+    {{/if}}
 
     <!-- Tracking Dates -->
     <div class="space-y-4 text-gray-600">
       <div class="flex justify-between">
         <p>Order Placed</p>
-        <p>November 1, 2024</p>
+        <p>{{trackDetails.date}}</p>
       </div>
       <div class="flex justify-between">
         <p>Shipped</p>
-        <p>November 3, 2024</p>
+        <p></p>
       </div>
       <div class="flex justify-between">
         <p>Out for Delivery</p>
-        <p>November 5, 2024</p>
+        <p></p>
       </div>
       <div class="flex justify-between text-gray-400">
         <p>Delivered</p>
-        <p>Expected November 6, 2024</p>
+        <p>Expected</p>
       </div>
     </div>
   </div>
 
   <!-- Action Buttons -->
   <div class="flex justify-end space-x-4">
-    <button class="px-6 py-2 bg-red-600 text-white font-medium rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-75">
+    <button onclick="cancelOrder('{{data.productId}}','{{orderId}}')" class="px-6 py-2 bg-red-600 text-white font-medium rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-75">
       Cancel Order
     </button>
     <button class="px-6 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75">
@@ -96,3 +176,47 @@
     </button>
   </div>
 </div>
+
+<script>
+  function cancelOrder(productId,orderId) {
+  Swal.fire({
+    title: 'Are you sure?',
+    text: "Do you want to cancel this order?",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Yes, cancel it!'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      fetch(`/users/cartordercancel/${productId}/${orderId}`, {
+        method: "POST"
+      }).then((response) => {
+        if (response.status){
+          Swal.fire(
+            'Cancelled!',
+            'Your order has been cancelled.',
+            'success'
+          ).then(() => {
+            location.href='/users/orders';
+          });
+        } else {
+          Swal.fire(
+            'Error!',
+            'Product could not be removed.',
+            'error'
+          ).then(()=>{
+            location.reload();
+          })
+        }
+      }).catch((error) => {
+        Swal.fire(
+          'Error!',
+          'There was an error processing your request.',
+          'error'
+        );
+      });
+    }
+  });
+}
+</script>
