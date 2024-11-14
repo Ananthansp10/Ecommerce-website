@@ -407,22 +407,91 @@ module.exports={
         })
     },
 
-    placeCartOrder:(data)=>{
+    getCartProducts:(cartId)=>{
+        return new Promise((resolve,reject)=>{
+            cartDetail.aggregate([{
+                $match:{
+                    _id:new ObjectId(cartId)
+                }
+            },
+            {
+                $unwind:"$products"
+            },
+            {
+                $lookup:{
+                    from:"products",
+                    localField:"products.productId",
+                    foreignField:"_id",
+                    as:"productDetails"
+                }
+            },
+            {
+                $unwind:"$productDetails"
+            },
+            {
+                $project:{
+                    productId:"$products.productId",
+                    quantity:"$products.quantity",
+                    price:"$products.price",
+                    description:"$productDetails.description",
+                    images:"$products.image",
+                    productName:"$productDetails.name",
+                    productCategory:"$productDetails.catType"
+                }
+            }
+        ]).then((data)=>{
+            resolve(data)
+        })
+        })
+    },
+
+    getOrderAddress:(addressId,userId)=>{
+        return new Promise((resolve,reject)=>{
+            addressDetail.findOne({userId:new ObjectId(userId),'address._id':new ObjectId(addressId)},{'address.$':1}).then((data)=>{
+                resolve(data.address)
+            })
+        })
+    },
+
+    placeCartOrder:(data,userId)=>{
         return new Promise((resolve,reject)=>{
             if(data.paymentMethod=="Cash On Delivery"){
                 const order=new orderDetail(data)
                 order.save().then(()=>{
-                    resolve({status:true})
+                    cartDetail.updateOne({userId:new ObjectId(userId)},{$set:{products:[]}}).then(()=>{
+                        resolve({status:true})
+                    })
                 })
             }
         })
     },
 
     getOrders:(userId)=>{
+        return new Promise(async(resolve,reject)=>{
+           const userOrder=await orderDetail.findOne({userId:new ObjectId(userId)})
+           if(userOrder){
+            orderDetail.findOne({userId:new ObjectId(userId)}).then((data)=>{
+                resolve(data)
+               })
+           }else{
+            resolve([])
+           }
+        })
+    },
+
+    getSingleProductFromOrder:(userId,productId)=>{
         return new Promise((resolve,reject)=>{
-           orderDetail.findOne({userId:new ObjectId(userId)}).populate('cartId').then((data)=>{
-            console.log(data)
-           })
+            orderDetail.findOne({userId:new ObjectId(userId),'orderedProducts.productId':new ObjectId(productId)},{orderedProducts:{$elemMatch:{productId:new ObjectId(productId)}}}).then((data)=>{
+                resolve(data.orderedProducts)
+            })
+        })
+    },
+
+    getOrderSingleProductAddress:(orderId)=>{
+        return new Promise((resolve,reject)=>{
+            orderDetail.findOne({_id:new ObjectId(orderId)}).lean().then((data)=>{
+                resolve(data.address)
+            })
         })
     }
 }

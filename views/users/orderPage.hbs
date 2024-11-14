@@ -1,3 +1,4 @@
+{{#if data}}
 <div class="container mx-auto p-8">
   <!-- Order Header -->
   <h1 class="text-2xl font-semibold mb-6">Your Orders</h1>
@@ -12,8 +13,8 @@
           <th class="py-2">Product Name</th>
           <th class="py-2">Quantity</th>
           <th class="py-2">Price</th>
-          <th class="py-2">Order Status</th>
-          <th class="py-2">Action</th>
+           <th class="py-2">Order Status</th>
+          <th class="py-2">Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -26,12 +27,13 @@
           <td class="text-center py-2">{{this.productName}}</td>
           <td class="text-center py-2">{{this.quantity}}</td>
           <td class="text-center py-2">Rs. {{this.price}}</td>
-          <td class="text-center py-2">
-            <span class="text-sm font-medium">{{this.orderStatus}}</span>
-          </td>
-          <td class="text-center py-2">
-            <button onclick="viewOrderDetails('{{this._id}}')" class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75">
+          <td class="text-center py-2">{{this.orderStatus}}</td>
+          <td class="text-center py-2 space-x-2">
+            <button onclick="viewOrderDetails('{{this.productId}}','{{this.orderId}}')" class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75">
               View Order Details
+            </button>
+            <button onclick="cancelOrder('{{this.productId}}')" class="px-4 py-2 bg-red-600 text-white font-semibold rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-75">
+              Cancel Order
             </button>
           </td>
         </tr>
@@ -40,12 +42,33 @@
     </table>
   </div>
 </div>
+{{else}}
+<div class="container mx-auto p-8 flex flex-col items-center text-center">
+  <!-- No Orders Icon -->
+  <div class="mb-6">
+    <svg class="w-24 h-24 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h18M9 3v12a6 6 0 006 6h3m0-12V3m0 12h3M3 3l1.752 7.486A5 5 0 009 15h4a5 5 0 004.248-2.514L21 3"></path>
+    </svg>
+  </div>
 
-<!-- Optional JavaScript (if using modal or page redirect) -->
+  <!-- Message -->
+  <h2 class="text-2xl font-semibold text-gray-700 mb-2">No Orders Yet</h2>
+  <p class="text-gray-500 mb-6">Looks like you haven't placed any orders yet. Start exploring our collection to place your first order.</p>
+
+  <!-- Button -->
+  <a href="/product/productlist" class="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
+    Browse Products
+  </a>
+</div>
+{{/if}}
+
 <script>
-  // Function to handle the "View Order Details" button click
-  function viewOrderDetails(orderId) {
-    // Redirect to the order details page or show a modal with more information
-    window.location.href = `/order/details/${orderId}`; // Example of redirect to order details page
+  function viewOrderDetails(productId,orderId) {
+    window.location.href =`/users/vieworder/${productId}/${orderId}`;
+  }
+  function cancelOrder(orderId) {
+    if (confirm("Are you sure you want to cancel this order?")) {
+      window.location.href = `/order/cancel/${orderId}`;
+    }
   }
 </script>

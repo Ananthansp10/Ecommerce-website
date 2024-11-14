@@ -19,6 +19,10 @@ const cartSchema=new Schema({
                 required:true,
                 default:1
             },
+            description:{
+                type:String,
+                required:true
+            },
             price:{
                 type:Number,
                 required:true

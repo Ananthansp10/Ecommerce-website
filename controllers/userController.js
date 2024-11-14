@@ -488,6 +488,7 @@ module.exports={
           const productObj={
             productId:productDetails._id,
             quantity:1,
+            description:productDetails.description,
             price:productDetails.price,
             image:productDetails.images
           }
@@ -576,26 +577,51 @@ module.exports={
                     totalPrice:data.price*data.quantity,
                 }
             })
-            console.log(plainObj)
             res.render('users/checkoutPage', { user: req.session.user,data:plainObj,totalAmount,subTotal,cartLength,address:plainAddress});
     } catch (error) {
       res.status(500).send("Error occured page not rendering")
     }
   },
 
-  placeCartOrder:(req,res)=>{
+  placeCartOrder:async(req,res)=>{
     try {
       const{addressId,cartId,totalAmount,payment}=req.body
       const userId=req.session.user._id
+      const cartProducts=await userhelper.getCartProducts(cartId)
+      let cartTotal=150;
+      const cartProductsObj=cartProducts.map((data)=>{
+        cartTotal+=data.quantity*data.price
+        return{
+          productId:data.productId,
+          name:data.productName,
+          catType:data.productCategory,
+          description:data.description,
+          quantity:data.quantity,
+          price:data.price,
+          images:data.images,
+          orderStatus:"Placed",
+          orderedDate:Date.now()
+        }
+      })
+      const addressDetails=await userhelper.getOrderAddress(addressId,userId)
+      const addressObj={
+        addressType:addressDetails[0].addressType,
+        addressLine1:addressDetails[0].addressLine1,
+        addressLine2:addressDetails[0].addressLine2,
+        city:addressDetails[0].city,
+        state:addressDetails[0].state,
+        country:addressDetails[0].country,
+        pincode:addressDetails[0].pincode,
+        landmark:addressDetails[0].landmark,      
+      }
       const orderObj={
         userId:userId,
-        cartId:cartId,
-        addressId:addressId,
-        totalPrice:totalAmount,
+        orderedProducts:cartProductsObj,
+        address:addressObj,
+        totalPrice:cartTotal,
         paymentMethod:payment,
-        orderStatus:"Placed"
       }
-      userhelper.placeCartOrder(orderObj).then((response)=>{
+      userhelper.placeCartOrder(orderObj,userId).then((response)=>{
         if(response.status){
           res.json({status:true})
         }
@@ -607,18 +633,50 @@ module.exports={
 
   orderPage:async(req,res)=>{
     try {
-      const orders=await userhelper.getOrders(req.session.user._id)
+      const fullOrders=await userhelper.getOrders(req.session.user._id)
+      let orders = [];
+      if (fullOrders && fullOrders.orderedProducts && fullOrders.orderedProducts.length > 0) {
+        orders = fullOrders.orderedProducts;
+      }
+      if(orders.length!=0){
       const plainObj=orders.map((data,index)=>{
         return{
-          productId:data.productDetails._id,
-          productName:data.productDetails.name,
-          price:data.productDetails.price,
-          images:data.productDetails.images,
+          orderId:fullOrders._id,
+          productId:data.productId,
+          productName:data.name,
+          description:data.description,
+          price:data.price,
+          quantity:data.quantity,
+          images:data.images,
+          orderStatus:data.orderStatus,
           key:index+1,
-          orderStatus:data.orderStatus
         }
       })
       res.render('users/orderPage',{user:req.session.user,data:plainObj})
+     }else{
+      res.render('users/orderPage',{user:req.session.user})
+     }
+    } catch (error) {
+      res.status(500).send("Error occured page not rendering")
+    }
+  },
+
+  viewOrderDetailsPage:async(req,res)=>{
+    try {
+      const orderProducts=await userhelper.getSingleProductFromOrder(req.session.user._id,req.params.productId)
+      const orderProductsObj={
+        productId:orderProducts[0].productId,
+        productName:orderProducts[0].name,
+        catType:orderProducts[0].catType,
+        description:orderProducts[0].description,
+        quantity:orderProducts[0].quantity,
+        price:orderProducts[0].price,
+        images:orderProducts[0].images,
+        orderStatus:orderProducts[0].orderStatus,
+        orderedDate:orderProducts[0].orderedDate
+      }
+      const orderAddress=await userhelper.getOrderSingleProductAddress(req.params.orderId)
+      res.render('users/orderviewPage',{user:req.session.user,data:orderProductsObj,address:orderAddress})
     } catch (error) {
       res.status(500).send("Error occured page not rendering")
     }

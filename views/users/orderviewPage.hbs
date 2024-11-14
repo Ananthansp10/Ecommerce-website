@@ -1,0 +1,98 @@
+<div class="container mx-auto p-8 space-y-8">
+  <!-- Page Header -->
+  <h1 class="text-3xl font-semibold mb-8 text-gray-700">Order Details</h1>
+
+  <!-- Product Details Section -->
+  <div class="bg-white shadow-md rounded-lg p-6">
+    <h2 class="text-xl font-semibold mb-4 text-gray-700">Product Details</h2>
+    <div class="divide-y divide-gray-200">
+      <!-- Product Item -->
+      <div class="flex items-center py-4">
+        <img src="{{data.images.[0]}}" alt="Product Image" class="w-24 h-24 object-cover rounded-lg mr-4">
+        <div class="flex-1">
+          <h3 class="text-lg font-semibold text-gray-800">{{data.productName}}</h3>
+          <p class="text-gray-500">{{data.description}}</p>
+          <p class="mt-2 font-medium">Quantity: <span class="text-gray-700">{{data.quantity}}</span></p>
+          <p class="mt-1 text-lg font-bold text-gray-800">Rs.{{data.price}}</p>
+        </div>
+      </div>
+      <!-- Repeat above block for each product in the order -->
+    </div>
+  </div>
+
+  <!-- Shipping Address Section -->
+  <div class="bg-white shadow-md rounded-lg p-6">
+    <h2 class="text-xl font-semibold mb-4 text-gray-700">Shipping Address</h2>
+    <div class="text-gray-600">
+      <p><strong>Address Type:</strong> {{address.addressType}}</p>
+      <p><strong>AddressLine1:</strong> {{address.addressLine1}}</p>
+      <p><strong>AddressLine2:</strong> {{address.addressLine2}}</p>
+      <p><strong>City:</strong> {{address.city}}</p>
+      <p><strong>State:</strong> {{address.state}}</p>
+      <p><strong>Country:</strong> {{address.country}}</p>
+      <p><strong>Pincode:</strong> {{address.pincode}}</p>
+      <p><strong>Landmark:</strong> {{address.landmark}}</p>
+    </div>
+  </div>
+
+  <!-- Order Tracking Section -->
+  <div class="bg-white shadow-md rounded-lg p-6">
+    <h2 class="text-xl font-semibold mb-4 text-gray-700">Order Tracking</h2>
+
+    <!-- Tracking Steps -->
+    <div class="flex items-center space-x-4 mb-6">
+      <div class="flex items-center">
+        <div class="w-8 h-8 flex items-center justify-center bg-blue-600 text-white font-semibold rounded-full">1</div>
+        <span class="ml-2 text-gray-700">Order Placed</span>
+      </div>
+      <div class="h-0.5 bg-blue-600 flex-1"></div>
+      
+      <div class="flex items-center">
+        <div class="w-8 h-8 flex items-center justify-center bg-blue-600 text-white font-semibold rounded-full">2</div>
+        <span class="ml-2 text-gray-700">Shipped</span>
+      </div>
+      <div class="h-0.5 bg-blue-600 flex-1"></div>
+
+      <div class="flex items-center">
+        <div class="w-8 h-8 flex items-center justify-center bg-blue-600 text-white font-semibold rounded-full">3</div>
+        <span class="ml-2 text-gray-700">Out for Delivery</span>
+      </div>
+      <div class="h-0.5 bg-gray-300 flex-1"></div>
+
+      <div class="flex items-center">
+        <div class="w-8 h-8 flex items-center justify-center bg-gray-300 text-gray-500 font-semibold rounded-full">4</div>
+        <span class="ml-2 text-gray-500">Delivered</span>
+      </div>
+    </div>
+
+    <!-- Tracking Dates -->
+    <div class="space-y-4 text-gray-600">
+      <div class="flex justify-between">
+        <p>Order Placed</p>
+        <p>November 1, 2024</p>
+      </div>
+      <div class="flex justify-between">
+        <p>Shipped</p>
+        <p>November 3, 2024</p>
+      </div>
+      <div class="flex justify-between">
+        <p>Out for Delivery</p>
+        <p>November 5, 2024</p>
+      </div>
+      <div class="flex justify-between text-gray-400">
+        <p>Delivered</p>
+        <p>Expected November 6, 2024</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="flex justify-end space-x-4">
+    <button class="px-6 py-2 bg-red-600 text-white font-medium rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-75">
+      Cancel Order
+    </button>
+    <button class="px-6 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75">
+      Contact Support
+    </button>
+  </div>
+</div>

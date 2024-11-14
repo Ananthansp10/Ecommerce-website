@@ -102,6 +102,8 @@ router.post('/placecartorder',usercontroller.placeCartOrder)
 
 router.get('/orders',usercontroller.orderPage)
 
+router.get('/vieworder/:productId/:orderId',usercontroller.viewOrderDetailsPage)
+
 
 //route for google authentication
 router.get('/auth/google', passport.authenticate('google', {
