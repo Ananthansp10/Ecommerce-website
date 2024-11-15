@@ -474,9 +474,22 @@ module.exports={
         return new Promise(async(resolve,reject)=>{
            const userOrder=await orderDetail.findOne({userId:new ObjectId(userId)})
            if(userOrder){
-            orderDetail.findOne({userId:new ObjectId(userId)}).then((data)=>{
-                resolve(data)
-               })
+            orderDetail.aggregate([{
+                $match:{
+                    userId:new ObjectId(userId)
+                }
+            },
+            {
+                $project:{
+                    orderedProducts:1
+                }
+            },
+            {
+                $unwind:"$orderedProducts"
+            }
+          ]).then((data)=>{
+            resolve(data)
+          })
            }else{
             resolve([])
            }
@@ -554,5 +567,51 @@ module.exports={
                 resolve(data)
             })
         })
-    }
+    },
+
+    returnOrder:(productId,orderId)=>{
+        return new Promise((resolve,reject)=>{
+            orderDetail.updateOne({_id:new ObjectId(orderId)},{$set:{'orderedProducts.$[].orderStatus':"Return"}}).then((data)=>{
+                if(data.acknowledged){
+                    resolve({status:true})
+                }else{
+                    resolve({status:false})
+                }
+            })
+        })
+    },
+
+    updateProductStock: (cartProducts) => {
+        return new Promise((resolve, reject) => {
+          const stockUpdates = cartProducts.map((data) => {
+            return {
+              updateOne: {
+                filter: { _id: new ObjectId(data.productId) },
+                update: { $inc: { stock: -data.quantity } },
+              },
+            };
+          });
+          product
+            .bulkWrite(stockUpdates)
+            .then((data) => {
+              resolve({status:true});
+            })
+            .catch((err) => {
+              console.error("Error updating stock:", err);
+              reject(err);
+            });
+        });
+      },
+      
+      returnProductUpdateQuantity:(productId,quantity)=>{
+        return new Promise((resolve,reject)=>{
+            product.updateOne({_id:new ObjectId(productId)},{$inc:{stock:quantity}}).then((data)=>{
+                if(data.acknowledged){
+                    resolve({status:true})
+                }else{
+                    resolve({status:false})
+                }
+            })
+        })
+      }
 }

@@ -22,6 +22,8 @@ module.exports={
         try {
             const user = await adminhelper.getUser();
             const userplainObj = user.map(data => {
+                const options = {day: '2-digit', month: '2-digit', year: 'numeric'}
+                const date=new Date(data.createdAt).toLocaleDateString('en-GB',options)
                 const status = data.status; 
                 return {
                     _id: data._id,
@@ -29,6 +31,7 @@ module.exports={
                     email: data.email,
                     verified: data.verified,
                     status: data.status,
+                    date:date,
                     isBlock: status === "Block",
                     isUnBlock: status === "Unblock"
                 };

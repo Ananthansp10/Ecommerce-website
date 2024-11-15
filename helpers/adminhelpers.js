@@ -98,6 +98,7 @@ module.exports={
             user.find({}).then((data)=>{
                 googleAuth.find({}).then((googleData)=>{
                     userArray=[...data,...googleData]
+                    console.log(userArray)
                     resolve(userArray)
                 })
             })

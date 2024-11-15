@@ -104,7 +104,9 @@ router.get('/orders',usercontroller.orderPage)
 
 router.get('/vieworder/:productId/:orderId',usercontroller.viewOrderDetailsPage)
 
-router.post('/cartordercancel/:productId/:orderId',usercontroller.cartOrderCancel)
+router.post('/cartordercancel/:productId/:orderId/:quantity',usercontroller.cartOrderCancel)
+
+router.post('/returnorder/:productId/:orderId/:quantity',usercontroller.returnOrder)
 
 
 //route for google authentication

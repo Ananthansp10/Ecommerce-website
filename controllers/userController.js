@@ -617,17 +617,17 @@ module.exports={
       let cartTotal=150;
       const cartProductsObj=cartProducts.map((data)=>{
         cartTotal+=data.quantity*data.price
-        return{
-          productId:data.productId,
-          name:data.productName,
-          catType:data.productCategory,
-          description:data.description,
-          quantity:data.quantity,
-          price:data.price,
-          images:data.images,
-          orderStatus:"Placed",
-          orderedDate:Date.now()
-        }
+          return{
+            productId:data.productId,
+            name:data.productName,
+            catType:data.productCategory,
+            description:data.description,
+            quantity:data.quantity,
+            price:data.price,
+            images:data.images,
+            orderStatus:"Placed",
+            orderedDate:Date.now()
+          }  
       })
       const addressDetails=await userhelper.getOrderAddress(addressId,userId)
       const addressObj={
@@ -648,9 +648,11 @@ module.exports={
         paymentMethod:payment,
       }
       userhelper.placeCartOrder(orderObj,userId).then((response)=>{
+        userhelper.updateProductStock(cartProducts).then((response)=>{
         if(response.status){
-          res.json({status:true})
-        }
+            res.json({status:true})
+          }
+        })
       })
       }else{
         res.json({noUserDetail:true})
@@ -663,22 +665,19 @@ module.exports={
   orderPage:async(req,res)=>{
     try {
       const fullOrders=await userhelper.getOrders(req.session.user._id)
-      let orders = [];
-      if (fullOrders && fullOrders.orderedProducts && fullOrders.orderedProducts.length > 0) {
-        orders = fullOrders.orderedProducts;
-      }
-      if(orders.length!=0){
-      const plainObj=orders.map((data,index)=>{
+      if(fullOrders.length!=0){
+      const plainObj=fullOrders.map((data,index)=>{
         return{
-          orderId:fullOrders._id,
-          productId:data.productId,
-          productName:data.name,
-          description:data.description,
-          price:data.price,
-          quantity:data.quantity,
-          images:data.images,
-          orderStatus:data.orderStatus,
+          orderId:data._id,
+          productId:data.orderedProducts.productId,
+          productName:data.orderedProducts.name,
+          description:data.orderedProducts.description,
+          price:data.orderedProducts.price,
+          quantity:data.orderedProducts.quantity,
+          images:data.orderedProducts.images,
+          orderStatus:data.orderedProducts.orderStatus,
           key:index+1,
+          isDelivered:data.orderedProducts.orderStatus=="Delivered"
         }
       })
       res.render('users/orderPage',{user:req.session.user,data:plainObj})
@@ -686,6 +685,7 @@ module.exports={
       res.render('users/orderPage',{user:req.session.user})
      }
     } catch (error) {
+      console.log(error)
       res.status(500).send("Error occured page not rendering")
     }
   },
@@ -733,11 +733,27 @@ module.exports={
   cartOrderCancel:(req,res)=>{
     try {
       userhelper.cartOrderCancel(req.params.productId,req.params.orderId).then((response)=>{
-        if(response.status){
-          res.json({status:true})
-        }else{
-          res.json({status:false})
-        }
+        userhelper.returnProductUpdateQuantity(req.params.productId,req.params.quantity).then((response)=>{
+          if(response.status){
+            res.json({status:true})
+          }else{
+            res.json({status:false})
+          }
+        })
+      })
+    } catch (error) {
+      res.status(500).send("Error occured")
+    }
+  },
+
+  returnOrder:(req,res)=>{
+    try {
+      userhelper.returnOrder(req.params.productId,req.params.orderId).then((response)=>{
+        userhelper.returnProductUpdateQuantity(req.params.productId,req.params.quantity).then((response)=>{
+          if(response.status){
+            res.json({status:true})
+          }
+        })
       })
     } catch (error) {
       res.status(500).send("Error occured")
