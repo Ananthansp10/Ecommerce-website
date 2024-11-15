@@ -611,6 +611,8 @@ module.exports={
     try {
       const{addressId,cartId,totalAmount,payment}=req.body
       const userId=req.session.user._id
+      const userDetail=await userhelper.findUserDetails(userId)
+      if(userDetail){
       const cartProducts=await userhelper.getCartProducts(cartId)
       let cartTotal=150;
       const cartProductsObj=cartProducts.map((data)=>{
@@ -650,6 +652,9 @@ module.exports={
           res.json({status:true})
         }
       })
+      }else{
+        res.json({noUserDetail:true})
+      }
     } catch (error) {
       res.status(500).send("Error occured")
     }
@@ -703,13 +708,21 @@ module.exports={
       const orderTrackDetails=await userhelper.trackOrderDetails(req.params.orderId,req.params.productId)
       const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
       const date = new Date(orderTrackDetails[0].orderDate).toLocaleDateString('en-GB', options);
+      const orderDate = new Date(orderTrackDetails[0].orderDate)
+      orderDate.setDate(orderDate.getDate() + 7)
+      const expectedDate = orderDate.toLocaleDateString('en-GB', options)
+      console.log(expectedDate)
       const orderTrackObj={
         status:orderTrackDetails[0].orderStatus,
         date:date,
         isPlaced:orderTrackDetails[0].orderStatus=="Placed",
         isShipped:orderTrackDetails[0].orderStatus=="Shipped",
-        isOutForDelivery:orderTrackDetails[0].orderStatus=="Arrived",
-        isDelivered:orderTrackDetails[0].orderStatus=="Delivered"
+        isOutForDelivery:orderTrackDetails[0].orderStatus=="outForDelivery",
+        isDelivered:orderTrackDetails[0].orderStatus=="Delivered",
+        shippedDate:orderTrackDetails[0].shippedDate,
+        arrivedDate:orderTrackDetails[0].arrivedDate,
+        deliveredDate:orderTrackDetails[0].deliveredDate,
+        expectedDate:expectedDate
       }
       res.render('users/orderviewPage',{user:req.session.user,data:orderProductsObj,address:orderAddress,trackDetails:orderTrackObj,orderId:req.params.orderId})
     } catch (error) {

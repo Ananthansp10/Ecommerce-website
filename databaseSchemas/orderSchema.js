@@ -44,6 +44,18 @@ const orderSchema=new Schema({
     orderedDate:{
         type: Date,
         default: Date.now
+    },
+    shippedDate:{
+        type: String,
+        default: Date.now
+    },
+    arrivedDate:{
+        type: String,
+        default: Date.now
+    },
+    deliveredDate:{
+        type: String,
+        default: Date.now
     }
     }],
 

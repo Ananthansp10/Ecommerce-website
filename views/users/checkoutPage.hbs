@@ -213,57 +213,75 @@
     form.classList.toggle('hidden');
   });
 
-  function placeOrder(cartId,totalAmount){
-    const selectedAddress = document.querySelector('input[name="address"]:checked');
-    const paymentMethod=document.querySelector('input[name="payment"]:checked');
-    if (selectedAddress && paymentMethod) {
-     const addressId = selectedAddress.value
-     const payment=paymentMethod.value
-     fetch('/users/placecartorder',{
-      method:"POST",
+function placeOrder(cartId, totalAmount) {
+  const selectedAddress = document.querySelector('input[name="address"]:checked');
+  const paymentMethod = document.querySelector('input[name="payment"]:checked');
+
+  if (selectedAddress && paymentMethod) {
+    const addressId = selectedAddress.value;
+    const payment = paymentMethod.value;
+
+    fetch('/users/placecartorder', {
+      method: "POST",
       headers: {
-      'Content-Type': 'application/json'
+        'Content-Type': 'application/json'
       },
-      body:JSON.stringify({
-      addressId,
-      cartId,
-      totalAmount,
-      payment
+      body: JSON.stringify({
+        addressId,
+        cartId,
+        totalAmount,
+        payment
       })
-     }).then((response)=>{
-      {{!-- if(response.status){
-        Swal.fire({
-        icon: 'success',
-        title: 'Order Placed Successfully!',
-        text: 'Thank you for your purchase. Your order placed.',
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.status) {
+        showOrderSuccessModal();
+      } else if (data.noUserDetail) {
+         Swal.fire({
+        icon: 'warning',
+        title: 'User Details Missing',
+        text: 'Please complete your user details to proceed with the order.',
+        confirmButtonText: 'Go to Add User Details'
+      }).then(() => {
+        location.href = '/users/adduserdetails';
+      });
+    }
+    })
+    .catch(error => {
+      console.error("Error placing order:", error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Order Error',
+        text: 'An error occurred while placing your order. Please try again later.',
         confirmButtonText: 'OK'
       });
-      } --}}
-      showOrderSuccessModal();
-      //location.href='/users/ordersuccess'
-     })
+    });
+
   } else {
-    if(!selectedAddress){
+    if (!selectedAddress) {
       Swal.fire({
-    icon: 'warning',
-    title: 'No Address Selected',
-    text: 'Please select an address to place order.',
-    confirmButtonText: 'OK'
-  });
-    }if(!paymentMethod){
+        icon: 'warning',
+        title: 'No Address Selected',
+        text: 'Please select an address to place the order.',
+        confirmButtonText: 'OK'
+      });
+    }
+    if (!paymentMethod) {
       Swal.fire({
-    icon: 'warning',
-    title: 'Payment Method is not Selected',
-    text: 'Please select a payment method to place order.',
-    confirmButtonText: 'OK'
-  });
-    }if(!selectedAddress && !paymentMethod){
+        icon: 'warning',
+        title: 'Payment Method Not Selected',
+        text: 'Please select a payment method to place the order.',
+        confirmButtonText: 'OK'
+      });
+    }
+    if (!selectedAddress && !paymentMethod) {
       Swal.fire({
-    icon: 'warning',
-    title: 'No Address and Payment method selected',
-    text: 'Please select ddress and payment method to place order.',
-    confirmButtonText: 'OK'
-  });
+        icon: 'warning',
+        title: 'No Address and Payment Method Selected',
+        text: 'Please select an address and payment method to place the order.',
+        confirmButtonText: 'OK'
+      });
     }
   }
 }

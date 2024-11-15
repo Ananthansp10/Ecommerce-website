@@ -515,10 +515,14 @@ module.exports={
             {
                 $project:{
                     orderStatus:"$orderedProducts.orderStatus",
-                    orderDate:"$orderedProducts.orderedDate"
+                    orderDate:"$orderedProducts.orderedDate",
+                    shippedDate:"$orderedProducts.shippedDate",
+                    arrivedDate:"$orderedProducts.arrivedDate",
+                    deliveredDate:"$orderedProducts.deliveredDate"
                 }
             }
         ]).then((data)=>{
+            console.log(data)
             resolve(data)
         })
         })
@@ -540,6 +544,14 @@ module.exports={
                }else{
                 resolve({status:false})
                }
+            })
+        })
+    },
+
+    findUserDetails:(userId)=>{
+        return new Promise((resolve,reject)=>{
+            userDetail.findOne({userId:new ObjectId(userId)}).then((data)=>{
+                resolve(data)
             })
         })
     }

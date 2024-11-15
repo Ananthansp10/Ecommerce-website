@@ -229,7 +229,33 @@ module.exports={
                 const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
                 const date = new Date(orderSummary[0].orderDate).toLocaleDateString('en-GB', options);
                 const orderDate=date
-                res.render('admin/orderviewPage',{admin:true,userdata:orderUserDetailsObj,orderCount,totalAmount,orderDate});
+                const orderProductDetails=await adminhelper.findOrderProductDetails(req.params.orderId)
+                const statusObj=orderProductDetails.map((data)=>{
+                    return{
+                    orderId:data.orderId,
+                    isPlaced:data.orderStatus=="Placed",
+                    isShipped:data.orderStatus=="Shipped",
+                    isOutForDelivery:data.orderStatus=="outForDelivery",
+                    isDelivered:data.orderStatus=="Delivered"
+                    }
+                })
+                const orderProductsObj=orderProductDetails.map((data)=>{
+                    return{
+                        orderId:data.orderId,
+                        productId:data.productId,
+                        name:data.name,
+                        colour:data.colour,
+                        price:data.price,
+                        quantity:data.quantity,
+                        images:data.images,
+                        totalPrice:data.price*data.quantity,
+                        isPlaced:data.orderStatus=="Placed",
+                        isShipped:data.orderStatus=="Shipped",
+                        isOutForDelivery:data.orderStatus=="outForDelivery",
+                        isDelivered:data.orderStatus=="Delivered"
+                    }
+                })
+                res.render('admin/orderviewPage',{admin:true,userdata:orderUserDetailsObj,orderCount,totalAmount,orderDate,products:orderProductsObj,status:statusObj});
             }else{
                 const orderSummary=await adminhelper.getorderSummary(req.params.orderId)
                 const orderCount=orderSummary.length;
@@ -237,7 +263,29 @@ module.exports={
                 const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
                 const date = new Date(orderSummary[0].orderDate).toLocaleDateString('en-GB', options);
                 const orderDate=date
-                res.render('admin/orderviewPage',{admin:true,orderCount,totalAmount,orderDate});
+                const orderProductDetails=await adminhelper.findOrderProductDetails(req.params.orderId)
+                const statusObj=orderProductDetails.map((data)=>{
+                    return{
+                    orderId:data.orderId,
+                    isPlaced:data.orderStatus=="Placed",
+                    isShipped:data.orderStatus=="Shipped",
+                    isOutForDelivery:data.orderStatus=="outForDelivery",
+                    isDelivered:data.orderStatus=="Delivered"
+                    }
+                })
+                const orderProductsObj=orderProductDetails.map((data)=>{
+                    return{
+                        orderId:data.orderId,
+                        productId:data.productId,
+                        name:data.name,
+                        colour:data.colour,
+                        price:data.price,
+                        quantity:data.quantity,
+                        images:data.images,
+                        totalPrice:data.price*data.quantity
+                    }
+                })
+                res.render('admin/orderviewPage',{admin:true,orderCount,totalAmount,orderDate,products:orderProductsObj,status:statusObj});
             }
         } catch (error) {
             console.log(error)
@@ -354,6 +402,20 @@ module.exports={
                })
             } catch (error) {
                res.status(500).send("Error occured") 
+            }
+        },
+
+        changeOrderStatus:(req,res)=>{
+            try {
+                adminhelper.changeOrderStatus(req.params.orderId,req.params.status).then((response)=>{
+                    if(response.status){
+                        res.json({status:true})
+                    }else{
+                        res.json({status:false})
+                    }
+                })
+            } catch (error) {
+                res.status(500).send("Error occured")
             }
         }
     

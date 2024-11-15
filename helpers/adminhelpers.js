@@ -321,5 +321,86 @@ module.exports={
             resolve(data)
            })
         })
+    },
+
+    findOrderProductDetails:(orderId)=>{
+        return new Promise((resolve,reject)=>{
+          orderDetail.aggregate([{
+            $match:{
+                _id:new ObjectId(orderId)
+            }
+           },
+           {
+            $unwind:"$orderedProducts"
+           },
+           {
+            $lookup:{
+                from:"products",
+                localField:"orderedProducts.productId",
+                foreignField:"_id",
+                as:"productDetails"
+            }
+           },
+           {
+            $unwind:"$productDetails"
+           },
+           {
+            $project:{
+                orderId:"$_id",
+                productId:"$productDetails._id",
+                quantity:"$orderedProducts.quantity",
+                price:"$orderedProducts.price",
+                name:"$orderedProducts.name",
+                colour:"$productDetails.colour",
+                images:"$productDetails.images",
+                orderStatus:"$orderedProducts.orderStatus"
+            }
+           }
+        ]).then((data)=>{
+            resolve(data)
+        })
+        })
+    },
+
+    changeOrderStatus:(orderId,status)=>{
+        return new Promise((resolve,reject)=>{
+            if(status=="Shipped"){
+                const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
+                let date=Date.now();
+                const convertDate = new Date(date).toLocaleDateString('en-GB', options)
+                orderDetail.updateOne({_id:new ObjectId(orderId)},{$set:{'orderedProducts.$[].orderStatus':status,'orderedProducts.$[].shippedDate':convertDate}}).then((data)=>{
+                    if(data.acknowledged){
+                        resolve({status:true})
+                    }else{
+                        resolve({status:false})
+                    }
+                })
+            }
+            if(status=="outForDelivery"){
+                const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
+                let date=Date.now();
+                const convertDate = new Date(date).toLocaleDateString('en-GB', options)
+                orderDetail.updateOne({_id:new ObjectId(orderId)},{$set:{'orderedProducts.$[].orderStatus':status,'orderedProducts.$[].arrivedDate':convertDate}}).then((data)=>{
+                    if(data.acknowledged){
+                        resolve({status:true})
+                    }else{
+                        resolve({status:false})
+                    }
+                })
+            }
+            if(status=="Delivered"){
+                const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
+                let date=Date.now();
+                const convertDate = new Date(date).toLocaleDateString('en-GB', options)
+                orderDetail.updateOne({_id:new ObjectId(orderId)},{$set:{'orderedProducts.$[].orderStatus':status,'orderedProducts.$[].deliveredDate':convertDate}}).then((data)=>{
+                    if(data.acknowledged){
+                        resolve({status:true})
+                    }else{
+                        resolve({status:false})
+                    }
+                })
+            }
+
+        })
     }
 }

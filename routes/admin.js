@@ -48,5 +48,7 @@ router.post('/deletecategory/:id',admincontroller.deleteCategory)
 
 router.post('/blockcategory/:id/:value',admincontroller.blockCategory)
 
+router.post('/changeorderstatus/:orderId/:status',admincontroller.changeOrderStatus)
+
 
 module.exports=router;
