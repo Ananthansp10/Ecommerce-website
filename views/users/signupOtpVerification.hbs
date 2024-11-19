@@ -18,14 +18,14 @@
       </p>
 
       <!-- OTP Form -->
-      <form class="space-y-6 mt-6" action="/users/signup-otp-verification" method="POST">
+      <form class="space-y-6 mt-6" onsubmit="otpVerification(event)">
         <!-- OTP Input Fields -->
         <div class="flex justify-center space-x-4">
           <!-- Circular Input Fields for OTP -->
-          <input type="text" name="first" maxlength="1" class="w-12 h-12 text-center text-2xl rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-600" oninput="moveToNext(this, 'second')" />
-          <input type="text" name="second" maxlength="1" class="w-12 h-12 text-center text-2xl rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-600" oninput="moveToNext(this, 'third')" />
-          <input type="text" name="third" maxlength="1" class="w-12 h-12 text-center text-2xl rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-600" oninput="moveToNext(this, 'fourth')" />
-          <input type="text" name="fourth" maxlength="1" class="w-12 h-12 text-center text-2xl rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-600" oninput="moveToNext(this, null)" />
+          <input type="text" name="first" maxlength="1" id="first" class="w-12 h-12 text-center text-2xl rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-600" oninput="moveToNext(this, 'second')" />
+          <input type="text" name="second" maxlength="1" id="second" class="w-12 h-12 text-center text-2xl rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-600" oninput="moveToNext(this, 'third')" />
+          <input type="text" name="third" maxlength="1" id="third" class="w-12 h-12 text-center text-2xl rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-600" oninput="moveToNext(this, 'fourth')" />
+          <input type="text" name="fourth" maxlength="1" id="fourth" class="w-12 h-12 text-center text-2xl rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-600" oninput="moveToNext(this, null)" />
         </div>
 
         <!-- Resend OTP Option with Timer -->
@@ -97,55 +97,112 @@
     }
   }
 
-  // Timer logic for Resend OTP button
-  let timeLeft = 60; // Change the starting time here
-  const timerElement = document.getElementById('timer');
-  const resendButton = document.getElementById('resend-button');
-  
-  // Hide the resend button initially
-  resendButton.style.display = 'none';
+let timeLeft = localStorage.getItem('timeLeft') ? parseInt(localStorage.getItem('timeLeft')) : 60;
+const timerElement = document.getElementById('timer');
+const resendButton = document.getElementById('resend-button');
+let countdown;
+resendButton.style.display = 'none';
 
-  const countdown = setInterval(() => {
+function startTimer() {
+  clearInterval(countdown);
+  timeLeft = 60; 
+  resendButton.style.display = 'none';
+  countdown = setInterval(() => {
     if (timeLeft > 0) {
       timeLeft--;
       timerElement.innerText = `${timeLeft}s`;
+      localStorage.setItem('timeLeft', timeLeft);
     } else {
       clearInterval(countdown);
-      // Show the resend button when time runs out
+      timerElement.innerText = ''; 
       resendButton.style.display = 'inline';
-      timerElement.innerText = ''; // Clear the timer text
     }
   }, 1000);
+}
 
-  // Add click event listener to the resend button
-  resendButton.addEventListener('click', () => {
-    // Send request to the backend to resend OTP
-    fetch('/users/resend-signup-otp', {
-      method: 'POST',
+if (timeLeft > 0) {
+  startTimer();
+} else {
+  resendButton.style.display = 'inline';
+}
+
+
+  function otpVerification(e){
+    e.preventDefault();
+    fetch('/users/signup-otp-verification',{
+      method:"POST",
+      headers: {
+          'Content-Type': 'application/json',
+      },
+      body:JSON.stringify({
+        first:document.getElementById("first").value,
+        second:document.getElementById("second").value,
+        third:document.getElementById("third").value,
+        fourth:document.getElementById("fourth").value
+      })
+    }).then((response)=>response.json()).then((response)=>{
+      if(response.status){
+        Swal.fire({
+        icon: 'success',
+        title: 'Signup Successful!',
+        text: 'You have successfully signed up',
+        confirmButtonText: 'Go to Login',
+      }).then(()=>{
+        location.href='/users/login'
+      })
+      }else{
+        Swal.fire({
+        icon: 'error',
+        title: 'Signup Failed',
+        text:response.message,
+        confirmButtonText: 'Retry or Resend OTP',
+      }).then(()=>{
+        location.reload();
+      })
+      }
+    }).catch(()=>{
+        Swal.fire({
+        icon: 'error',
+        title: 'Signup Failed',
+        text:"Something went wrong",
+        confirmButtonText: 'Retry or Resend OTP',
+      })
     })
-    .then(response => response.json())
-    .then(data => {
+  }
+
+  resendButton.addEventListener('click', () => {
+  fetch('/users/resend-signup-otp', {
+    method: 'POST',
+  })
+    .then((response) => response.json())
+    .then((data) => {
       if (data.success) {
-        alert('OTP has been resent.');
-        // Optionally restart the timer if you want to prevent immediate clicks
-        timeLeft = 60;  // Reset the timer
-        resendButton.style.display = 'none'; // Hide the resend button again
-        countdown = setInterval(() => {
-          if (timeLeft > 0) {
-            timeLeft--;
-            timerElement.innerText = `${timeLeft}s`;
-          } else {
-            clearInterval(countdown);
-            resendButton.style.display = 'inline';
-            timerElement.innerText = '';
-          }
-        }, 1000);
+        Swal.fire({
+          icon: 'success',
+          title: 'OTP Resent!',
+          text: 'A new OTP has been sent to your registered email or phone number. Please check your inbox.',
+          confirmButtonText: 'OK',
+        }).then(() => {
+          localStorage.setItem('timeLeft', timeLeft)
+          startTimer();
+        });
       } else {
-        alert('Error resending OTP. Please try again.');
+        Swal.fire({
+          icon: 'error',
+          title: 'Failed to Resend OTP',
+          text: 'Unable to resend OTP at the moment. Please try again later.',
+          confirmButtonText: 'Retry',
+        });
       }
     })
-    .catch(error => {
+    .catch((error) => {
       console.error('Error:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'An error occurred while resending the OTP. Please try again later.',
+        confirmButtonText: 'OK',
+      });
     });
-  });
+});
 </script>

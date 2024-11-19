@@ -16,33 +16,16 @@ const userSchema = new Schema({
         unique: true,
         lowercase: true,
         trim: true,
-        match: [
-            /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
-            'Please provide a valid email address',
-        ],
     },
     password: {
         type: String,
         required: [true, 'Password is required'],
         minlength: [6, 'Password must be at least 6 characters long'],
-        validate: {
-            validator: function (password) {
-              return /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/.test(password);
-            },
-            message: 'Password must be at least 6 characters long, contain one uppercase letter, one number, and one special character.'
-          }
         },
 
     confirmPassword: {
         type: String,
         required: [true, 'Confirm Password is required'],
-        validate: {
-            // Custom validator to check if password and confirmPassword match
-            validator: function (value) {
-                return value === this.password;
-            },
-            message: 'Passwords do not match',
-        },
     },
     verified:{
         type:Boolean

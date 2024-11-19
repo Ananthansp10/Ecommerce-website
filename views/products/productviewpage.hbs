@@ -117,7 +117,7 @@
       <!-- Add to Cart / Buy Now Buttons -->
       <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mb-6">
         {{#if product.inStock }}
-          <button class="flex-1 bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-500 focus:outline-none">Add to Cart</button>
+          <button class="flex-1 bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-500 focus:outline-none" onclick="addToCart('{{product._id}}')">Add to Cart</button>
           <button class="flex-1 bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-500 focus:outline-none">Buy Now</button>
         {{/if}}
         {{#if product.limitedStock}}
@@ -239,10 +239,10 @@
         if (result.dismiss === Swal.DismissReason.cancel) {
           location.href = '/product/cartPage';
         } else {
-          //location.href = '/';
           var count=document.getElementById("cartCount").innerText
           count=parseInt(count) || 0
           document.getElementById("cartCount").innerText=count+1
+          location.href = '/';
         }
       });
     } else {

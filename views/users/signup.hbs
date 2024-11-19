@@ -12,16 +12,17 @@
       </h2>
 
       <!-- Sign-up Form -->
-      <form class="space-y-6 mt-6" action="/users/signup" method="POST">
+      <form class="space-y-6 mt-6" onsubmit="signup(event)">
         <!-- Full Name Input -->
         <div>
           <label for="name" class="block text-sm font-medium leading-6 text-gray-900">
             Full Name
           </label>
           <div class="mt-2">
-            <input id="name" name="name" type="text" required class="block w-full rounded-md border-gray-300 py-2 text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+            <input id="name" name="name" type="text"  class="block w-full rounded-md border-gray-300 py-2 text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
           </div>
         </div>
+        <div class="mt-2 text-sm text-red-600 bg-red-100 p-2 rounded-md hidden" id="nameError"></div>
 
         <!-- Email Input -->
         <div>
@@ -29,9 +30,10 @@
             Email address
           </label>
           <div class="mt-2">
-            <input id="email" name="email" type="email" required class="block w-full rounded-md border-gray-300 py-2 text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+            <input id="email" name="email" type="text" class="block w-full rounded-md border-gray-300 py-2 text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
           </div>
         </div>
+        <div class="mt-2 text-sm text-red-600 bg-red-100 p-2 rounded-md hidden" id="emailError"></div>
 
         <!-- Password Input -->
         <div>
@@ -39,22 +41,21 @@
             Password
           </label>
           <div class="mt-2">
-            <input id="password" name="password" type="password" required class="block w-full rounded-md border-gray-300 py-2 text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+            <input id="password" name="password" type="password" class="block w-full rounded-md border-gray-300 py-2 text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
           </div>
         </div>
+        <div class="mt-2 text-sm text-red-600 bg-red-100 p-2 rounded-md hidden" id="passwordError"></div>
 
         <!-- Confirm Password Input -->
         <div>
-          <label for="confirm-password" class="block text-sm font-medium leading-6 text-gray-900">
+          <label for="confirmPassword" class="block text-sm font-medium leading-6 text-gray-900">
             Confirm Password
           </label>
           <div class="mt-2">
-            <input id="confirm-password" name="confirmPassword" type="password" required class="block w-full rounded-md border-gray-300 py-2 text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-            {{#if message}}
-            <p class="text-red-500 font-medium mt-3">{{message}}</p>
-            {{/if}}
+            <input id="confirmPassword" name="confirmPassword" type="password" class="block w-full rounded-md border-gray-300 py-2 text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
           </div>
         </div>
+        <div class="mt-2 text-sm text-red-600 bg-red-100 p-2 rounded-md hidden" id="confirmPasswordError"></div>
 
         <!-- Sign-up Button -->
         <div>
@@ -110,4 +111,104 @@
   function googleauthenticate(){
    window.location.href='/users/auth/google';
   }
+
+  function signup(e) {
+  e.preventDefault();
+  let isValid = true;
+
+  const name = document.getElementById('name').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value.trim();
+  const confirmPassword = document.getElementById('confirmPassword').value.trim();
+
+  console.log(name,password,email,confirmPassword)
+
+
+  // Name validation
+  if (!/^[a-zA-Z\s]+$/.test(name)) {
+    isValid = false;
+    showError('nameError', 'Name must contain only letters.');
+  } else {
+    hideError('nameError');
+  }
+
+  // Email validation
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailPattern.test(email)) {
+    isValid = false;
+    showError('emailError', 'Invalid email format.');
+  } else {
+    hideError('emailError');
+  }
+
+  // Password validation
+  if (password.length < 6 || !/[A-Z]/.test(password) || !/[0-9]/ || !/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+    isValid = false;
+    showError('passwordError', 'Password must be at least 6 characters long, with at least one uppercase letter and one number and one special character');
+  } else {
+    hideError('passwordError');
+  }
+
+  // Confirm password validation
+  if (password !== confirmPassword) {
+    isValid = false;
+    showError('confirmPasswordError', 'Passwords do not match.');
+  } else {
+    hideError('confirmPasswordError');
+  }
+
+  if (isValid) {
+    fetch('/users/signup',{
+      method:"POST",
+      headers: {
+      "Content-Type": "application/json"
+      },
+      body:JSON.stringify({
+        name:name,
+        email:email,
+        password:password,
+        confirmPassword:confirmPassword
+      })
+    }).then((response)=>response.json()).then((response)=>{
+      if(response.status){
+        Swal.fire({
+          icon: 'success',
+          title: 'OTP Sent!',
+          text:response.message,
+          confirmButtonText: 'OK'
+        }).then(()=>{
+          location.href='/users/signupOtpVerification'
+        })
+      }else{
+        Swal.fire({
+        icon: 'error',
+        title: 'Validation Error',
+        text: response.message,
+        confirmButtonText: 'OK'
+      }).then(()=>{
+        location.href='/users/signup'
+      })
+      }
+    })
+  }
+}
+
+function showError(elementId, message) {
+  const errorElement = document.getElementById(elementId);
+  if (errorElement) {
+  errorElement.innerText = message;
+  errorElement.classList.remove('hidden');
+  }
+}
+
+function hideError(elementId) {
+  const errorElement = document.getElementById(elementId);
+   if (errorElement) {
+    errorElement.innerText = '';
+    errorElement.classList.add('hidden');
+  } else {
+    console.error(`Error: Element with ID '${elementId}' not found.`);
+  }
+}
+
 </script>

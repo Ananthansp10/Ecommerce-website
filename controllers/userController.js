@@ -62,11 +62,13 @@ module.exports={
     req.session.email = req.body.email;
     try {
       const addUserResponse = await userhelper.addUser(req.body);
-      if (addUserResponse.status) {
+      if (addUserResponse.status){
         const otpResponse = await userhelper.otpGenerate(req.body.email);
         if (otpResponse.status) {
-          res.render('users/signupOtpVerification');
+          res.status(200).json({status:true,message:otpResponse.message})
         } 
+      }else{
+        res.status(400).json({status:false,message:addUserResponse.message})
       } 
     } catch (error) {
       req.session.errorMessage = error.message;
@@ -92,9 +94,9 @@ module.exports={
       const response = await userhelper.resendOtpGenerate(req.session.email);
 
       if (response.status) {
-          res.json({ success: true });
+          res.json({success: true,message:"OTP has been resend check it in your email"});
       } else {
-          res.json({ success: false, message: "Failed to send OTP" });
+          res.json({success: false, message: "Failed to Send OTP please try again"});
       }
   } catch (error) {
       console.error("Error in resendOtp:", error);
@@ -108,10 +110,9 @@ module.exports={
       const response = await userhelper.signupOtpVerification(req.session.email, otp);
 
       if (response.status) {
-          res.redirect('/users/login');
+          res.status(200).json({status:true,message:response.message})
       } else {
-          req.session.otpError = "OTP is wrong";
-          res.redirect('/users/signupOtpVerification');
+          res.status(400).json({status:false,message:response.message})
       }
   } catch (error) {
       console.error("Error in otpVerification:", error);

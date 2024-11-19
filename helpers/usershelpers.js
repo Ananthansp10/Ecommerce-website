@@ -24,28 +24,19 @@ module.exports={
             verified:false,
             status:"Unblock"
         });
-    
-        return new Promise((resolve, reject) => {
-            userData.save()
-                .then(() => {
-                    resolve({ status: true });
+        return new Promise(async(resolve, reject) => {
+            const userFind=await user.findOne({email:userdata.email})
+            if(userFind){
+                resolve({status:false,message:"User with same email already exist"})
+            }else{
+                userData.save().then((data)=>{
+                    if(data){
+                        resolve({status:true,message:"User Created Successfully"})
+                    }else{
+                        resolve({status:false,message:"Error occured try again"})
+                    }
                 })
-                .catch((err) => {
-                    console.log(err.errors)
-                    // Check if it's a validation error
-                    if (err.errors && err.errors.confirmPassword) {
-                        reject({ status: false, message: err.errors.confirmPassword.message });
-                    } else if (err.errors && err.errors.password) {
-                        reject({ status: false, message:err.errors.password.message});
-                    } else if (err.errors && err.errors.email) {
-                        reject({ status: false, message:err.errors.email.message});
-                    } else if(err.errors && err.errors.password) {
-                        reject({ status: false, message:err.errors.password.message});
-                    }
-                    else{
-                        reject({status:false,message:"error occured"})
-                    }
-                });
+            }
         });
     },
     checkUser:async(userdata)=>{
@@ -79,7 +70,7 @@ module.exports={
 
             sendEmail(email,subject,text).then(()=>{
                 OTPschema.collection.insertOne({email:email,otp:OTP}).then(()=>{
-                    resolve({status:true,userotp:OTP,message:"OTP send successfully"})
+                    resolve({status:true,userotp:OTP,message:"OTP Send Successfully to your email"})
                 }).catch((err)=>{
                     console.log("OTP not send error occured" +err)
                     reject({message:"OTP not send error occured"})
@@ -92,14 +83,13 @@ module.exports={
         console.log(otp,email)
         return new Promise(async(resolve,reject)=>{
             const dbOTP= await OTPschema.collection.findOne({email:email})
-            console.log(dbOTP)
             if(dbOTP.otp==otp){
                 await user.collection.updateOne({email:email},{$set:{verified:true}}).then(()=>{
-                    resolve({status:true})
+                    resolve({status:true,message:"User Signed Successfully"})
                 })
             }
             else{
-                resolve({status:false})
+                resolve({status:false,message:"User Signup Failed Wrong OTP"})
             }
         })
     },
