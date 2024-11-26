@@ -34,17 +34,39 @@
       </button>
     </div>
 </div>
-        <!-- Wishlist Icon -->
-        <a href="/product/wishlist" class="text-white"><i class="fa-solid fa-heart"></i></a>
+    <div class="flex justify-end space-x-6 pr-4">
+  <!-- Wishlist Icon -->
+  <div class="relative inline-block">
+    <a href="/product/wishlist" class="text-white">
+      <i class="fa-solid fa-heart text-lg"></i>
+    </a>
+    {{#if wishlistLength}}
+      <span
+        id="wishcount"
+        class="absolute bg-white text-center text-black text-xs font-semibold top-2 -right-5 w-4 h-4 rounded-full"
+      >
+        {{wishlistLength}}
+      </span>
+    {{/if}}
+  </div>
 
-        <!-- Cart Icon -->
-        <a href="/product/cartPage" class="text-white"><i class="fa-solid fa-cart-shopping"></i>
-        {{#if cartLength}}
-          <span id="cartCount" class="inline-block bg-white text-center text-black text-xs font-semibold ml-0.1 pl-0.5 pe-0.5 w-5 h-4 rounded-full">{{cartLength}}</span>
-          {{/if}}
-        </a>
+  <!-- Cart Icon -->
+  <div class="relative inline-block">
+    <a href="/product/cartPage" class="text-white">
+      <i class="fa-solid fa-cart-shopping mt-2 ml-2"></i>
+    </a>
+    {{#if cartLength}}
+      <span
+        id="cartCount"
+        class="absolute bg-white text-center text-black text-xs font-semibold top-2 -right-5 w-4 h-4 rounded-full"
+      >
+        {{cartLength}}
+      </span>
+    {{/if}}
+  </div>
+</div>
 
-        <!-- Space for better visual gap -->
+          <!-- Space for better visual gap -->
         <div class="border-l border-gray-600 h-6 mx-2"></div>
 
         <!-- User Logo and Name -->
@@ -99,15 +121,38 @@
         <!-- Search Icon -->
         <a href="/product/productSearch" class="text-white ms-3"><i class="fa-solid fa-magnifying-glass"></i></a>
 
-        <!-- Wishlist Icon -->
-        <a href="" class="text-white"><i class="fa-solid fa-heart"></i></a>
+        <div class="flex justify-end space-x-6 pr-4">
+  <!-- Wishlist Icon -->
+  <div class="relative inline-block">
+    <a href="/product/wishlist" class="text-white">
+      <i class="fa-solid fa-heart text-lg"></i>
+    </a>
+    {{#if wishlistLength}}
+      <span
+        id="wishcount"
+        class="absolute bg-white text-center text-black text-xs font-semibold top-2 -right-5 w-4 h-4 rounded-full"
+      >
+        {{wishlistLength}}
+      </span>
+    {{/if}}
+  </div>
 
-        <!-- Cart Icon -->
-        <a href="" class="text-white"><i class="fa-solid fa-cart-shopping"></i>
-        {{#if cartLength}}
-          <span class="inline-block bg-white text-black text-xs font-semibold px-2 py-0.5 rounded-full">{{cartLength}}</span>
-          {{/if}}
-        </a>
+  <!-- Cart Icon -->
+  <div class="relative inline-block">
+    <a href="/product/cartPage" class="text-white">
+      <i class="fa-solid fa-cart-shopping mt-2 ml-2"></i>
+    </a>
+    {{#if cartLength}}
+      <span
+        id="cartCount"
+        class="absolute bg-white text-center text-black text-xs font-semibold top-2 -right-5 w-4 h-4 rounded-full"
+      >
+        {{cartLength}}
+      </span>
+    {{/if}}
+  </div>
+</div>
+
 
         <!-- User Logo and Name -->
         {{#if user}}

@@ -1,61 +1,169 @@
 <section>
   <div class="min-h-screen bg-white flex items-center justify-center  py-12 px-4 sm:px-6 lg:px-8">
-  <div class="max-w-md w-full space-y-3">
-    <!-- Mob N Access Heading -->
-    <h1 class="text-center ps-7 font-extrabold text-2xl tracking-tight login-heading">
-      Mob N Access
-    </h1>
+    <div class="max-w-md w-full space-y-3">
+      <!-- Mob N Access Heading -->
+      <h1 class="text-center ps-7 font-extrabold text-2xl tracking-tight login-heading">
+        Mob N Access
+      </h1>
 
-    <!-- Sign-in Section -->
-    <div class="bg-gray-300 py-8 px-4 mb-10 shadow sm:rounded-lg sm:px-10">
-      <h2 class="text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
-        Sign in to your account
-      </h2>
-      
-      <form class="space-y-6 mt-6" action="/users/login" method="POST">
-        <!-- Email Input -->
-        <div>
-          <p class="font-medium text-red-500">{{message}}</p>
-          <label for="email" class="block text-sm font-medium leading-6 text-black">
-            Email address
-          </label>
-          <div class="mt-2">
-            <input id="email" name="email" type="email" autocomplete="email" required class="block w-full rounded-md border-gray-300 py-2 text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-          </div>
-        </div>
+      <!-- Sign-in Section -->
+      <div class="bg-gray-300 py-8 px-4 mb-10 shadow sm:rounded-lg sm:px-10">
+        <h2 class="text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
+          Sign in to your account
+        </h2>
 
-        <!-- Password Input -->
-        <div>
-          <div class="flex justify-between">
-            <label for="password" class="block text-sm font-medium leading-6 text-gray-900">
-              Password
+        <form class="space-y-6 mt-6" onsubmit="goToLogin(event)">
+          <!-- Email Input -->
+          <div>
+            <p class="font-medium text-red-500">{{message}}</p>
+            <label for="email" class="block text-sm font-medium leading-6 text-black">
+              Email address
             </label>
-            <div class="text-sm">
-              <a href="/users/forgottenPassword" class="font-medium text-indigo-600 hover:text-indigo-500">
-                Forgot password?
-              </a>
+            <div class="mt-2">
+              <input id="email" name="email" type="text" autocomplete="email" class="block w-full rounded-md border-gray-300 py-2 text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
             </div>
           </div>
-          <div class="mt-2">
-            <input id="password" name="password" type="password" autocomplete="current-password" required class="block w-full rounded-md border-gray-300 py-2 text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+           <div class="mt-2 text-sm text-red-600 bg-red-100 p-2 rounded-md hidden" id="emailError"></div>
+
+          <!-- Password Input -->
+          <div>
+            <div class="flex justify-between">
+              <label for="password" class="block text-sm font-medium leading-6 text-gray-900">
+                Password
+              </label>
+              <div class="text-sm">
+                <a href="/users/forgottenPassword" class="font-medium text-indigo-600 hover:text-indigo-500">
+                  Forgot password?
+                </a>
+              </div>
+            </div>
+            <div class="mt-2">
+              <input id="password" name="password" type="password" autocomplete="current-password" class="block w-full rounded-md border-gray-300 py-2 text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+            </div>
           </div>
+           <div class="mt-2 text-sm text-red-600 bg-red-100 p-2 rounded-md hidden" id="passwordError"></div>
+
+          <!-- Sign-in Button -->
+          <div>
+            <button type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+              Sign in
+            </button>
+          </div>
+        </form>
+
+        <!-- Social Authentication Buttons -->
+        <div class="flex items-center justify-center space-x-4 mt-3">
+        <button onclick="googleauthenticate()" type="button" class="flex items-center w-full justify-center py-2 px-4 border border-gray-300 rounded-md bg-white text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-red-500" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M23.44 12.28c0-.81-.07-1.59-.2-2.35H12v4.44h6.44c-.28 1.5-1.12 2.78-2.4 3.63v3.01h3.88c2.28-2.09 3.6-5.17 3.6-8.73z" />
+        <path d="M12 24c3.24 0 5.97-1.08 7.96-2.91l-3.88-3.01c-1.08.72-2.47 1.14-4.08 1.14-3.13 0-5.77-2.11-6.72-4.94H1.36v3.1C3.32 21.6 7.37 24 12 24z" />
+        <path d="M5.28 14.29a6.77 6.77 0 0 1 0-4.58V6.62H1.36a12 12 0 0 0 0 10.76l3.92-3.09z" />
+        <path d="M12 4.79c1.76 0 3.34.6 4.57 1.79l3.43-3.43C17.96 1.48 15.23 0 12 0 7.37 0 3.32 2.4 1.36 5.9l3.92 3.09c.95-2.83 3.59-4.94 6.72-4.94z" />
+        </svg>
+        Continue with Google
+        </button>
+        </div>
+        <div class="flex items-center justify-center space-x-4 mt-3">
+        <button type="button" class="flex items-center w-full justify-center py-2 px-4 border border-gray-300 rounded-md bg-white text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-blue-600" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M22.676 0H1.324C.593 0 0 .593 0 1.324v21.352C0 23.407.593 24 1.324 24H12.82v-9.294H9.692V11.07h3.128V8.414c0-3.1 1.893-4.788 4.657-4.788 1.324 0 2.463.099 2.795.143v3.24l-1.917.001c-1.504 0-1.794.715-1.794 1.763v2.31h3.587l-.467 3.636h-3.12V24h6.116c.73 0 1.324-.593 1.324-1.324V1.324C24 .593 23.407 0 22.676 0z" />
+        </svg>
+        Continue with Facebook
+        </button>
         </div>
 
-        <!-- Sign-in Button -->
-        <div>
-          <button type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-            Sign in
-          </button>
-        </div>
-      </form>
 
-      <p class="mt-6 text-center text-sm text-black">
-        Create New Account?
-        <a href="/users/signup" class="font-semibold text-indigo-600 hover:text-indigo-500">
-          Signup?
-        </a>
-      </p>
+        <p class="mt-6 text-center text-sm text-black">
+          Create New Account?
+          <a href="/users/signup" class="font-semibold text-indigo-600 hover:text-indigo-500">
+            Signup?
+          </a>
+        </p>
+      </div>
     </div>
   </div>
-</div>
 </section>
+
+<script>
+
+  function googleauthenticate(){
+   window.location.href='/users/auth/google';
+  }
+
+ function goToLogin(e) {
+  e.preventDefault();
+  let isValid = true;
+
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
+  const emailError = document.getElementById("emailError");
+  const passwordError = document.getElementById("passwordError");
+
+  // Email validation
+  if (!email) {
+    emailError.innerText = "This field is required! Enter email.";
+    emailError.classList.remove("hidden"); 
+    isValid = false;
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    emailError.innerText = "Invalid email format.";
+    emailError.classList.remove("hidden");
+    isValid = false;
+  } else {
+    emailError.classList.add("hidden");
+  }
+
+  // Password validation
+  if (!password) {
+    passwordError.innerText = "This field is required! Enter password.";
+    passwordError.classList.remove("hidden");
+    isValid = false;
+  } else if (
+    password.length < 6 ||
+    !/[A-Z]/.test(password) ||
+    !/[0-9]/.test(password) ||
+    !/[!@#$%^&*(),.?":{}|<>]/.test(password)
+  ) {
+    passwordError.innerText =
+      "Password must be at least 6 characters long, with one uppercase letter, one number, and one special character.";
+    passwordError.classList.remove("hidden");
+    isValid = false;
+  } else {
+    passwordError.classList.add("hidden"); 
+  }
+
+  if (isValid) {
+    fetch('/users/login',{
+      method:"POST",
+       headers: {
+      "Content-Type": "application/json"
+      },
+      body:JSON.stringify({
+        email:email,
+        password:password
+      })
+    }).then((response)=>response.json()).then((response)=>{
+      if(response.status){
+        Swal.fire({
+      icon: 'success',
+      title: 'Login Successful!',
+      text: 'You have successfully logged in.',
+      confirmButtonText: 'OK',
+    }).then(()=>{
+      location.href='/'
+    })
+    }else{
+      Swal.fire({
+      icon: 'error',
+      title:response.message,
+      text:"Invalid Password",
+      confirmButtonText: 'Try Again'
+    }).then(()=>{
+      location.reload();
+    })
+    }
+    })
+  }
+}
+
+
+</script>

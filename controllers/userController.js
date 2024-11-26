@@ -23,14 +23,11 @@ module.exports={
    loginsubmission:async(req,res)=>{
     try {
       const response = await userhelper.checkUser(req.body);
-
-      if (response.status) {
-          req.session.user = response.user;
-          req.session.loggedIn = true;
-          res.redirect('/');
-      } else {
-          req.session.errorMessage = response.message;
-          res.redirect('/users/login');
+      if(response.status){
+        req.session.user=response.user
+        res.status(200).json({status:true})
+      }else{
+        res.status(400).json({status:false,message:response.message})
       }
   } catch (err) {
       console.error(err);
@@ -227,7 +224,6 @@ module.exports={
   googleAuthenticationVerification:async(req, res) => {
     try {
       const response = await userhelper.googleAuthUserAdd(req.user);
-
       if (response.status) {
           req.session.user = response.userData;
           res.redirect('/');
@@ -245,27 +241,46 @@ module.exports={
    userHomePage:async(req, res) => {
     try {
       let cartLength=0;
+      let wishlistLength=0;
       const products = await producthelper.getProducts()
       if(req.session.user){
       cartLength=await producthelper.getCartLength(req.session.user._id)
+      wishlistLength=await userhelper.findWishListLength(req.session.user._id)
       }
-      const plainProducts = products.map(product => ({
-          _id: product._id,
-          name: product.name,
-          description: product.description,
-          price: product.price,
-          images: product.images
-      }));
+      const plainProducts = await Promise.all(
+        products.map(async (product) => {
+          if (req.session.user != undefined) {
+            const findwish = await userhelper.findWishProduct(req.session.user._id, product._id);
+            return {
+              _id: product._id,
+              name: product.name,
+              description: product.description,
+              price: product.price,
+              images: product.images,
+              isOnWishList:findwish
+            };
+          } else {
+            return {
+              _id: product._id,
+              name: product.name,
+              description: product.description,
+              price: product.price,
+              images: product.images,
+              isOnWishList:false,
+            };
+          }
+        })
+      );      
       let userprofile
       if(req.session.user){
       userprofile=await userhelper.findUserProfile(req.session.user._id);
       req.session.user.image=userprofile;
       }
       if(userprofile){
-      res.render('users/index', { user: req.session.user, products: plainProducts,cartLength});
+      res.render('users/index', { user: req.session.user, products: plainProducts,cartLength,wishlistLength});
       }
       else{
-        res.render('users/index', { user: req.session.user, products: plainProducts,cartLength});
+        res.render('users/index', { user: req.session.user, products: plainProducts,cartLength,wishlistLength});
       }
   } catch (error) {
       console.error("Error in userHomePage:", error);
@@ -755,6 +770,38 @@ module.exports={
             res.json({status:true})
           }
         })
+      })
+    } catch (error) {
+      res.status(500).send("Error occured")
+    }
+  },
+
+  addToWishlist:async(req,res)=>{
+    try {
+      if(req.session.user==undefined){
+        res.json({status:false,message:"Can't add product to wislist"})
+      }else{
+        userhelper.addToWishlist(req.session.user._id,req.params.productId).then((response)=>{
+          if(response.status){
+            res.status(200).json({status:true})
+          }else{
+            res.status(400).json({status:false,message:"Product not addedd to wishlist"})
+          }
+        })
+      }
+    } catch (error) {
+      res.status(500).send("Error occured")
+    }
+  },
+
+  removeFromWish:(req,res)=>{
+    try {
+      userhelper.removeFromWish(req.session.user._id,req.params.productId).then((response)=>{
+        if(response.status){
+          res.json({status:true,message:"Product removed from wishlist"})
+        }else{
+          res.json({status:false,message:"Product not removed from wishlist"})
+        }
       })
     } catch (error) {
       res.status(500).send("Error occured")

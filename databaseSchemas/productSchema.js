@@ -51,7 +51,7 @@ const productSchema = new mongoose.Schema({
     },
     visiblity:{
         type:Boolean
-    }
+    },
 });
 
 const Product = mongoose.model('Product', productSchema);

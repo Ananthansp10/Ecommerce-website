@@ -1,58 +1,107 @@
+{{#if products}}
 <div class="container mx-auto px-4 py-8">
     <!-- Wishlist Header -->
-    <h1 class="text-2xl font-bold mb-6 text-center">Your Wishlist</h1>
+    <h1 class="text-3xl font-bold mb-6 text-center text-gray-800">Your Wishlist</h1>
 
     <!-- Wishlist Items Section -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <!-- Wishlist Item Card -->
-        <div class="bg-white border rounded-lg shadow-lg p-4 flex flex-col">
+        {{#each products}}
+        <div class="flex flex-col bg-white border rounded-lg shadow-lg p-4 relative hover:shadow-xl">
+            <!-- Product Image -->
             <div class="flex justify-center mb-4">
-                <img class="object-contain h-48 w-48" src="/images/phone1.jpg" alt="Product Image">
+                <img class="object-contain h-48 w-48" src="{{this.images.[0]}}" alt="Product Image">
             </div>
-            <h2 class="text-lg font-semibold">Product Name</h2>
-            <p class="text-gray-600 mb-2">$99.99</p>
-            <div class="flex justify-between items-center mt-auto">
-                <button class="bg-blue-500 text-white py-2 px-4 rounded-lg">Add to Cart</button>
-                <a class="text-red-500 hover:text-red-600" title="Remove from Wishlist">
-                    <i class="fas fa-trash-alt"></i>
-                </a>
+            
+            <!-- Product Details -->
+            <div class="flex flex-col gap-2">
+                <h2 class="text-lg font-semibold text-gray-900 truncate">{{this.name}}</h2>
+                <p class="text-gray-600 text-sm">Color: <span class="font-medium text-gray-800">{{this.colour}}</span></p>
+                <p class="text-gray-600 text-sm">Price: <span class="font-medium text-green-600">RS. {{this.price}}</span></p>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="mt-4 flex justify-between items-center">
+                <button class="bg-blue-500 text-white py-2 px-4 rounded-lg text-sm hover:bg-blue-600">Add to Cart</button>
+                <button onclick="removeFromWish('{{this.productId}}')" class="text-red-500 hover:text-red-600" title="Remove from Wishlist">
+                    <i class="fas fa-trash-alt text-lg"></i>
+                </button>
             </div>
         </div>
-
-        <!-- Repeat the Wishlist Item Card for more items -->
-        <div class="bg-white border rounded-lg shadow-lg p-4 flex flex-col">
-            <div class="flex justify-center mb-4">
-                <img class="object-contain h-48 w-48" src="/images/phone2.jpg" alt="Product Image">
-            </div>
-            <h2 class="text-lg font-semibold">Product Name</h2>
-            <p class="text-gray-600 mb-2">$199.99</p>
-            <div class="flex justify-between items-center mt-auto">
-                <button class="bg-blue-500 text-white py-2 px-4 rounded-lg">Add to Cart</button>
-                <a class="text-red-500 hover:text-red-600" title="Remove from Wishlist">
-                    <i class="fas fa-trash-alt"></i>
-                </a>
-            </div>
-        </div>
-
-        <div class="bg-white border rounded-lg shadow-lg p-4 flex flex-col">
-            <div class="flex justify-center mb-4">
-                <img class="object-contain h-48 w-48" src="/images/phone1.jpg" alt="Product Image">
-            </div>
-            <h2 class="text-lg font-semibold">Product Name</h2>
-            <p class="text-gray-600 mb-2">$299.99</p>
-            <div class="flex justify-between items-center mt-auto">
-                <button class="bg-blue-500 text-white py-2 px-4 rounded-lg">Add to Cart</button>
-                <a class="text-red-500 hover:text-red-600" title="Remove from Wishlist">
-                    <i class="fas fa-trash-alt"></i>
-                </a>
-            </div>
-        </div>
-
-        <!-- Add more wishlist item cards as needed -->
-    </div>
-
-    <!-- Checkout Button -->
-    <div class="mt-8 text-center">
-        <button class="bg-green-500 text-white py-2 px-4 rounded-lg">Proceed to Checkout</button>
+        {{/each}}
     </div>
 </div>
+{{else}}
+<div class="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+  <div class="bg-white rounded-lg shadow-lg p-8 max-w-md text-center">
+    <svg
+      class="mx-auto h-16 w-16 text-gray-400 mb-4"
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+    >
+      <path
+        fill-rule="evenodd"
+        d="M12 3.75a6.375 6.375 0 00-4.516 10.853l-1.88 1.88a.75.75 0 001.06 1.06l1.88-1.88A6.375 6.375 0 1012 3.75zM6.75 12a5.25 5.25 0 1110.5 0 5.25 5.25 0 01-10.5 0z"
+        clip-rule="evenodd"
+      />
+    </svg>
+    <h1 class="text-xl font-semibold text-gray-800 mb-2">Your Wishlist is Empty</h1>
+    <p class="text-gray-600 mb-6">
+      Looks like you haven't added anything to your wishlist yet. Start exploring and save your favorites!
+    </p>
+    <a
+      href="/"
+      class="bg-blue-500 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-600"
+    >
+      Browse Products
+    </a>
+  </div>
+</div>
+{{/if}}
+
+<script>
+  function removeFromWish(productId) {
+  swal.fire({
+    title: "Are you sure?",
+    text: "Do you really want to remove this product from your wishlist?",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "Yes, remove it!",
+    cancelButtonText: "Cancel"
+  }).then((result) => {
+    if (result.isConfirmed) {
+      fetch(`/users/removefromwish/${productId}`, {
+        method: "POST"
+      }).then((response) => response.json()).then((response) => {
+        if(response.status){
+          swal.fire({
+            title: "Success!",
+            text:response.message,
+            icon: "success",
+            button: "OK",
+          }).then(() => {
+            location.reload();
+          });
+        } else {
+          swal.fire({
+            title: "Error!",
+            text: response.message,
+            icon: "error",
+            button: "OK",
+          }).then(() => {
+            location.reload();
+          });
+        }
+      }).catch((error) => {
+        swal({
+          title: "Error!",
+          text: "There was an issue with the request. Please try again.",
+          icon: "error",
+          button: "OK",
+        });
+      });
+    }
+  });
+}
+</script>

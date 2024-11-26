@@ -1,4 +1,5 @@
 const producthelpers = require('../helpers/producthelpers');
+const usershelpers = require('../helpers/usershelpers');
 
 module.exports={
     productList:async(req,res)=>{
@@ -8,14 +9,32 @@ module.exports={
                 cartLength=await producthelpers.getCartLength(req.session.user._id)
             }
             const products = await producthelpers.getAllProducts();
-            const plainProducts = products.map(product => ({
-                _id: product._id,
-                name: product.name,
-                description: product.description,
-                price: product.price,
-                images: product.images,
-                isDisabled:product.stock==0
-            }));
+            const plainProducts =await Promise.all(
+                products.map(async(product)=>{
+                    if(req.session.user!=undefined){
+                        const findwish=await usershelpers.findWishProduct(req.session.user._id,product._id)
+                        return{
+                            _id: product._id,
+                            name: product.name,
+                            description: product.description,
+                            price: product.price,
+                            images: product.images,
+                            isDisabled:product.stock==0,
+                            isOnWishList:findwish
+                        }
+                    }else{
+                        return{
+                            _id: product._id,
+                            name: product.name,
+                            description: product.description,
+                            price: product.price,
+                            images: product.images,
+                            isDisabled:product.stock==0,
+                            isOnWishList:false
+                        }
+                    }
+                })
+            )
             res.render('products/productlist', { user: req.session.user, products: plainProducts,cartLength });
         } catch (error) {
             res.status(500).send('Error rendering product list');
@@ -28,14 +47,31 @@ module.exports={
             if(req.session.user){
                 cartLength=await producthelpers.getCartLength(req.session.user._id)
             }
-            const products = await producthelpers.productByCat(req.params.cat);
-            const plainProducts = products.map(product => ({
-                _id: product._id,
-                name: product.name,
-                description: product.description,
-                price: product.price,
-                images: product.images
-            }));
+            const products = await producthelpers.productByCat(req.params.cat)
+            const plainProducts =await Promise.all(
+                products.map(async(product)=>{
+                    if(req.session.user!=undefined){
+                        const findwish=await usershelpers.findWishProduct(req.session.user._id,product._id)
+                        return{
+                            _id: product._id,
+                            name: product.name,
+                            description: product.description,
+                            price: product.price,
+                            images: product.images,
+                            isOnWishList:findwish
+                        }
+                    }else{
+                        return{
+                            _id: product._id,
+                            name: product.name,
+                            description: product.description,
+                            price: product.price,
+                            images: product.images,
+                            isOnWishList:false
+                        }
+                    }
+                })
+            )
             res.render('products/productlist', { user: req.session.user, products: plainProducts,cartLength });
         } catch (error) {
             res.status(500).send('Error retrieving products by category');
@@ -62,6 +98,10 @@ module.exports={
             else{
                 inStock=true;
             }
+            let findwish
+            if(req.session.user!=undefined){
+                findwish=await usershelpers.findWishProduct(req.session.user._id,req.params.id)
+            }
             const plainProduct = {
                 _id: productDetails._id,
                 name: productDetails.name,
@@ -72,7 +112,8 @@ module.exports={
                 stock: productDetails.stock,
                 outOfStock:productDetails.stock==0,
                 inStock:productDetails.stock>5,
-                limitedStock:productDetails.stock<=5 && productDetails.stock>0
+                limitedStock:productDetails.stock<=5 && productDetails.stock>0,
+                isOnWishList:findwish?findwish:false
             };
             
             const colours = await producthelpers.getColourVariant(productDetails.name);
@@ -96,9 +137,23 @@ module.exports={
         }
     },
 
-    wishList:(req,res)=>{
+    wishList:async(req,res)=>{
         try {
-            res.render('products/wishlist', { user: req.session.user });
+            const products=await usershelpers.getWishProducts(req.session.user._id)
+            if(products!=0){
+                const plainProducts=products.map((product)=>{
+                    return{
+                        productId:product.productId,
+                        name:product.name,
+                        price:product.price,
+                        colour:product.colour,
+                        images:product.images
+                    }
+                })
+                res.render('products/wishlist', { user: req.session.user,products:plainProducts})
+            }else{
+                res.render('products/wishlist', { user: req.session.user})
+            }
         } catch (error) {
             res.status(500).send('Error rendering wishlist page');
         }
@@ -160,16 +215,30 @@ module.exports={
            const item=req.params.item
            req.session.product=item
            var searchProducts=await producthelpers.getSearchProducts(item)
-           var plainProduct=searchProducts.map((data)=>{
-            return{
-                name:data.name,
-                description:data.description,
-                image:data.images,
-                price:data.price,
-                _id:data._id,
-                isDisabled:data.stock==0
-            }
-           })
+           var plainProduct=await Promise.all(
+            searchProducts.map(async(product)=>{
+                if(req.session.user!=undefined){
+                    const findwish=await usershelpers.findWishProduct(req.session.user._id,product._id)
+                    return{
+                        _id: product._id,
+                        name: product.name,
+                        description: product.description,
+                        price: product.price,
+                        images: product.images,
+                        isOnWishList:findwish
+                    }
+                }else{
+                    return{
+                        _id: product._id,
+                        name: product.name,
+                        description: product.description,
+                        price: product.price,
+                        images: product.images,
+                        isOnWishList:false
+                    }
+                }
+            })
+        )
             res.render('products/productSearchPage',{user:req.session.user,products:plainProduct,item:req.session.product,cartLength})
         } catch (error) {
           res.status(500).send('Error occured')  
@@ -183,13 +252,30 @@ module.exports={
                 cartLength=await producthelpers.getCartLength(req.session.user._id)
             }
             var products=await producthelpers.sortProductByPrice(req.params.value)
-            const plainProducts = products.map(product => ({
-                _id: product._id,
-                name: product.name,
-                description: product.description,
-                price: product.price,
-                images: product.images
-            }));
+            const plainProducts =await Promise.all(
+                products.map(async(product)=>{
+                    if(req.session.user!=undefined){
+                        const findwish=await usershelpers.findWishProduct(req.session.user._id,product._id)
+                        return{
+                            _id: product._id,
+                            name: product.name,
+                            description: product.description,
+                            price: product.price,
+                            images: product.images,
+                            isOnWishList:findwish
+                        }
+                    }else{
+                        return{
+                            _id: product._id,
+                            name: product.name,
+                            description: product.description,
+                            price: product.price,
+                            images: product.images,
+                            isOnWishList:false
+                        }
+                    }
+                })
+            )
             res.render('products/productlist',{products:plainProducts,user:req.session.user,cartLength})
         } catch (error) {
             res.status(500).send('Error occured')
@@ -205,16 +291,30 @@ module.exports={
             const item=req.params.item
             req.session.product=item
             var sortSearchProducts=await producthelpers.sortSearchProducts(req.params.value,item)
-            var plainProduct=sortSearchProducts.map((data)=>{
-             return{
-                _id:data._id,
-                 name:data.name,
-                 description:data.description,
-                 image:data.images,
-                 price:data.price,
-                 isDisabled:data.stock==0
-             }
-            })
+            var plainProduct=await Promise.all(
+                sortSearchProducts.map(async(product)=>{
+                    if(req.session.user!=undefined){
+                        const findwish=await usershelpers.findWishProduct(req.session.user._id,product._id)
+                        return{
+                            _id: product._id,
+                            name: product.name,
+                            description: product.description,
+                            price: product.price,
+                            images: product.images,
+                            isOnWishList:findwish
+                        }
+                    }else{
+                        return{
+                            _id: product._id,
+                            name: product.name,
+                            description: product.description,
+                            price: product.price,
+                            images: product.images,
+                            isOnWishList:false
+                        }
+                    }
+                })
+            )
             res.render('products/productSearchPage',{products:plainProduct,user:req.session.user,item:req.session.product,cartLength})
          } catch (error) {
            res.status(500).send('Error occured')  
@@ -228,14 +328,32 @@ module.exports={
                 cartLength=await producthelpers.getCartLength(req.session.user._id)
             }
            const filteredProducts=await producthelpers.filterProducts(req.params.cat,req.params.price)
-           const plainProducts = filteredProducts.map(product => ({
-            _id: product._id,
-            name: product.name,
-            description: product.description,
-            price: product.price,
-            images: product.images,
-            isDisabled:product.stock==0
-        }));
+           const plainProducts =await Promise.all(
+            filteredProducts.map(async(product)=>{
+                if(req.session.user!=undefined){
+                    const findwish=await usershelpers.findWishProduct(req.session.user._id,product._id)
+                    return{
+                        _id: product._id,
+                        name: product.name,
+                        description: product.description,
+                        price: product.price,
+                        images: product.images,
+                        isDisabled:product.stock==0,
+                        isOnWishList:findwish
+                    }
+                }else{
+                    return{
+                        _id: product._id,
+                        name: product.name,
+                        description: product.description,
+                        price: product.price,
+                        images: product.images,
+                        isDisabled:product.stock==0,
+                        isOnWishList:false
+                    }
+                }
+            })
+        )
            res.render('products/productlist',{user:req.session.user,products:plainProducts,cartLength})
         } catch (error) {
             res.status(500).send("Error occured page not rendering")

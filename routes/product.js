@@ -18,7 +18,7 @@ router.get('/productPage/:id',productcontroller.productPage)
 
 router.get('/productSearch',productcontroller.productSearch)
 
-router.get('/wishlist',productcontroller.wishList)
+router.get('/wishlist',isAuthenticated,productcontroller.wishList)
 
 router.get('/offerSection',productcontroller.offerPage)
 

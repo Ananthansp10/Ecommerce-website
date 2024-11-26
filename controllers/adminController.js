@@ -106,7 +106,7 @@ module.exports={
 
     adminProductSubmission:async(req,res)=>{
         try {
-            const{ name, catType, price, stock, colour, description } = req.body;
+            const{name, catType, price, stock, colour, description} = req.body;
             const newprice=parseInt(price)
             const newstock=parseInt(stock)
             const imageUrls = req.files.map(file => file.path);
@@ -125,9 +125,9 @@ module.exports={
     
             const response = await adminhelper.addProduct(newProduct);
             if (response.status) {
-                res.redirect('/admin/products');
+                res.status(200).json({status:true,message:"Product addedd successfully"})
             } else {
-                res.status(400).send('Failed to add product');
+                res.status(400).json({status:false,message:"Product not addedd"})
             }
         } catch (error) {
             console.log(error)
@@ -167,8 +167,12 @@ module.exports={
             const productId = req.params.id;
             const data=req.body;
             const imageUrls=req.files.map(file=>file.path)
-            adminhelper.editProduct(productId,data,imageUrls).then(()=>{
-                res.redirect('/admin/products')
+            adminhelper.editProduct(productId,data,imageUrls).then((response)=>{
+               if(response.status){
+                res.status(200).json({status:true,message:"Product edited successfully"})
+               }else{
+                res.status(400).json({status:false,message:"Product not edited"})
+               }
             })
         } catch (error) {
             res.status(500).send('Error rendering edit product page');

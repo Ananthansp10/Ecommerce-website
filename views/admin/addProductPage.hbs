@@ -1,12 +1,13 @@
 <div class="p-4 md:p-8 bg-gray-200 max-w-4xl mx-auto">
     <h2 class="text-2xl md:text-3xl font-bold text-gray-700 mb-4 md:mb-6">Add New Product</h2>
 
-    <form class="space-y-4 md:space-y-6" action="/admin/addProducts" method="post" enctype="multipart/form-data">
+    <form class="space-y-4 md:space-y-6" onsubmit="addProducts(event)">
         <!-- Product Name -->
         <div>
             <label for="product-name" class="block text-sm font-medium text-gray-700">Product Name</label>
-            <input type="text" name="name" id="product-name" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Enter product name" />
+            <input type="text" name="name" id="name" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Enter product name" />
         </div>
+        <div class="mt-2 text-sm text-red-900 bg-red-300 p-2 rounded-md hidden" id="nameError"></div>
 
         <!-- Category -->
         <div>
@@ -17,6 +18,7 @@
                 <option value="accessory">Accessory</option>
             </select>
         </div>
+        <div class="mt-2 text-sm text-red-900 bg-red-300 p-2 rounded-md hidden" id="categoryError"></div>
 
         <!-- Product Images (Four Images Upload) -->
         <div>
@@ -25,30 +27,34 @@
     <!-- Image 1 -->
     <div class="mt-1">
         <label for="product-image-1" class="block text-sm font-medium text-gray-700">Image 1</label>
-        <input type="file" name="images" id="product-image-1" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" accept="image/*" onchange="updateImagePreview(this, 'image-preview-1')" />
-        <img id="image-preview-1" src="{{product.images.[0]}}" class="mt-2 max-w-xs w-32 h-100" alt="Image Preview" />
+        <input type="file" accept="image/png, image/jpeg, image/jpg" name="images" id="img1" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"  onchange="handleImageInput(this, 'image1','image1Error')" />
+        <img id="image1" class="mt-2 max-w-xs w-32 h-100" alt="Image Preview" />
     </div>
+    <div class="mt-2 text-sm text-red-900 bg-red-300 p-2 rounded-md hidden" id="image1Error"></div>
 
     <!-- Image 2 -->
     <div class="mt-1">
         <label for="product-image-2" class="block text-sm font-medium text-gray-700">Image 2</label>
-        <input type="file" name="images" id="product-image-2" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" accept="image/*" onchange="updateImagePreview(this, 'image-preview-2')" />
-        <img id="image-preview-2" src="{{product.images.[1]}}" class="mt-2 max-w-xs w-32 h-100" alt="Image Preview" />
+        <input type="file"  accept="image/png, image/jpeg, image/jpg" name="images" id="img2" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" onchange="handleImageInput(this, 'image2','image2Error')" />
+        <img id="image2" class="mt-2 max-w-xs w-32 h-100" alt="Image Preview" />
     </div>
+    <div class="mt-2 text-sm text-red-900 bg-red-300 p-2 rounded-md hidden" id="image2Error"></div>
 
     <!-- Image 3 -->
     <div class="mt-1">
         <label for="product-image-3" class="block text-sm font-medium text-gray-700">Image 3</label>
-        <input type="file" name="images" id="product-image-3" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" accept="image/*" onchange="updateImagePreview(this, 'image-preview-3')" />
-        <img id="image-preview-3" src="{{product.images.[2]}}" class="mt-2 max-w-xs w-32 h-100" alt="Image Preview" />
+        <input type="file"  accept="image/png, image/jpeg, image/jpg" name="images" id="img3" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" onchange="handleImageInput(this, 'image3','image3Error')"  />
+        <img id="image3" class="mt-2 max-w-xs w-32 h-100" alt="Image Preview" />
     </div>
+    <div class="mt-2 text-sm text-red-900 bg-red-300 p-2 rounded-md hidden" id="image3Error"></div>
 
     <!-- Image 4 -->
     <div class="mt-1">
         <label for="product-image-4" class="block text-sm font-medium text-gray-700">Image 4</label>
-        <input type="file" name="images" id="product-image-4" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" accept="image/*" onchange="updateImagePreview(this, 'image-preview-4')" />
-        <img id="image-preview-4" src="{{product.images.[3]}}" class="mt-2 max-w-xs w-32 h-100" alt="Image Preview" />
+        <input type="file"  accept="image/png, image/jpeg, image/jpg" name="images" id="img4" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" onchange="handleImageInput(this, 'image4','image4Error')"  />
+        <img id="image4" class="mt-2 max-w-xs w-32 h-100" alt="Image Preview" />
     </div>
+    <div class="mt-2 text-sm text-red-900 bg-red-300 p-2 rounded-md hidden" id="image4Error"></div>
 </div>
 
         <!-- Price and Stock (Two Columns on Larger Screens) -->
@@ -58,29 +64,33 @@
                 <label for="price" class="block text-sm font-medium text-gray-700">Price</label>
                 <input type="number" name="price" id="price" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Enter product price" />
             </div>
+            <div class="mt-7 text-sm text-red-900 bg-red-300 p-2 rounded-md hidden" id="priceError"></div>
 
             <!-- Stock -->
             <div class="w-full md:w-1/2 px-2">
                 <label for="stock" class="block text-sm font-medium text-gray-700">Stock</label>
                 <input type="number" name="stock" id="stock" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Enter available stock" />
             </div>
+            <div class="mt-7 text-sm text-red-900 bg-red-300 p-2 rounded-md hidden" id="stockError"></div>
         </div>
 
         <!-- Color -->
         <div>
             <label for="color" class="block text-sm font-medium text-gray-700">Color</label>
-            <input type="text" name="colour" id="color" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Enter product color" />
+            <input type="text" name="colour" id="colour" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Enter product color" />
         </div>
+        <div class="mt-2 text-sm text-red-900 bg-red-300 p-2 rounded-md hidden" id="colourError"></div>
 
         <!-- Description -->
         <div>
             <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
             <textarea id="description" max name="description" rows="4" wrap="hard" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Enter product description"></textarea>
         </div>
+        <div class="mt-2 text-sm text-red-900 bg-red-300 p-2 rounded-md hidden" id="descriptionError"></div>
 
         <!-- Buttons -->
         <div class="flex justify-end space-x-2 md:space-x-4">
-            <button type="reset" class="bg-gray-500 text-white px-3 py-2 md:px-4 rounded hover:bg-gray-600">Reset</button>
+            <button type="reset" class="bg-gray-500 text-white px-3 py-2 md:px-4 rounded hover:bg-gray-600" onclick="resetPage()">Reset</button>
             <button type="submit" class="bg-blue-600 text-white px-3 py-2 md:px-4 rounded hover:bg-blue-500">
                 <i class="fas fa-plus"></i> Add Product
             </button>
@@ -88,21 +98,243 @@
     </form>
 </div>
 
+
+<!-- Cropper Modal -->
+<div id="cropper-modal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white p-4 rounded-lg max-w-lg w-full">
+        <h3 class="text-lg font-semibold text-gray-700 mb-4">Crop Image</h3>
+        <div>
+            <img id="image-to-crop" class="max-w-full rounded-md" alt="Image for cropping" />
+        </div>
+        <div class="mt-4 flex justify-end space-x-2">
+            <button id="cancel-crop" class="bg-gray-500 text-white px-3 py-2 rounded hover:bg-gray-600">Cancel</button>
+            <button id="crop-image" class="bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-500">Crop</button>
+        </div>
+    </div>
+</div>
+
+
+
 <script>
-    function updateImagePreview(input, imgId) {
-        const file = input.files[0];
-        const img = document.getElementById(imgId);
-        
-        if (file) {
+
+    let originalImageUrl = null;
+
+    var formData = new FormData();
+
+    document.addEventListener('DOMContentLoaded', () => {
+    const cropperModal = document.getElementById('cropper-modal');
+    const imageToCrop = document.getElementById('image-to-crop');
+    const cancelCropButton = document.getElementById('cancel-crop');
+    const cropImageButton = document.getElementById('crop-image');
+    let currentImagePreviewId = null; // Track the current image being cropped
+    let cropper = null;
+
+    // Function to handle image input
+    window.handleImageInput = (inputElement, previewId) => {
+        const file = inputElement.files[0];
+        if (file && file.type.startsWith('image/')) {
             const reader = new FileReader();
+            reader.onload = () => {
+                // Set up the image for cropping
+                currentImagePreviewId = previewId;
+                originalImageUrl = reader.result;
+                imageToCrop.src = reader.result;
 
-            reader.onload = function(e) {
-                img.src = e.target.result; 
-            }
+                // Wait until the image is fully loaded
+                imageToCrop.onload = () => {
+                    // Show the modal
+                    cropperModal.classList.remove('hidden');
 
-            reader.readAsDataURL(file); 
+                    // Destroy the previous cropper instance (if any)
+                    if (cropper) cropper.destroy();
+
+                    // Initialize Cropper.js
+                    cropper = new Cropper(imageToCrop, {
+                        aspectRatio: 1, // You can set this to a different ratio if needed
+                        viewMode: 2, // Ensures the entire image fits in the container
+                        dragMode: 'move', // Enable dragging of the image
+                        autoCropArea: 0.8, // Default cropping area
+                        movable: true, // Allow moving the image
+                        scalable: true, // Allow scaling the image
+                        zoomable: true, // Allow zooming the image
+                        background: true, // Show the checkerboard background
+                        responsive: true, // Respond to container size changes
+                    });
+                };
+            };
+            reader.readAsDataURL(file);
         } else {
-            img.classList.add('hidden'); 
+                Swal.fire({
+                title: "Error!",
+                text:"Image only can choose no other files and image with .jpg,.png,.jpeg only allowed",
+                icon: "error",
+                confirmButtonText: "OK",
+                }).then(()=>{
+                    document.getElementById(inputElement.id).value=""
+                })
         }
+    };
+
+    // Handle crop action
+    cropImageButton.addEventListener('click', () => {
+        if (cropper) {
+            cropper.getCroppedCanvas().toBlob((blob) => {
+                const url = URL.createObjectURL(blob);
+
+                // Update the corresponding image preview
+                const imagePreview = document.getElementById(currentImagePreviewId);
+                imagePreview.src = url;
+
+                formData.append("images", blob);
+
+                // Close the modal
+                cropperModal.classList.add('hidden');
+
+                // Clean up the cropper
+                cropper.destroy();
+                cropper = null;
+            });
+        }
+    });
+
+    // Handle cancel action
+    cancelCropButton.addEventListener('click', () => {
+        const imagePreview = document.getElementById(currentImagePreviewId);
+        imagePreview.src = originalImageUrl; 
+        cropperModal.classList.add('hidden');
+        if (cropper) {
+            cropper.destroy();
+            cropper = null;
+        }
+    });
+});
+
+
+    function resetPage(){
+
+        location.reload();
     }
+
+     function addProducts(e){
+        var isValid=true;
+        e.preventDefault();
+        const productName=document.getElementById("name").value
+        const category=document.getElementById("category").value
+        const price=document.getElementById("price").value
+        const stock=document.getElementById("stock").value
+        const colour=document.getElementById("colour").value
+        const description=document.getElementById("description").value
+        const image1=document.getElementById("img1").files[0]
+        const image2=document.getElementById("img2").files[0]
+        const image3=document.getElementById("img3").files[0]
+        const image4=document.getElementById("img4").files[0]
+
+        if(!productName){
+            document.getElementById("nameError").innerText="Enter the Product Name !"
+            document.getElementById("nameError").classList.remove('hidden')
+            isValid=false
+        }
+        if(!category){
+            document.getElementById("categoryError").innerText="Enter the Product Category !"
+            document.getElementById("categoryError").classList.remove('hidden')
+            isValid=false
+        }
+        if(!price){
+            document.getElementById("priceError").innerText="Enter the Product Price !"
+            document.getElementById("priceError").classList.remove('hidden')
+            isValid=false
+        }else{
+            if(price<=0){
+               document.getElementById("priceError").innerText="Price cannot be zero or negative !"
+               document.getElementById("priceError").classList.remove('hidden')
+               isValid=false 
+            }
+        }
+        if(!stock){
+            document.getElementById("stockError").innerText="Enter the Product Stock !"
+            document.getElementById("stockError").classList.remove('hidden')
+            isValid=false
+        }else{
+            if(stock<=0){
+            document.getElementById("stockError").innerText="Stock cannot be zero or negative !"
+            document.getElementById("stockError").classList.remove('hidden')
+            isValid=false
+            }
+        }
+        if(!colour){
+            document.getElementById("colourError").innerText="Enter the Product Colour !"
+            document.getElementById("colourError").classList.remove('hidden')
+            isValid=false
+        }
+        if(!description){
+            document.getElementById("descriptionError").innerText="Enter the Product Description !"
+            document.getElementById("descriptionError").classList.remove('hidden')
+            isValid=false
+        }
+        if(!image1){
+            document.getElementById("image1Error").innerText="Choose the Image !"
+            document.getElementById("image1Error").classList.remove('hidden')
+            isValid=false
+        }
+        if(!image2){
+            document.getElementById("image2Error").innerText="Choose the Image !"
+            document.getElementById("image2Error").classList.remove('hidden')
+            isValid=false
+        }
+        if(!image3){
+            document.getElementById("image3Error").innerText="Choose the Image !"
+            document.getElementById("image3Error").classList.remove('hidden')
+            isValid=false
+        }
+        if(!image4){
+            document.getElementById("image4Error").innerText="Choose the Image !"
+            document.getElementById("image4Error").classList.remove('hidden')
+            isValid=false
+        }
+
+        let formData = new FormData();
+        formData.append('name', productName);
+        formData.append('catType', category);
+        formData.append('price', price);
+        formData.append('stock', stock);
+        formData.append('colour', colour);
+        formData.append('description', description);
+
+        // Append files
+        formData.append('images', image1);
+        formData.append('images', image2);
+        formData.append('images', image3);
+        formData.append('images', image4);
+
+
+        if(isValid){
+            fetch('/admin/addProducts',{
+                method:"POST",
+                body:formData
+            }).then((response)=>response.json()).then((response)=>{
+                if(response.status){
+                    Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text:response.message,
+                    confirmButtonText: 'OK'
+                    }).then(()=>{
+                        location.href='/admin/products'
+                    })
+
+                }else{
+                    Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text:response.message,
+                    confirmButtonText: 'OK'
+                    }).then(()=>{
+                        location.reload();
+                    })
+
+                }
+            })
+        }
+     }
+
 </script>

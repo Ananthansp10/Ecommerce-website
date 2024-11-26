@@ -21,8 +21,12 @@ module.exports={
 
     addProduct:(data)=>{
         return new Promise((resolve,reject)=>{
-            product.collection.insertOne(data).then(()=>{
-                resolve({status:true})
+            product.collection.insertOne(data).then((data)=>{
+                if(data){
+                    resolve({status:true})
+                }else{
+                    resolve({status:false})
+                }
             })
         })
     },
@@ -55,8 +59,12 @@ module.exports={
                 images:images
             }
             return new Promise((resolve,reject)=>{
-                product.updateOne({_id:new ObjectId(proId)},{$set:editproduct}).then(()=>{
-                    resolve()
+                product.updateOne({_id:new ObjectId(proId)},{$set:editproduct}).then((data)=>{
+                    if(data.acknowledged){
+                        resolve({status:true})
+                    }else{
+                        resolve({status:false})
+                    }
                 })
             })
         }else{
@@ -69,8 +77,12 @@ module.exports={
                 description:data.description,
             }
         return new Promise((resolve,reject)=>{
-            product.updateOne({_id:new ObjectId(proId)},{$set:editproduct}).then(()=>{
-                resolve()
+            product.updateOne({_id:new ObjectId(proId)},{$set:editproduct}).then((data)=>{
+                if(data.acknowledged){
+                    resolve({status:true})
+                }else{
+                    resolve({status:false})
+                }
             })
         })
        }

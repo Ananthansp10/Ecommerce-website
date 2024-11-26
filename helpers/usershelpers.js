@@ -12,6 +12,7 @@ const addressDetail=require('../databaseSchemas/addressSchema');
 const product=require('../databaseSchemas/productSchema');
 const cartDetail=require("../databaseSchemas/cartSchema");
 const orderDetail=require('../databaseSchemas/orderSchema');
+const wishlist=require('../databaseSchemas/wishListSchema');
 const mongoose=require('mongoose')
 const { ObjectId } = mongoose.Types;
 module.exports={
@@ -601,6 +602,98 @@ module.exports={
                 }else{
                     resolve({status:false})
                 }
+            })
+        })
+      },
+
+      addToWishlist:async(userId,productId)=>{
+        const prod=await product.findOne({_id:new ObjectId(productId)})
+        const obj={
+            productId:prod._id,
+            name:prod.name,
+            description:prod.description,
+            colour:prod.colour,
+            price:prod.price,
+            images:prod.images,
+            isOnWishList:true
+        }
+        return new Promise(async(resolve,reject)=>{
+            const findUser=await wishlist.findOne({userId:new ObjectId(userId)})
+            if(findUser){
+                await wishlist.updateOne({userId:new ObjectId(userId)},{$push:{products:obj}}).then((res)=>{
+                    if(res.acknowledged){
+                        resolve({status:true})
+                    }else{
+                        resolve({status:false})
+                    }
+                })
+            }else{
+                const wish=new wishlist({
+                    userId:userId,
+                    products:obj
+                })
+                wish.save().then((data)=>{
+                    if(data){
+                        resolve({status:true})
+                    }else{
+                        resolve({status:false})
+                    }
+                })
+            }
+        })
+      },
+
+      getWishProducts:(userId)=>{
+        return new Promise(async(resolve,reject)=>{
+            const findUser=await wishlist.findOne({userId:new ObjectId(userId)})
+            if(findUser){
+                wishlist.findOne({userId:userId}).then((data)=>{
+                    resolve(data.products)
+                })
+            }else{
+                resolve(0)
+            }
+        })
+      },
+
+      findWishProduct:(userId,productId)=>{
+        return new Promise(async(resolve,reject)=>{
+            const findUser=await wishlist.findOne({userId:new ObjectId(userId)})
+            if(findUser){
+                wishlist.findOne({userId:new ObjectId(userId),'products.productId':new ObjectId(productId)}).then((data)=>{
+                    if(data){
+                        resolve(true)
+                    }else{
+                        resolve(false)
+                    }
+                })
+            }else{
+                resolve(false)
+            }
+        })
+      },
+
+      findWishListLength:(userId)=>{
+        return new Promise(async(resolve,reject)=>{
+            const findUser=await wishlist.findOne({userId:new ObjectId(userId)})
+            if(findUser){
+                wishlist.findOne({userId:new ObjectId(userId)}).then((data)=>{
+                    resolve(data.products.length)
+                })
+            }else{
+                resolve()
+            }
+        })
+      },
+
+      removeFromWish:(userId,productId)=>{
+        return new Promise((resolve,reject)=>{
+            wishlist.updateOne({userId:new ObjectId(userId)},{$pull:{products:{productId:new ObjectId(productId)}}}).then((data)=>{
+               if(data.acknowledged){
+                resolve({status:true})
+               }else{
+                resolve({status:false})
+               }
             })
         })
       }

@@ -121,40 +121,57 @@
   const password = document.getElementById('password').value.trim();
   const confirmPassword = document.getElementById('confirmPassword').value.trim();
 
-  console.log(name,password,email,confirmPassword)
-
-
   // Name validation
+  if(!name){
+    isValid = false;
+    showError('nameError',"This Field is required ! Enter the name")
+  }else{
   if (!/^[a-zA-Z\s]+$/.test(name)) {
     isValid = false;
     showError('nameError', 'Name must contain only letters.');
   } else {
     hideError('nameError');
   }
+  }
 
   // Email validation
-  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if(!email){
+    isValid = false;
+    showError('emailError',"This Field is required ! Enter the email")
+  }else{
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailPattern.test(email)) {
     isValid = false;
     showError('emailError', 'Invalid email format.');
   } else {
     hideError('emailError');
   }
+  }
 
   // Password validation
-  if (password.length < 6 || !/[A-Z]/.test(password) || !/[0-9]/ || !/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+  if(!password){
+    isValid = false;
+    showError('passwordError',"This Field is required ! Enter the password")
+  }else{
+    if (password.length < 6 || !/[A-Z]/.test(password) || !/[0-9]/ || !/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
     isValid = false;
     showError('passwordError', 'Password must be at least 6 characters long, with at least one uppercase letter and one number and one special character');
   } else {
     hideError('passwordError');
   }
+  }
 
   // Confirm password validation
-  if (password !== confirmPassword) {
+  if(!confirmPassword){
     isValid = false;
-    showError('confirmPasswordError', 'Passwords do not match.');
+    showError('confirmPasswordError',"This Field is required ! Enter the confirm password")
+  }else{
+    if (password !== confirmPassword) {
+    isValid = false;
+    showError('confirmPasswordError', 'Password and Confirm Password do not match.');
   } else {
     hideError('confirmPasswordError');
+  }
   }
 
   if (isValid) {

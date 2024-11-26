@@ -108,6 +108,10 @@ router.post('/cartordercancel/:productId/:orderId/:quantity',usercontroller.cart
 
 router.post('/returnorder/:productId/:orderId/:quantity',usercontroller.returnOrder)
 
+router.post('/addtowishlist/:productId',usercontroller.addToWishlist)
+
+router.post('/removefromwish/:productId',usercontroller.removeFromWish)
+
 
 //route for google authentication
 router.get('/auth/google', passport.authenticate('google', {
