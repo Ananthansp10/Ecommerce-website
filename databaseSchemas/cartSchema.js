@@ -30,7 +30,10 @@ const cartSchema=new Schema({
             image:[{
                 type:String,
                 required:true
-            }]
+            }],
+            offerPrice:{
+                type:Number
+            }
         }
     ],
 })

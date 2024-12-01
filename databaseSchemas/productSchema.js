@@ -52,6 +52,9 @@ const productSchema = new mongoose.Schema({
     visiblity:{
         type:Boolean
     },
+    offerPrice:{
+        type:Number
+    }
 });
 
 const Product = mongoose.model('Product', productSchema);

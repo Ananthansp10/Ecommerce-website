@@ -14,6 +14,10 @@ const couponSchema=new Schema({
         type:Number,
         required:true
     },
+    minimumPrice:{
+        type:Number,
+        required:true
+    },
     startDate:{
         type:Date,
         required:true

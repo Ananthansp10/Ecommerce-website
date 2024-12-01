@@ -20,7 +20,8 @@ module.exports={
                             price: product.price,
                             images: product.images,
                             isDisabled:product.stock==0,
-                            isOnWishList:findwish
+                            isOnWishList:findwish,
+                            offerPrice:product.offerPrice ? product.offerPrice : false
                         }
                     }else{
                         return{
@@ -30,7 +31,8 @@ module.exports={
                             price: product.price,
                             images: product.images,
                             isDisabled:product.stock==0,
-                            isOnWishList:false
+                            isOnWishList:false,
+                            offerPrice:product.offerPrice ? product.offerPrice : false
                         }
                     }
                 })
@@ -58,7 +60,8 @@ module.exports={
                             description: product.description,
                             price: product.price,
                             images: product.images,
-                            isOnWishList:findwish
+                            isOnWishList:findwish,
+                            offerPrice:product.offerPrice ? product.offerPrice : false
                         }
                     }else{
                         return{
@@ -67,7 +70,8 @@ module.exports={
                             description: product.description,
                             price: product.price,
                             images: product.images,
-                            isOnWishList:false
+                            isOnWishList:false,
+                            offerPrice:product.offerPrice ? product.offerPrice : false
                         }
                     }
                 })
@@ -113,7 +117,8 @@ module.exports={
                 outOfStock:productDetails.stock==0,
                 inStock:productDetails.stock>5,
                 limitedStock:productDetails.stock<=5 && productDetails.stock>0,
-                isOnWishList:findwish?findwish:false
+                isOnWishList:findwish?findwish:false,
+                offerPrice:productDetails.offerPrice ? productDetails.offerPrice :false
             };
             
             const colours = await producthelpers.getColourVariant(productDetails.name);
@@ -147,7 +152,8 @@ module.exports={
                         name:product.name,
                         price:product.price,
                         colour:product.colour,
-                        images:product.images
+                        images:product.images,
+                        offerPrice:product.offerPrice ? product.offerPrice : false
                     }
                 })
                 res.render('products/wishlist', { user: req.session.user,products:plainProducts})
@@ -177,7 +183,7 @@ module.exports={
             let totalAmount=150
             let subTotal=0
             let total=cartProducts.map((data)=>{
-                let value=data.price*data.quantity
+                let value=data.offerPrice ? data.offerPrice*data.quantity :data.price*data.quantity
                 totalAmount+=value
                 subTotal+=value
             })
@@ -194,7 +200,7 @@ module.exports={
                     inStock:data.stock>5,
                     limitedStock:data.stock<=5 && data.stock>=1,
                     outofStock:data.stock==0,
-                    totalPrice:data.price*data.quantity,
+                    totalPrice:data.offerPrice ? data.offerPrice*data.quantity : data.price*data.quantity,
                     isQuantityGreaterThanOne:data.quantity>1,
                     isIncrementButtonLessThanStock:data.quantity<data.stock,
                     isMinimumStockExceded:data.quantity==data.stock
@@ -202,6 +208,7 @@ module.exports={
             })
             res.render('users/cartPage', { user: req.session.user,data:plainObj,totalAmount,subTotal,cartLength});
         } catch (error) {
+            console.log(error)
             res.status(500).send('Error rendering cart page');
         }
     },
@@ -225,7 +232,8 @@ module.exports={
                         description: product.description,
                         price: product.price,
                         images: product.images,
-                        isOnWishList:findwish
+                        isOnWishList:findwish,
+                        offerPrice:product.offerPrice ? product.offerPrice : false
                     }
                 }else{
                     return{
@@ -234,7 +242,8 @@ module.exports={
                         description: product.description,
                         price: product.price,
                         images: product.images,
-                        isOnWishList:false
+                        isOnWishList:false,
+                        offerPrice:product.offerPrice ? product.offerPrice : false
                     }
                 }
             })
@@ -262,7 +271,8 @@ module.exports={
                             description: product.description,
                             price: product.price,
                             images: product.images,
-                            isOnWishList:findwish
+                            isOnWishList:findwish,
+                            offerPrice:product.offerPrice ? product.offerPrice : false
                         }
                     }else{
                         return{
@@ -271,7 +281,8 @@ module.exports={
                             description: product.description,
                             price: product.price,
                             images: product.images,
-                            isOnWishList:false
+                            isOnWishList:false,
+                            offerPrice:product.offerPrice ? product.offerPrice : false
                         }
                     }
                 })
@@ -301,7 +312,8 @@ module.exports={
                             description: product.description,
                             price: product.price,
                             images: product.images,
-                            isOnWishList:findwish
+                            isOnWishList:findwish,
+                            offerPrice:product.offerPrice ? product.offerPrice : false
                         }
                     }else{
                         return{
@@ -310,7 +322,8 @@ module.exports={
                             description: product.description,
                             price: product.price,
                             images: product.images,
-                            isOnWishList:false
+                            isOnWishList:false,
+                            offerPrice:product.offerPrice ? product.offerPrice : false
                         }
                     }
                 })
@@ -339,7 +352,8 @@ module.exports={
                         price: product.price,
                         images: product.images,
                         isDisabled:product.stock==0,
-                        isOnWishList:findwish
+                        isOnWishList:findwish,
+                        offerPrice:product.offerPrice ? product.offerPrice : false
                     }
                 }else{
                     return{
@@ -349,7 +363,8 @@ module.exports={
                         price: product.price,
                         images: product.images,
                         isDisabled:product.stock==0,
-                        isOnWishList:false
+                        isOnWishList:false,
+                        offerPrice:product.offerPrice ? product.offerPrice : false
                     }
                 }
             })

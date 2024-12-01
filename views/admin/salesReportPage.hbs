@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sales Report</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+  <div class="container mx-auto py-8">
+    <!-- Page Title -->
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-gray-800">Sales Report</h1>
+      <p class="text-gray-500">View the performance of your store with detailed sales analytics.</p>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <!-- Total Sales -->
+      <div class="bg-white shadow-lg rounded-lg p-6">
+        <h2 class="text-sm font-medium text-gray-500">Total Sales</h2>
+        <p class="text-3xl font-bold text-gray-800 mt-2">₹{{totalAmount}}</p>
+      </div>
+      <!-- Total Orders -->
+      <div class="bg-white shadow-lg rounded-lg p-6">
+        <h2 class="text-sm font-medium text-gray-500">Total Orders</h2>
+        <p class="text-3xl font-bold text-gray-800 mt-2">{{totalOrders}}</p>
+      </div>
+      <!-- Total Products Sold -->
+      <div class="bg-white shadow-lg rounded-lg p-6">
+        <h2 class="text-sm font-medium text-gray-500">Products Sold</h2>
+        <p class="text-3xl font-bold text-gray-800 mt-2">{{totalProducts}}</p>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white shadow-lg rounded-lg p-6 mb-8">
+      <div class="flex items-center justify-between">
+        <div>
+          <label for="date-range" class="block text-sm font-medium text-gray-700">Date Range</label>
+          <input type="date" id="date-range" class="mt-1 block w-52 p-2 border border-gray-300 rounded-lg">
+        </div>
+        <div>
+          <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg mt-4">Apply Filter</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sales Table -->
+    <div class="bg-white shadow-lg rounded-lg p-6">
+      <h2 class="text-lg font-semibold text-gray-800 mb-4">Sales Data</h2>
+      <div class="overflow-x-auto">
+        <table class="w-full table-auto border-collapse">
+          <thead>
+            <tr>
+              <th class="border-b-2 border-gray-300 px-4 py-2 text-left text-sm font-medium text-gray-600">Order ID</th>
+              <th class="border-b-2 border-gray-300 px-4 py-2 text-left text-sm font-medium text-gray-600">Customer</th>
+              <th class="border-b-2 border-gray-300 px-4 py-2 text-left text-sm font-medium text-gray-600">Date</th>
+              <th class="border-b-2 border-gray-300 px-4 py-2 text-left text-sm font-medium text-gray-600">Amount</th>
+              <th class="border-b-2 border-gray-300 px-4 py-2 text-left text-sm font-medium text-gray-600">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="border-b border-gray-300 px-4 py-2 text-sm text-gray-800">#12345</td>
+              <td class="border-b border-gray-300 px-4 py-2 text-sm text-gray-800">John Doe</td>
+              <td class="border-b border-gray-300 px-4 py-2 text-sm text-gray-800">2024-12-01</td>
+              <td class="border-b border-gray-300 px-4 py-2 text-sm text-gray-800">₹1,234</td>
+              <td class="border-b border-gray-300 px-4 py-2 text-sm text-green-500">Completed</td>
+            </tr>
+            <tr>
+              <td class="border-b border-gray-300 px-4 py-2 text-sm text-gray-800">#12346</td>
+              <td class="border-b border-gray-300 px-4 py-2 text-sm text-gray-800">Jane Smith</td>
+              <td class="border-b border-gray-300 px-4 py-2 text-sm text-gray-800">2024-12-01</td>
+              <td class="border-b border-gray-300 px-4 py-2 text-sm text-gray-800">₹2,345</td>
+              <td class="border-b border-gray-300 px-4 py-2 text-sm text-yellow-500">Pending</td>
+            </tr>
+            <!-- More rows as needed -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

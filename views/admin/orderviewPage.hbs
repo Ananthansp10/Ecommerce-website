@@ -28,6 +28,7 @@
         <h3 class="text-lg font-semibold text-gray-700">Order Summary</h3>
         <p class="text-gray-600">Order Date: {{orderDate}}</p>
         <p class="text-gray-600">Total Items: {{orderCount}}</p>
+        <p class="text-red-600">Coupon Used: {{#if couponUsed}}{{couponUsed}}{{else}}No coupon used{{/if}}</p>
         <p class="text-gray-600 font-semibold text-lg">Total Price: RS.{{totalAmount}}</p>
       </div>
     </div>
@@ -43,7 +44,7 @@
             <div class="ml-4">
               <p class="font-semibold text-gray-800">{{this.name}}</p>
               <p class="text-gray-500">Color: {{this.colour}}</p>
-              <p class="text-gray-500">Quantity: 1</p>
+              <p class="text-gray-500">Quantity: {{this.quantity}}</p>
             </div>
           </div>
           <p class="text-gray-600 font-semibold">Price: RS.{{this.price}}</p>

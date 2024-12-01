@@ -14,6 +14,7 @@
           <p class="text-gray-500">{{data.description}}</p>
           <p class="mt-2 font-medium">Quantity: <span class="text-gray-700">{{data.quantity}}</span></p>
           <p class="mt-1 text-lg font-bold text-gray-800">Rs.{{data.price}}</p>
+          <p class="mt-1 text-md font-bold text-blue-600">Buyable Price Rs.{{data.totalPrice}}</p>
         </div>
       </div>
       <!-- Repeat above block for each product in the order -->
@@ -168,7 +169,7 @@
 
   <!-- Action Buttons -->
   <div class="flex justify-end space-x-4">
-    <button onclick="cancelOrder('{{data.productId}}','{{orderId}}')" class="px-6 py-2 bg-red-600 text-white font-medium rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-75">
+    <button onclick="cancelOrder('{{data.productId}}','{{orderId}}',{{data.quantity}})" class="px-6 py-2 bg-red-600 text-white font-medium rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-75">
       Cancel Order
     </button>
     <button class="px-6 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75">
@@ -178,7 +179,7 @@
 </div>
 
 <script>
-  function cancelOrder(productId,orderId) {
+  function cancelOrder(productId,orderId,quantity) {
   Swal.fire({
     title: 'Are you sure?',
     text: "Do you want to cancel this order?",
@@ -189,7 +190,7 @@
     confirmButtonText: 'Yes, cancel it!'
   }).then((result) => {
     if (result.isConfirmed) {
-      fetch(`/users/cartordercancel/${productId}/${orderId}`, {
+      fetch(`/users/cartordercancel/${productId}/${orderId}/${quantity}`, {
         method: "POST"
       }).then((response) => {
         if (response.status){

@@ -90,6 +90,9 @@ const orderSchema=new Schema({
     paymentMethod:{
         type:String,
         required:true
+    },
+    couponCode:{
+        type:String
     }
 })
 

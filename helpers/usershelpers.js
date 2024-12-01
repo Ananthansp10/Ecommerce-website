@@ -13,6 +13,10 @@ const product=require('../databaseSchemas/productSchema');
 const cartDetail=require("../databaseSchemas/cartSchema");
 const orderDetail=require('../databaseSchemas/orderSchema');
 const wishlist=require('../databaseSchemas/wishListSchema');
+const couponData=require('../databaseSchemas/couponSchema');
+const useCoupon=require('../databaseSchemas/couponUsesSchema');
+const wallet=require('../databaseSchemas/walletSchema');
+const razorpay=require('../config/razorpay');
 const mongoose=require('mongoose')
 const { ObjectId } = mongoose.Types;
 module.exports={
@@ -351,7 +355,8 @@ module.exports={
                     productId:data.products[0].productId,
                     quantity:data.products[0].quantity,
                     price:data.products[0].price,
-                    image:data.products[0].image
+                    image:data.products[0].image,
+                    offerPrice:data.products[0].offerPrice
                 }
                 cartDetail.updateOne({userId:new ObjectId(data.userId)},{$push:{products:obj}}).then(()=>{
                     resolve()
@@ -431,7 +436,8 @@ module.exports={
                     description:"$productDetails.description",
                     images:"$products.image",
                     productName:"$productDetails.name",
-                    productCategory:"$productDetails.catType"
+                    productCategory:"$productDetails.catType",
+                    offerPrice:"$productDetails.offerPrice"
                 }
             }
         ]).then((data)=>{
@@ -449,7 +455,7 @@ module.exports={
     },
 
     placeCartOrder:(data,userId)=>{
-        return new Promise((resolve,reject)=>{
+        return new Promise(async(resolve,reject)=>{
             if(data.paymentMethod=="Cash On Delivery"){
                 const order=new orderDetail(data)
                 order.save().then(()=>{
@@ -457,6 +463,22 @@ module.exports={
                         resolve({status:true})
                     })
                 })
+            }else if(data.paymentMethod==="Online"){
+                try {
+                    const razorpayOrder = await razorpay.orders.create({
+                        amount: data.totalPrice * 100,
+                        currency: "INR",
+                        receipt: `receipt_${new Date().getTime()}`
+                    })
+
+                    resolve({status: 'PENDING_PAYMENT',
+                        orderId: razorpayOrder.id,
+                        key: razorpay.key_id,amount:data.totalPrice*100,data:data})
+
+                } catch (error) {
+                    console.log(error)
+                    reject(error);
+                }
             }
         })
     },
@@ -472,7 +494,8 @@ module.exports={
             },
             {
                 $project:{
-                    orderedProducts:1
+                    orderedProducts:1,
+                    totalPrice:1
                 }
             },
             {
@@ -487,14 +510,28 @@ module.exports={
         })
     },
 
-    getSingleProductFromOrder:(userId,productId)=>{
-        return new Promise((resolve,reject)=>{
-            orderDetail.findOne({userId:new ObjectId(userId),'orderedProducts.productId':new ObjectId(productId)},{orderedProducts:{$elemMatch:{productId:new ObjectId(productId)}}}).then((data)=>{
-                resolve(data.orderedProducts)
-            })
-        })
+    getSingleProductFromOrder: (orderId, productId) => {
+        return new Promise((resolve, reject) => {
+            orderDetail.findOne(
+                { 
+                    _id: new ObjectId(orderId), 
+                    'orderedProducts.productId': new ObjectId(productId) 
+                },
+                {
+                    totalPrice: 1,
+                    orderedProducts: { 
+                        $elemMatch: { productId: new ObjectId(productId) } 
+                    }
+                }
+            ).then((data) => {
+                console.log(data);
+                resolve(data);
+            }).catch((error) => {
+                reject(error);
+            });
+        });
     },
-
+    
     getOrderSingleProductAddress:(orderId)=>{
         return new Promise((resolve,reject)=>{
             orderDetail.findOne({_id:new ObjectId(orderId)}).lean().then((data)=>{
@@ -533,6 +570,7 @@ module.exports={
     },
 
     cartOrderCancel:(productId,orderId)=>{
+        console.log(productId,orderId)
         return new Promise((resolve,reject)=>{
             orderDetail.updateOne({_id:new ObjectId(orderId)},{$pull:{orderedProducts:{productId:new ObjectId(productId)}}}).then((data)=>{
                if(data.acknowledged){
@@ -615,7 +653,8 @@ module.exports={
             colour:prod.colour,
             price:prod.price,
             images:prod.images,
-            isOnWishList:true
+            isOnWishList:true,
+            offerPrice:prod.offerPrice ? prod.offerPrice : false
         }
         return new Promise(async(resolve,reject)=>{
             const findUser=await wishlist.findOne({userId:new ObjectId(userId)})
@@ -695,6 +734,172 @@ module.exports={
                 resolve({status:false})
                }
             })
+        })
+      },
+
+      getAllCoupon:()=>{
+        return new Promise((resolve,reject)=>{
+            couponData.find({isActive:true}).then((data)=>{
+                resolve(data)
+            })
+        })
+      },
+
+      applyCoupon:(couponCode,userId,totalAmount)=>{
+        return new Promise(async(resolve,reject)=>{
+            const findcoupon = await couponData.findOne({code:couponCode,isActive:true})
+            const date=new Date().toISOString().split('T')[0].trim()
+            if(findcoupon){
+                const couponStartDate=new Date(findcoupon.startDate).toISOString().split('T')[0].trim()
+                const couponEndDate=new Date(findcoupon.endDate).toISOString().split('T')[0].trim()
+                if(date < couponStartDate && date!=couponStartDate){
+                    resolve({status:false,message:"Coupon cannot addedd beacause coupon not yet started"})
+                }
+                if(date > couponEndDate && date!=couponEndDate){
+                    resolve({status:false,message:"Coupon expires cannot add"})
+                }
+                if(totalAmount<findcoupon.minimumPrice){
+                    resolve({status:false,message:"This Coupon cannot addedd for this amount"})
+                }
+                const findUser= await useCoupon.findOne({userId:userId})
+                if(findUser){
+                    const isUsed=findUser.usedCoupons.some((data)=>data==couponCode)
+                    if(isUsed){
+                        resolve({status:false,message:"Coupon cannot add its already used"})
+                    }else{
+                        resolve({status:true,amount:findcoupon.discountValue})
+                    }
+                }
+                else{
+                    resolve({status:true,amount:findcoupon.discountValue})
+                }
+            }else{
+                resolve({status:false,message:"No coupon found !"})
+            }
+        })
+      },
+
+      addCoupon:(userId,couponCode)=>{
+        return new Promise(async(resolve,reject)=>{
+            const findUser=await useCoupon.findOne({userId:new ObjectId(userId)})
+            if(findUser){
+                if(couponCode=="no"){
+                    resolve()
+                }
+                useCoupon.updateOne({userId:new ObjectId(userId)},{$push:{usedCoupons:couponCode}}).then(()=>{
+                    resolve()
+                })
+            }else{
+                if(couponCode=="no"){
+                    resolve()
+                }else{
+                    let obj={
+                        userId:userId,
+                        usedCoupons:[
+                          couponCode
+                      ]
+                    }
+                    let data=new useCoupon(obj)
+                    data.save().then((data)=>{
+                        if(data){
+                            resolve()
+                        }
+                    })
+                }
+            }
+        })
+      },
+
+      addOrder:(data,userId)=>{
+        return new Promise((resolve,reject)=>{
+            const obj=new orderDetail(data)
+            obj.save().then((data)=>{
+                if(data){
+                cartDetail.updateOne({userId:new ObjectId(userId)},{$set:{products:[]}}).then(()=>{
+                    resolve({status:true})
+                })
+                }else{
+                    resolve({status:false})
+                }
+            })
+        })
+      },
+
+    //   addToWallet:(productId,orderId,userId)=>{
+    //     return new Promise(async(resolve,reject)=>{
+    //         const product=await orderDetail.findOne({_id:new ObjectId(orderId),'orderedProducts.productId':new ObjectId(productId)})
+    //         const orderedProduct = product.orderedProducts.find(p => p.productId.toString() === productId.toString());
+    //         console.log(orderedProduct)
+    //         const userExist=await wallet.findOne({userId:new ObjectId(userId)})
+    //         if(userExist){
+    //             let obj={
+    //                 userId:userId,
+    //                 balanceAmount:orderedProduct.price
+    //             }
+    //             let data=new wallet(obj)
+    //             data.save().then((data)=>{
+    //                 console.log(data)
+    //                 resolve({status:true})
+    //             })
+    //         }else{
+    //             wallet.updateOne({userId:new ObjectId(userId)},{$inc:{balanceAmount:orderedProduct.price}}).then(()=>{
+    //                 resolve({status:true})
+    //             })
+    //         }
+    //     })
+    //   }
+
+    addToWallet: async (productId, orderId, userId) => {
+        return new Promise(async(resolve,reject)=>{
+            try {
+                const product = await orderDetail.findOne({
+                  _id: new ObjectId(orderId),
+                  'orderedProducts.productId': new ObjectId(productId)
+                });
+            
+                if (!product) {
+                  return reject(new Error('Order not found or product not in the order'));
+                }
+            
+                const orderedProduct = product.orderedProducts.find(p => p.productId.toString() === productId.toString());
+            
+                if (!orderedProduct) {
+                  return reject(new Error('Product not found in the order'));
+                }
+            
+                const userExist = await wallet.findOne({ userId: new ObjectId(userId) });
+            
+                if (userExist) {
+                  await wallet.updateOne(
+                    { userId: new ObjectId(userId) },
+                    { $inc: { balanceAmount: orderedProduct.price } }
+                  );
+                  return resolve({ status: true });
+                } else {
+                  const newWallet = new wallet({
+                    userId: new ObjectId(userId),
+                    balanceAmount: orderedProduct.price
+                  });
+                  await newWallet.save();
+                  return resolve({ status: true });
+                }
+              } catch (error) {
+                console.error('Error adding to wallet:', error);
+                return reject(error);
+              }
+        })
+      },
+
+      findWalletAmount:(userId)=>{
+        return new Promise(async(resolve,reject)=>{
+            const userExist=await wallet.findOne({userId:new ObjectId(userId)})
+            if(userExist){
+                wallet.findOne({userId:new ObjectId(userId)}).then((data)=>{
+                    resolve(data.balanceAmount)
+                })
+            }else{
+                resolve()
+            }
         })
       }
 }

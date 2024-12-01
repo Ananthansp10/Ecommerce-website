@@ -78,7 +78,15 @@
       </div>
 
       <!-- Product Price -->
-      <div class="text-2xl font-semibold text-green-600 mb-4">RS: {{product.price}}</div>
+      <div class="text-2xl font-semibold text-green-600 mb-4">
+      {{#if product.offerPrice}}
+      <span class="line-through text-gray-500 text-lg">₹{{product.price}}</span>
+      <span class="ml-2 text-green-600">₹{{product.offerPrice}}</span>
+      {{else}}
+      ₹{{product.price}}
+      {{/if}}
+      </div>
+
 
       <!-- Product Description -->
       <p class="text-gray-600 mb-6">{{product.description}}</p>

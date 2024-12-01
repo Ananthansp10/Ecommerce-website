@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Offer</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+
+  <!-- Page Container -->
+  <div class="min-h-screen flex flex-col">
+    
+    <!-- Header -->
+    <header class="bg-blue-600 text-white py-4 shadow-lg">
+      <div class="max-w-7xl mx-auto px-4 flex justify-between items-center">
+        <h1 class="text-2xl font-bold">Admin Panel</h1>
+        <p class="text-lg">Add New Offer</p>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow">
+      <div class="max-w-7xl mx-auto px-4 py-8">
+        <!-- Card -->
+        <div class="bg-white shadow-lg rounded-lg p-6">
+          <h2 class="text-xl font-bold mb-4">Add product offer</h2>
+
+          <form class="space-y-6" onsubmit="addOffer(event)">
+            <!-- Title -->
+            <div>
+              <label for="title" class="block text-sm font-medium text-gray-700">Offer Title</label>
+              <input 
+                type="text" 
+                id="title" 
+                class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
+                placeholder="e.g., Black Friday Sale"
+              >
+            </div>
+            <p id="titleError" class="text-sm text-red-500 mt-1 hidden">Offer title is required.</p>
+
+            <!-- Description -->
+            <div>
+              <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
+              <textarea 
+                id="description" 
+                rows="4" 
+                class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
+                placeholder="Details about the offer"
+              ></textarea>
+            </div>
+            <p id="descriptionError" class="text-sm text-red-500 mt-1 hidden">Description is required.</p>
+
+            <!-- Discount Type and Value -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label for="discountType" class="block text-sm font-medium text-gray-700">Discount Type</label>
+                <select 
+                  id="discountType" 
+                  class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                > 
+                  <option value="percentage">Percentage</option>
+                  <option value="flat">Flat Amount</option>
+                </select>
+                <p id="discountTypeError" class="text-sm text-red-500 mt-1 hidden">Discount Type is required.</p>
+              </div>
+              <div>
+                <label for="discountValue" class="block text-sm font-medium text-gray-700">Discount Value</label>
+                <input 
+                  type="text" 
+                  id="discountValue" 
+                  class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
+                  placeholder="e.g., 10 for 10% or 100 for ₹100"
+                >
+                <p id="discountValueError" class="text-sm text-red-500 mt-3 ml-3 hidden">Discount value is required.</p>
+              </div>
+            </div>
+
+            <!--Minimum Amount-->
+
+            <div>
+                <label for="minimumPrice" class="block text-sm font-medium text-gray-700">Minimum Price</label>
+                <input 
+                  type="number" 
+                  id="minimumPrice" 
+                  class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
+                  placeholder="Enter the Minimum price"
+                >
+              </div>
+              <p id="minimumPriceError" class="text-sm text-red-500 mt-1 hidden">Minimum price is required.</p>
+
+            <!-- Applicable Products -->
+            <div>
+              <label for="applicableProducts" class="block text-sm font-medium text-gray-700">Applicable Products</label>
+              <input 
+                type="text" 
+                id="applicableProducts" 
+                class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
+                placeholder="Enter the category"
+              >
+            </div>
+            <p id="applicableProductsError" class="text-sm text-red-500 mt-1 hidden">Applicable Products is required.</p>
+
+            <!-- Date Range -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label for="startDate" class="block text-sm font-medium text-gray-700">Start Date</label>
+                <input 
+                  type="date" 
+                  id="startDate" 
+                  class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
+                >
+              </div>
+              <p id="startDateError" class="text-sm mt-9 text-red-500 mt-1 hidden">Start date is required.</p>
+              <div>
+                <label for="endDate" class="block text-sm font-medium text-gray-700">End Date</label>
+                <input 
+                  type="date" 
+                  id="endDate" 
+                  class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+              </div>
+              <p id="endDateError" class="text-sm mt-9 text-red-500 mt-1 hidden">End date is required.</p>
+            </div>
+
+            <!-- Image Upload -->
+            <div>
+              <label for="offerImage" class="block text-sm font-medium text-gray-700">Offer Image</label>
+              <input 
+                type="file" 
+                id="offerImage" 
+                class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                accept="image/*" 
+                onchange="previewImage(event)"
+              >
+              <p id="imageError" class="text-sm text-red-500 mt-1 hidden">Image is required.</p>
+            </div>
+
+            <div class="mt-4">
+              <p class="text-sm font-medium text-gray-700">Image Preview:</p>
+              <img id="imagePreview" src="" alt="Image preview" class="mt-2 max-w-full h-auto rounded-md shadow-md hidden">
+            </div>
+
+            <!-- Submit Button -->
+            <div class="flex justify-end">
+              <button 
+                type="submit" 
+                class="bg-blue-600 text-white px-6 py-2 rounded-md shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              >
+                Add Offer
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+
+    function previewImage(event) {
+      const imagePreview = document.getElementById('imagePreview');
+      const file = event.target.files[0];
+      const reader = new FileReader();
+
+      reader.onload = function(e) {
+        imagePreview.src = e.target.result;
+        imagePreview.classList.remove('hidden');
+      }
+
+      if (file) {
+        reader.readAsDataURL(file);
+      }
+    }
+
+
+    function addOffer(e){
+        e.preventDefault();
+        isValid=true;
+
+        const title=document.getElementById("title").value.trim()
+        const description=document.getElementById("description").value.trim()
+        const discountType=document.getElementById("discountType").value.trim()
+        const discountValue=document.getElementById("discountValue").value.trim()
+        const minimumPrice=document.getElementById("minimumPrice").value.trim()
+        const applicableProducts=document.getElementById("applicableProducts").value.trim()
+        const startDate=document.getElementById("startDate").value.trim()
+        const endDate=document.getElementById("endDate").value.trim()
+        const offerImage = document.getElementById("offerImage").files[0];
+
+        if(!title && !description && !discountValue && !minimumPrice && !applicableProducts && !startDate && !endDate && !offerImage){
+            Swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: 'Fill all the fields !',
+        })
+        isValid=false
+        }else{
+        if(!title){
+            document.getElementById("titleError").classList.remove('hidden')
+            isValid=false
+        }
+        if(!description){
+            document.getElementById("descriptionError").classList.remove('hidden')
+            isValid=false
+        }
+        if(!discountValue){
+            document.getElementById("discountValueError").classList.remove('hidden')
+            isValid=false
+        }
+        if(!minimumPrice){
+            document.getElementById("minimumPriceError").classList.remove('hidden')
+            isValid=false
+        }
+        if(!applicableProducts){
+            document.getElementById("applicableProductsError").classList.remove('hidden')
+            isValid=false
+        }
+        if(!startDate){
+            document.getElementById("startDateError").classList.remove('hidden')
+            isValid=false
+        }
+        if(!endDate){
+            document.getElementById("endDateError").classList.remove('hidden')
+            isValid=false
+        }
+        if(!offerImage) {
+            document.getElementById("imageError").classList.remove('hidden');
+            isValid = false;
+       }
+        if(parseInt(discountValue)>100 || parseInt(discountValue)<=0){
+            document.getElementById("discountValueError").innerText="Discount value cannot be greater than 100% or zero or negative"
+            document.getElementById("discountValueError").classList.remove('hidden')
+            isValid=false
+        }
+        if(parseInt(minimumPrice)<=0){
+            document.getElementById("minimumPriceError").innerText="Minimum price cannot be zero or negative"
+            document.getElementById("minimumPriceError").classList.remove('hidden')
+            isValid=false
+        }
+    }
+
+    if(isValid){
+        fetch('/admin/addcategoryoffer',{
+            headers:{
+                "Content-Type":"application/json"
+            },
+            method:"POST",
+            body:JSON.stringify({
+                title,
+                description,
+                discountType,
+                discountValue,
+                minimumPrice,
+                applicableProducts,
+                startDate,
+                endDate
+            })
+        }).then((response)=>response.json()).then((response)=>{
+            if(response.status){
+                Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text:response.message,
+            })
+            }else{
+                Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: response.message,
+            })
+            }
+        })
+    }
+    }
+  </script>
+
+</body>
+</html>

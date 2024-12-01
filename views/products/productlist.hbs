@@ -44,7 +44,15 @@
           <p class="text-gray-600 mt-2 text-sm">{{this.description}}</p>
 
           <div class="mt-4 flex items-center justify-between">
-            <span class="text-xl font-bold text-gray-800">RS:{{this.price}}</span>
+            <span class="text-xl font-bold text-gray-800">
+            {{#if this.offerPrice}}
+            <span class="line-through text-gray-500 text-lg">₹{{this.price}}</span>
+            <span class="ml-2 text-green-600">₹{{this.offerPrice}}</span>
+            {{else}}
+            ₹{{this.price}}
+            {{/if}}
+            </span>
+
             <div class="flex space-x-1 text-yellow-400">
               <span>★</span><span>★</span><span>★</span><span>★</span><span class="text-gray-300">★</span>
             </div>

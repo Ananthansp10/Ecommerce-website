@@ -1,8 +1,8 @@
 const express=require('express');
 const router=express.Router();
 const upload=require('../config/cloudinary');
-const adminhelper=require('../helpers/adminhelpers');
 const admincontroller=require('../controllers/adminController');
+const offercontroller=require('../controllers/offerController');
 
 router.get('/',admincontroller.adminLogin,admincontroller.adminDashboardSection)
 
@@ -34,6 +34,8 @@ router.get('/orderview/:orderId',admincontroller.adminOrderViewPage)
 
 router.get('/coupon',admincontroller.couponPage)
 
+router.post('/addcoupon',admincontroller.addCoupon)
+
 router.get('/category',admincontroller.categoryPage)
 
 router.get('/addCategory',admincontroller.addcategoryPage)
@@ -49,6 +51,26 @@ router.post('/deletecategory/:id',admincontroller.deleteCategory)
 router.post('/blockcategory/:id/:value',admincontroller.blockCategory)
 
 router.post('/changeorderstatus/:orderId/:status',admincontroller.changeOrderStatus)
+
+router.get('/editcoupon/:couponCode',admincontroller.editCouponPage)
+
+router.post('/editcoupon/:couponCode',admincontroller.editCoupon)
+
+router.post('/deletecoupon/:couponCode',admincontroller.deleteCoupon)
+
+router.get('/offer',admincontroller.offerPage)
+
+router.get('/addoffer',admincontroller.addOfferPage)
+
+router.get('/categoryoffer',offercontroller.addCategoryOfferPage)
+
+router.post('/addcategoryoffer',upload.array('image',1),offercontroller.addCategoryOffer)
+
+router.post('/applyoffer/:offerId',offercontroller.applyOffer)
+
+router.post('/deleteoffer/:offerId',offercontroller.deletOffer)
+
+router.get('/salesreport',admincontroller.salesReportPage)
 
 
 module.exports=router;

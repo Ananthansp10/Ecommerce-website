@@ -37,6 +37,10 @@ const wishListSchema=new Schema({
             isOnWishList:{
                 type:Boolean,
                 default:true
+            },
+            offerPrice:{
+                type:Number,
+                default:false
             }
         }
     ]

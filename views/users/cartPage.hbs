@@ -12,18 +12,22 @@
                 <img src="{{this.images.[0]}}" alt="Product Image" class="w-24 h-24 object-cover rounded-lg">
                 <div class="flex-1 ml-4">
                     <h3 class="text-lg font-semibold">{{this.productName}}</h3>
-                    <p class="text-gray-600">Category:{{this.category}}</p>
-                     <p class="text-gray-600">Price:{{this.price}}</p>
-                    <p class="text-gray-600">Quantity:{{this.quantity}}</p>
-                    <p class="text-gray-500 mt-1">Description:{{this.description}}</p>
+                    <p class="text-gray-600">Category: {{this.category}}</p>
+                    {{#if this.offerPrice}}
+                    <p class="text-gray-600">Price: {{this.offerPrice}}</p>
+                    {{else}}
+                    <p class="text-gray-600">Price: {{this.price}}</p>
+                    {{/if}}
+                    <p class="text-gray-600">Quantity: {{this.quantity}}</p>
+                    <p class="text-gray-500 mt-1">Description: {{this.description}}</p>
                     {{#if this.isMinimumStockExceded}}
-                     <p class="text-red-600 font-medium mt-1">Minimum Stock Exceded</p>
-                     {{else}}
-                     {{#if this.inStock}}
-                     <p class="text-green-600 font-medium mt-1">In Stock</p>
+                    <p class="text-red-600 font-medium mt-1">Minimum Stock Exceeded</p>
+                    {{else}}
+                    {{#if this.inStock}}
+                    <p class="text-green-600 font-medium mt-1">In Stock</p>
                     {{/if}}
                     {{#if this.limitedStock}}
-                     <p class="text-yellow-600 font-medium mt-1">Limited Stock</p>
+                    <p class="text-yellow-600 font-medium mt-1">Limited Stock</p>
                     {{/if}}
                     {{#if this.outofStock}}
                     <p class="text-red-600 font-medium mt-1">Out Of Stock</p>
@@ -61,27 +65,74 @@
         <!-- Order Summary -->
         <div class="lg:w-1/4 bg-gray-100 p-6 rounded-lg shadow-lg">
             <h2 class="text-xl font-semibold mb-6">Price Summary</h2>
+
+            <!-- Coupon Section -->
+            <div class="mb-6">
+                <h2 class="text-xl font-semibold mb-4">Apply Coupon</h2>
+                <div class="flex items-center">
+                    <input type="text" id="couponCode" class="flex-1 px-4 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter coupon code" />
+                    <button onclick="applyCoupon()" class="bg-blue-500 text-white px-4 py-2 rounded-r-lg hover:bg-blue-600 transition-all">
+                        Apply
+                    </button>
+                </div>
+                <div class="mt-4 text-right">
+                    <button onclick="showCoupons()" class="text-blue-500 hover:underline">
+                        Add Coupon
+                    </button>
+                </div>
+                 <div class="mt-4 text-right hidden" id="removeCoupon">
+                    <button onclick=location.reload() class="text-red-600 hover:underline">
+                        Remove Coupon
+                    </button>
+                </div>
+            </div>
+
             <div class="flex justify-between mb-2 text-lg font-semibold">
                 <span class="text-gray-700 font-semibold">Subtotal</span>
                 <span class="text-gray-700 font-semibold">RS.{{subTotal}}</span>
             </div>
             <div class="flex justify-between mb-2 text-lg font-semibold">
-                <span class=" text-lg font-semibold">Shipping</span>
-                <span class=" text-lg font-semibold">RS.100</span>
+                <span class="text-lg font-semibold">Shipping</span>
+                <span class="text-lg font-semibold">RS.100</span>
             </div>
             <div class="flex justify-between mb-4 text-lg font-semibold">
                 <span class="text-lg font-semibold">Tax</span>
                 <span class="text-lg font-semibold">RS.50</span>
             </div>
+            <div class="flex justify-between mb-4 text-md font-semibold">
+                <span class="font-semibold text-red-600">Coupon Applied</span>
+                <span class="font-semibold text-red-600" id="couponApplied"></span>
+            </div>
+            <div class="flex justify-between mb-4 text-md font-semibold">
+                <span class="font-semibold text-red-600">Coupon Discount</span>
+                <span class="font-semibold text-red-600" id="couponDiscount"></span>
+            </div>
             <hr class="mb-4">
             <div class="flex justify-between text-lg font-semibold mb-6">
                 <span>Total</span>
-                <span>{{totalAmount}}</span>
+                <span id="total">{{totalAmount}}</span>
             </div>
             <button onclick="goToCheckOut()" class="bg-blue-500 text-white py-2 px-4 w-full rounded-lg hover:bg-blue-600 transition-all">Proceed to Checkout</button>
         </div>
     </div>
 </div>
+
+<!-- Modal for Viewing Coupons -->
+<div id="couponModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center">
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-lg p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-semibold">Available Coupons</h3>
+            <button onclick="closeCouponModal()" class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <ul id="couponList" class="space-y-4">
+            <!-- Coupons will be dynamically added here -->
+        </ul>
+        <button onclick="closeCouponModal()" class="bg-red-500 text-white px-4 py-2 mt-6 rounded-lg w-full hover:bg-gray-400 transition-all">Close</button>
+    </div>
+</div>
+
 {{else}}
 <div class="container mx-auto px-4 py-8">
     <div class="flex justify-center items-center min-h-screen">
@@ -98,6 +149,119 @@
 {{/if}}
 
 <script>
+    let couponCode="no"
+    let couponStatus=false
+    let totalAmount=document.getElementById("total").innerText
+    function applyCoupon() {
+        couponCode = document.getElementById('couponCode').value;
+        if (!couponCode) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Please enter the coupon code.',
+                confirmButtonText: 'OK',
+            });
+        }else{
+        fetch(`/users/applycoupon/${couponCode}/${totalAmount}`, {
+            method: 'POST',
+          })
+            .then((response) => response.json())
+            .then((data) => {
+                if (data.status) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Coupon Applied',
+                        text: `Discount applied successfully! ${data.amount} reduced from the total`,
+                        confirmButtonText: 'OK',
+                    }).then(() => {
+                        let total=document.getElementById("total").innerText
+                        total=parseFloat(total)
+                        let diff=total-data.amount
+                        totalAmount=diff
+                        document.getElementById("total").innerText=diff
+                        document.getElementById("couponApplied").innerText=couponCode
+                        document.getElementById("couponDiscount").innerText=data.amount
+                        couponStatus=true
+                        document.getElementById("removeCoupon").classList.remove('hidden')
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text:data.message,
+                        confirmButtonText: 'Try Again',
+                    })
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'An unexpected error occurred.',
+                    confirmButtonText: 'Close',
+                });
+            });
+        }
+    }
+
+    function showCoupons() {
+        const modal = document.getElementById('couponModal');
+        const couponList = document.getElementById('couponList');
+        fetch('/users/getallcoupons')
+            .then((response) => response.json())
+            .then((coupons) => {
+                couponList.innerHTML = '';
+                if (coupons.length === 0) {
+                    couponList.innerHTML = '<li class="text-gray-500 text-center">No coupons available</li>';
+                } else {
+                    coupons.forEach((coupon) => {
+                        const listItem = document.createElement('li');
+                        listItem.className = 'p-4 border border-gray-200 rounded-lg flex justify-between items-center';
+                        listItem.innerHTML = `
+                            <div>
+                                <p class="text-gray-700 font-medium">${coupon.code}</p>
+                                <p class="text-sm text-gray-500">Discount: RS ${coupon.discountValue}</p>
+                                <p class="text-sm text-gray-500">Coupon Code: ${coupon.code}</p>
+                            </div>
+                            <button
+                                onclick="selectCoupon('${coupon.code}')"
+                                class="bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-600"
+                            >
+                                Apply
+                            </button>
+                        `;
+                        couponList.appendChild(listItem);
+                    });
+                }
+            })
+            .catch((error) => {
+                console.error('Error fetching coupons:', error);
+            });
+
+        modal.classList.remove('hidden');
+    }
+
+    function selectCoupon(code) {
+         if(couponStatus){
+             Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: "Cannot Add the coupon first remove the existing coupon"
+        }).then(()=>{
+             closeCouponModal();
+        })
+        }else{
+        document.getElementById('couponCode').value = code;
+        closeCouponModal();
+        }
+    }
+
+    function closeCouponModal() {
+        const modal = document.getElementById('couponModal');
+        modal.classList.add('hidden');
+    }
+
     function deleteCartProduct(productId) {
     Swal.fire({
         title: 'Are you sure?',
@@ -157,6 +321,6 @@
     }
 
     function goToCheckOut(){
-        location.href='/users/checkout'
+        location.href=`/users/checkout/${couponCode}/${totalAmount}`
     }
 </script>

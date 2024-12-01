@@ -1,6 +1,8 @@
 const userhelper=require('../helpers/usershelpers')
 const producthelper=require('../helpers/producthelpers');
 const { response } = require('express');
+const crypto = require('crypto');
+const razorpay=require('../config/razorpay')
 module.exports={
 
     loginsection:(req,res)=>{
@@ -257,7 +259,8 @@ module.exports={
               description: product.description,
               price: product.price,
               images: product.images,
-              isOnWishList:findwish
+              isOnWishList:findwish,
+              offerPrice:product.offerPrice ? product.offerPrice :false
             };
           } else {
             return {
@@ -267,6 +270,7 @@ module.exports={
               price: product.price,
               images: product.images,
               isOnWishList:false,
+              offerPrice:product.offerPrice ? product.offerPrice :false
             };
           }
         })
@@ -506,7 +510,8 @@ module.exports={
             quantity:1,
             description:productDetails.description,
             price:productDetails.price,
-            image:productDetails.images
+            image:productDetails.images,
+            offerPrice:productDetails.offerPrice ? productDetails.offerPrice : false
           }
           const cartObj={
             userId:req.session.user._id,
@@ -552,6 +557,7 @@ module.exports={
   },
 
   checkOutPage:async(req,res)=>{
+    let couponCode=req.params.couponCode
     try {
       let cartLength=0;
             if(req.session.user){
@@ -571,16 +577,18 @@ module.exports={
                   country:data.country,
                   pincode:data.pincode,
                   landmark:data.landmark,
-                  key:index+1
+                  key:index+1,
+                  offerPrice:data.offerPrice ? data.offerPrice : false
                 }
               })
               let totalAmount=150
               let subTotal=0
               let total=cartProducts.map((data)=>{
-                  let value=data.price*data.quantity
+                  let value=data.offerPrice ? data.offerPrice *data.quantity : data.price*data.quantity
                   totalAmount+=value
                   subTotal+=value
               })
+              totalAmount=req.params.totalAmount
               const plainObj=cartProducts.map((data)=>{
                   return{
                       cartId:data._id,
@@ -592,9 +600,10 @@ module.exports={
                       quantity:data.quantity,
                       images:data.images,
                       totalPrice:data.price*data.quantity,
+                      offerPrice:data.offerPrice ? data.offerPrice : false
                   }
               })
-              res.render('users/checkoutPage', { user: req.session.user,data:plainObj,totalAmount,subTotal,cartLength,address:plainAddress});
+              res.render('users/checkoutPage', { user: req.session.user,data:plainObj,totalAmount,subTotal,cartLength,address:plainAddress,couponCode});
             }else{
               let totalAmount=150
               let subTotal=0
@@ -603,6 +612,7 @@ module.exports={
                   totalAmount+=value
                   subTotal+=value
               })
+              totalAmount=req.params.totalAmount
               const plainObj=cartProducts.map((data)=>{
                   return{
                       cartId:data._id,
@@ -616,7 +626,7 @@ module.exports={
                       totalPrice:data.price*data.quantity,
                   }
               })
-              res.render('users/checkoutPage', { user: req.session.user,data:plainObj,totalAmount,subTotal,cartLength});
+              res.render('users/checkoutPage', { user: req.session.user,data:plainObj,totalAmount,subTotal,cartLength,couponCode});
             }
     } catch (error) {
       res.status(500).send("Error occured page not rendering")
@@ -625,21 +635,22 @@ module.exports={
 
   placeCartOrder:async(req,res)=>{
     try {
-      const{addressId,cartId,totalAmount,payment}=req.body
+      const{addressId,cartId,totalAmount,payment,couponCode}=req.body
       const userId=req.session.user._id
       const userDetail=await userhelper.findUserDetails(userId)
       if(userDetail){
       const cartProducts=await userhelper.getCartProducts(cartId)
-      let cartTotal=150;
+      const applyCoupon=await userhelper.addCoupon(userId,couponCode)
+      let cartTotal=totalAmount;
       const cartProductsObj=cartProducts.map((data)=>{
-        cartTotal+=data.quantity*data.price
+        // cartTotal+=data.quantity*data.price
           return{
             productId:data.productId,
             name:data.productName,
             catType:data.productCategory,
             description:data.description,
             quantity:data.quantity,
-            price:data.price,
+            price:data.offerPrice ? data.offerPrice : data.price,
             images:data.images,
             orderStatus:"Placed",
             orderedDate:Date.now()
@@ -660,15 +671,20 @@ module.exports={
         userId:userId,
         orderedProducts:cartProductsObj,
         address:addressObj,
-        totalPrice:cartTotal,
+        totalPrice:totalAmount,
         paymentMethod:payment,
+        couponCode:couponCode==0 ? false :couponCode
       }
       userhelper.placeCartOrder(orderObj,userId).then((response)=>{
-        userhelper.updateProductStock(cartProducts).then((response)=>{
-        if(response.status){
-            res.json({status:true})
-          }
-        })
+        if(response.status===true){
+          userhelper.updateProductStock(cartProducts).then((response)=>{
+            if(response.status){
+              res.json({status:true})
+            }
+          })
+        }else if(response.status==="PENDING_PAYMENT"){
+          res.json({status:response.status,orderId:response.orderId,key:response.key,amount:response.amount,data:response.data})
+        }
       })
       }else{
         res.json({noUserDetail:true})
@@ -689,6 +705,7 @@ module.exports={
           productName:data.orderedProducts.name,
           description:data.orderedProducts.description,
           price:data.orderedProducts.price,
+          totalPrice:data.totalPrice,
           quantity:data.orderedProducts.quantity,
           images:data.orderedProducts.images,
           orderStatus:data.orderedProducts.orderStatus,
@@ -708,17 +725,18 @@ module.exports={
 
   viewOrderDetailsPage:async(req,res)=>{
     try {
-      const orderProducts=await userhelper.getSingleProductFromOrder(req.session.user._id,req.params.productId)
+      const orderProducts=await userhelper.getSingleProductFromOrder(req.params.orderId,req.params.productId)
       const orderProductsObj={
-        productId:orderProducts[0].productId,
-        productName:orderProducts[0].name,
-        catType:orderProducts[0].catType,
-        description:orderProducts[0].description,
-        quantity:orderProducts[0].quantity,
-        price:orderProducts[0].price,
-        images:orderProducts[0].images,
-        orderStatus:orderProducts[0].orderStatus,
-        orderedDate:orderProducts[0].orderedDate
+        productId:orderProducts.orderedProducts[0].productId,
+        productName:orderProducts.orderedProducts[0].name,
+        catType:orderProducts.orderedProducts[0].catType,
+        description:orderProducts.orderedProducts[0].description,
+        quantity:orderProducts.orderedProducts[0].quantity,
+        price:orderProducts.orderedProducts[0].price,
+        images:orderProducts.orderedProducts[0].images,
+        orderStatus:orderProducts.orderedProducts[0].orderStatus,
+        orderedDate:orderProducts.orderedProducts[0].orderedDate,
+        totalPrice:orderProducts.totalPrice
       }
       const orderAddress=await userhelper.getOrderSingleProductAddress(req.params.orderId)
       const orderTrackDetails=await userhelper.trackOrderDetails(req.params.orderId,req.params.productId)
@@ -727,7 +745,6 @@ module.exports={
       const orderDate = new Date(orderTrackDetails[0].orderDate)
       orderDate.setDate(orderDate.getDate() + 7)
       const expectedDate = orderDate.toLocaleDateString('en-GB', options)
-      console.log(expectedDate)
       const orderTrackObj={
         status:orderTrackDetails[0].orderStatus,
         date:date,
@@ -766,9 +783,11 @@ module.exports={
     try {
       userhelper.returnOrder(req.params.productId,req.params.orderId).then((response)=>{
         userhelper.returnProductUpdateQuantity(req.params.productId,req.params.quantity).then((response)=>{
-          if(response.status){
-            res.json({status:true})
-          }
+          userhelper.addToWallet(req.params.productId,req.params.orderId,req.session.user._id).then((response)=>{
+            if(response.status){
+              res.json({status:true})
+            }
+          })
         })
       })
     } catch (error) {
@@ -805,6 +824,82 @@ module.exports={
       })
     } catch (error) {
       res.status(500).send("Error occured")
+    }
+  },
+
+  getAllCoupon:(req,res)=>{
+    try {
+      userhelper.getAllCoupon().then((data)=>{
+        plainObj=data.map((data)=>{
+          const startDate=new Date(data.startDate)
+          const endDate=new Date(data.endDate)
+          const formatStartDate=startDate.toISOString().split('T')[0]
+          const formatEndDate=endDate.toISOString().split('T')[0]
+          return{
+              _id:data._id,
+              name:data.name,
+              code:data.code,
+              discountValue:data.discountValue,
+              startDate:formatStartDate,
+              endDate:formatEndDate
+          }
+      })
+      res.status(200).json(plainObj)
+      })
+    } catch (error) {
+      res.status(400).send("Error occured")
+    }
+  },
+
+  applyCoupon:(req,res)=>{
+    try {
+      userhelper.applyCoupon(req.params.couponCode,req.session.user._id,req.params.totalAmount).then((response)=>{
+        if(response.status){
+          res.status(200).json({status:true,amount:response.amount})
+        }else{
+          res.status(400).json({status:false,message:response.message})
+        }
+      })
+    } catch (error) {
+      res.status(500).send("Error occured")
+    }
+  },
+
+  verifyPayment:(req,res)=>{
+    const {razorpay_order_id, razorpay_payment_id, razorpay_signature,data} = req.body;
+
+    try {
+        const hmac = crypto.createHmac('sha256', razorpay.key_secret);
+        hmac.update(`${razorpay_order_id}|${razorpay_payment_id}`);
+        const generatedSignature = hmac.digest('hex');
+
+       
+        if (generatedSignature === razorpay_signature) {
+          userhelper.addOrder(data,req.session.user._id).then((response)=>{
+            if(response.status){
+              userhelper.updateProductStock(data.orderedProducts).then((response)=>{
+                if(response.status){
+                  res.json({status:true, message: 'Payment verified successfully!'});
+                }
+              })
+            }
+          })
+        } else {
+
+            res.status(400).json({ status:false, message: 'Payment verification failed!'});
+        }
+    } catch (error) {
+        console.error('Error verifying payment:', error);
+        res.status(500).json({status: 'failure', message: 'Server error during payment verification'});
+    }
+  },
+
+  walletPage:async(req,res)=>{
+    try {
+      const walletAmount=await userhelper.findWalletAmount(req.session.user._id)
+      res.render('users/walletPage',{walletAmount})
+    } catch (error) {
+      res.status(500).send("Error occured page not rendering")
     }
   }
 }

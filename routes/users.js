@@ -94,7 +94,7 @@ router.post('/deletecartproduct/:productId',usercontroller.deleteCartProduct)
 
 router.post('/updateproductquantity/:productId/:value',usercontroller.updateProductQuantity)
 
-router.get('/checkout',usercontroller.checkOutPage)
+router.get('/checkout/:couponCode/:totalAmount',usercontroller.checkOutPage)
 
 router.post('/addAddressFromCart',usercontroller.addAddressFromCart)
 
@@ -111,6 +111,14 @@ router.post('/returnorder/:productId/:orderId/:quantity',usercontroller.returnOr
 router.post('/addtowishlist/:productId',usercontroller.addToWishlist)
 
 router.post('/removefromwish/:productId',usercontroller.removeFromWish)
+
+router.get('/getallcoupons',usercontroller.getAllCoupon)
+
+router.post('/applycoupon/:couponCode/:totalAmount',usercontroller.applyCoupon)
+
+router.post('/verify-payment',usercontroller.verifyPayment)
+
+router.get('/wallet',usercontroller.walletPage)
 
 
 //route for google authentication

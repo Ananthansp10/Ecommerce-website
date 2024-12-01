@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Offers</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+
+  <!-- Header -->
+  <header class="bg-blue-600 text-white py-4 shadow-md">
+    <div class="max-w-7xl mx-auto px-4 flex justify-between items-center">
+      <h1 class="text-2xl font-bold">Admin Panel</h1>
+      <p class="text-lg">Manage Offers</p>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="py-8">
+    <div class="max-w-7xl mx-auto px-4">
+      <h2 class="text-xl font-bold text-gray-700 mb-6">Offer Types</h2>
+
+      <!-- Offer Type Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Referral Offer -->
+        <div class="bg-white rounded-lg shadow-lg p-6 flex flex-col items-center hover:shadow-xl transition-shadow">
+          <img src="https://tse2.mm.bing.net/th?id=OIP.KkWpfCxFdC0W7titoofC9AHaEH&pid=Api&P=0&h=180" alt="Referral Offer" class="mb-4 w-20 h-20">
+          <h3 class="text-lg font-bold text-gray-700">Referral Offer</h3>
+          <p class="text-sm text-gray-500 mt-2">Encourage users to refer friends and earn rewards.</p>
+          <a href="/offers/referral" class="mt-4 px-6 py-2 bg-blue-600 text-white rounded-md text-sm shadow hover:bg-blue-700">Add Offer</a>
+        </div>
+
+        <!-- Category Offer -->
+        <div class="bg-white rounded-lg shadow-lg p-6 flex flex-col items-center hover:shadow-xl transition-shadow">
+          <img src="https://tse4.mm.bing.net/th?id=OIP.LAn9Q9RwF4wQ2VTUCOH2xgHaF7&pid=Api&P=0&h=180" alt="Category Offer" class="mb-4 w-20 h-20">
+          <h3 class="text-lg font-bold text-gray-700">Category Offer</h3>
+          <p class="text-sm text-gray-500 mt-2">Apply discounts to specific product categories.</p>
+          <a href="/admin/categoryoffer" class="mt-4 px-6 py-2 bg-blue-600 text-white rounded-md text-sm shadow hover:bg-blue-700">Add Offer</a>
+        </div>
+
+        <!-- Product Offer -->
+        <div class="bg-white rounded-lg shadow-lg p-6 flex flex-col items-center hover:shadow-xl transition-shadow">
+          <img src="https://tse3.mm.bing.net/th?id=OIP.d_QJ40b5g_sdKVShAFnR5wHaFP&pid=Api&P=0&h=180" alt="Product Offer" class="mb-4 w-20 h-20">
+          <h3 class="text-lg font-bold text-gray-700">Product Offer</h3>
+          <p class="text-sm text-gray-500 mt-2">Offer discounts on specific products and enjoy the order.</p>
+          <a href="/offers/product" class="mt-4 px-6 py-2 bg-blue-600 text-white rounded-md text-sm shadow hover:bg-blue-700">Add Offer</a>
+        </div>
+
+        <!-- Seasonal Offer -->
+        <div class="bg-white rounded-lg shadow-lg p-6 flex flex-col items-center hover:shadow-xl transition-shadow">
+          <img src="https://tse2.mm.bing.net/th?id=OIP.Xd3I6vyFzosXJ-oLnfwP3QHaFx&pid=Api&P=0&h=180" alt="Seasonal Offer" class="mb-4 w-20 h-20">
+          <h3 class="text-lg font-bold text-gray-700">Seasonal Offer</h3>
+          <p class="text-sm text-gray-500 mt-2">Create special offers for festive seasons.</p>
+          <a href="/offers/seasonal" class="mt-4 px-6 py-2 bg-blue-600 text-white rounded-md text-sm shadow hover:bg-blue-700">Add Offer</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+</body>
+</html>

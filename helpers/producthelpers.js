@@ -166,7 +166,8 @@ module.exports={
                     images:'$productDetails.images',
                     description:'$productDetails.description',
                     stock:'$productDetails.stock',
-                    quantity:'$products.quantity'
+                    quantity:'$products.quantity',
+                    offerPrice:'$productDetails.offerPrice'
                 }
             }
         ]).then((data)=>{

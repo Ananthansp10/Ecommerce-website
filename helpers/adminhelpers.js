@@ -4,6 +4,7 @@ const user=require('../databaseSchemas/usersSchemas');
 const category=require('../databaseSchemas/categorySchema');
 const googleAuth=require('../databaseSchemas/googleAuthSchemas');
 const orderDetail=require('../databaseSchemas/orderSchema');
+const couponData=require('../databaseSchemas/couponSchema');
 const mongoose = require('mongoose');
 const { ObjectId } = mongoose.Types; 
 module.exports={
@@ -297,7 +298,7 @@ module.exports={
             {
                 $project:{
                     userName:"$userDetails.name",
-                    email:"$userDetail.email",
+                    email:"$userDetails.email",
                     number:"$userDetails.phoneNumber",
                     address1:"$address.addressLine1",
                     address2:"$address.addressLine2",
@@ -327,7 +328,8 @@ module.exports={
             {
                 $project:{
                     orderDate:"$orderedProducts.orderedDate",
-                    totalPrice:"$totalPrice"
+                    totalPrice:"$totalPrice",
+                    couponCode:"$couponCode"
                 }
             }
            ]).then((data)=>{
@@ -414,6 +416,94 @@ module.exports={
                 })
             }
 
+        })
+    },
+
+    findAllCoupons:()=>{
+        return new Promise((resolve,reject)=>{
+            couponData.find({isActive:true}).then((data)=>{
+                resolve(data)
+            })
+        })
+    },
+
+    addCoupon:(data)=>{
+        return new Promise(async(resolve,reject)=>{
+            const findCoupon=await couponData.findOne({code:data.code,isActive:true})
+            if(findCoupon){
+                resolve({status:false,message:"Coupon with same coupon code exist"})
+            }else{
+                const dataObj=new couponData(data)
+                dataObj.save().then((data)=>{
+                if(data){
+                    resolve({status:true})
+                }else{
+                    resolve({status:false,message:"Coupon not addedd"})
+                }
+            })
+            }
+        })
+    },
+
+    findCouponToEdit:(couponCode)=>{
+        return new Promise((resolve,reject)=>{
+            couponData.findOne({code:couponCode,isActive:true}).then((data)=>{
+                resolve(data)
+            })
+        })
+    },
+
+    editCoupon:(data,couponCode)=>{
+        console.log(couponCode)
+        return new Promise((resolve,reject)=>{
+            couponData.updateOne({code:couponCode,isActive:true},{$set:data}).then((data)=>{
+                if(data.acknowledged){
+                    resolve({status:true,message:"Coupon edited successfully"})
+                }else{
+                    resolve({status:false,message:"Coupon not edited"})
+                }
+            })
+        })
+    },
+
+    deleteCoupon:(couponCode)=>{
+        return new Promise((resolve,reject)=>{
+            couponData.updateOne({code:couponCode},{$set:{isActive:false}}).then((data)=>{
+                if(data.acknowledged){
+                    resolve({status:true})
+                }else{
+                    resolve({status:false})
+                }
+            })
+        })
+    },
+
+    getOrderTotalAmount:()=>{
+        return new Promise(async(resolve,reject)=>{
+            const orders =await orderDetail.find()
+            let total=0
+            orders.map((data)=>{
+                total+=data.totalPrice
+            })
+            resolve(total)
+        })
+    },
+
+    getOrderTotal:()=>{
+        return new Promise(async(resolve,reject)=>{
+            const orders =await orderDetail.find()
+            resolve(orders.length)
+        })
+    },
+
+    getTotalProductsCount:()=>{
+        return new Promise(async(resolve,reject)=>{
+            const orders =await orderDetail.find()
+            let totalProductsCount=0
+            orders.map((data)=>{
+                totalProductsCount+=data.orderedProducts.length
+            })
+            resolve(totalProductsCount)
         })
     }
 }

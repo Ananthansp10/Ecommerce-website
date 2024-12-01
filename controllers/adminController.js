@@ -1,4 +1,6 @@
+const { response } = require('express');
 const adminhelper=require('../helpers/adminhelpers')
+const offerhelper=require('../helpers/offerhelpers')
 
 module.exports={
     adminLogin:(req,res,next)=>{
@@ -233,6 +235,7 @@ module.exports={
                 const orderSummary=await adminhelper.getorderSummary(req.params.orderId)
                 const orderCount=orderSummary.length;
                 const totalAmount=orderSummary[0].totalPrice
+                const couponUsed=orderSummary[0].couponCode
                 const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
                 const date = new Date(orderSummary[0].orderDate).toLocaleDateString('en-GB', options);
                 const orderDate=date
@@ -262,7 +265,7 @@ module.exports={
                         isDelivered:data.orderStatus=="Delivered"
                     }
                 })
-                res.render('admin/orderviewPage',{admin:true,userdata:orderUserDetailsObj,orderCount,totalAmount,orderDate,products:orderProductsObj,status:statusObj});
+                res.render('admin/orderviewPage',{admin:true,userdata:orderUserDetailsObj,orderCount,couponUsed,totalAmount,orderDate,products:orderProductsObj,status:statusObj});
             }else{
                 const orderSummary=await adminhelper.getorderSummary(req.params.orderId)
                 const orderCount=orderSummary.length;
@@ -292,7 +295,7 @@ module.exports={
                         totalPrice:data.price*data.quantity
                     }
                 })
-                res.render('admin/orderviewPage',{admin:true,orderCount,totalAmount,orderDate,products:orderProductsObj,status:statusObj});
+                res.render('admin/orderviewPage',{admin:true,orderCount,totalAmount,couponUsed,orderDate,products:orderProductsObj,status:statusObj});
             }
         } catch (error) {
             console.log(error)
@@ -302,7 +305,24 @@ module.exports={
 
     couponPage:(req,res)=>{
         try {
-            res.render('admin/couponaddPage', { admin: true });
+            let plainObj
+            adminhelper.findAllCoupons().then((data)=>{
+                plainObj=data.map((data)=>{
+                    const startDate=new Date(data.startDate)
+                    const endDate=new Date(data.endDate)
+                    const formatStartDate=startDate.toISOString().split('T')[0]
+                    const formatEndDate=endDate.toISOString().split('T')[0]
+                    return{
+                        _id:data._id,
+                        name:data.name,
+                        code:data.code,
+                        discountValue:data.discountValue,
+                        startDate:formatStartDate,
+                        endDate:formatEndDate
+                    }
+                })
+                res.render('admin/couponaddPage', { admin: true,data:plainObj });
+            })
         } catch (error) {
             res.status(500).send('Error rendering coupon add page');
             }    
@@ -423,6 +443,147 @@ module.exports={
                 })
             } catch (error) {
                 res.status(500).send("Error occured")
+            }
+        },
+
+        addCoupon:(req,res)=>{
+            try {
+                const obj={
+                    name:req.body.name,
+                    code:req.body.code,
+                    discountValue:req.body.discountValue,
+                    minimumPrice:req.body.minimumPrice,
+                    startDate:req.body.startDate,
+                    endDate:req.body.endDate,
+                    description:req.body.description,
+                    isActive:true
+                }
+                adminhelper.addCoupon(obj).then((response)=>{
+                    if(response.status){
+                        res.status(200).json({status:true,message:"Coupon addedd successfully"})
+                    }else{
+                        res.status(400).json({status:false,message:response.message})
+                    }
+                })
+            } catch (error) {
+               res.status(500).send("Error occured") 
+            }
+        },
+
+        editCouponPage:async(req,res)=>{
+            try {
+                const findCouponToEdit=await adminhelper.findCouponToEdit(req.params.couponCode)
+                const formatStartDate=findCouponToEdit.startDate.toISOString().split('T')[0]
+                const formatEndDate=findCouponToEdit.endDate.toISOString().split('T')[0]
+                const obj={
+                    name:findCouponToEdit.name,
+                    description:findCouponToEdit.description,
+                    discountValue:findCouponToEdit.discountValue,
+                    minimumPrice:findCouponToEdit.minimumPrice,
+                    startDate:formatStartDate,
+                    endDate:formatEndDate,
+                    code:findCouponToEdit.code
+                }
+                let plainObj
+                adminhelper.findAllCoupons().then((data)=>{
+                plainObj=data.map((data)=>{
+                    const startDate=new Date(data.startDate)
+                    const endDate=new Date(data.endDate)
+                    const formatStartDate=startDate.toISOString().split('T')[0]
+                    const formatEndDate=endDate.toISOString().split('T')[0]
+                    return{
+                        _id:data._id,
+                        name:data.name,
+                        code:data.code,
+                        discountValue:data.discountValue,
+                        startDate:formatStartDate,
+                        endDate:formatEndDate
+                    }
+                })
+                res.render('admin/couponEditPage',{admin:true,data:plainObj,detail:obj})
+            })
+            } catch (error) {
+               res.status(500).send("Error occured page not rendering") 
+            }
+        },
+
+        editCoupon:(req,res)=>{
+            try {
+                const obj={
+                    name:req.body.name,
+                    code:req.body.code,
+                    discountValue:req.body.discountValue,
+                    minimumPrice:req.body.minimumPrice,
+                    startDate:req.body.startDate,
+                    endDate:req.body.endDate,
+                    description:req.body.description,
+                    isActive:true
+                }
+                adminhelper.editCoupon(obj,req.params.couponCode).then((response)=>{
+                    if(response.status){
+                        res.status(200).json({status:true,message:response.message})
+                    }else{
+                        res.status(400).json({status:response.message})
+                    }
+                })
+            } catch (error) {
+                res.status(500).send("Error occured")
+            }
+        },
+
+        deleteCoupon:(req,res)=>{
+            try {
+               adminhelper.deleteCoupon(req.params.couponCode).then((response)=>{
+                if(response.status){
+                    res.status(200).json({status:true,message:"Coupon deleted"})
+                }else{
+                    res.status(400).json({status:false,message:"Coupon not deleted try again"})
+                }
+               }) 
+            } catch (error) {
+                res.status(500).send("Error occured")
+            }
+        },
+
+        offerPage:async(req,res)=>{
+            try {
+                const offers=await offerhelper.findAllOffer()
+                const plainObj=offers.map((data)=>{
+                    return{
+                        title:data.title,
+                        description:data.description,
+                        discountValue:data.discountValue,
+                        image:data.image,
+                        startDate:new Date(data.startDate).toISOString().split('T')[0],
+                        endDate:new Date(data.endDate).toISOString().split('T')[0],
+                        isActive:data.isActive,
+                        category:data.applicable,
+                        offerId:data._id,
+                        isUsed:data.isUsed
+                    }
+                })
+                res.render('admin/offersPage',{admin:true,offer:plainObj})
+            } catch (error) {
+               res.status(500).send("Error occured page not rendering") 
+            }
+        },
+
+        addOfferPage:(req,res)=>{
+            try {
+                res.render('admin/offerAddPage',{admin:true})
+            } catch (error) {
+                res.status(500).send("Error occured page not rendering") 
+            }
+        },
+
+        salesReportPage:async(req,res)=>{
+            try {
+                const totalAmount=await adminhelper.getOrderTotalAmount()
+                const totalOrders=await adminhelper.getOrderTotal()
+                const totalProducts=await adminhelper.getTotalProductsCount()
+                res.render('admin/salesReportPage',{admin:true,totalAmount,totalOrders,totalProducts})
+            } catch (error) {
+                res.status(500).send("Error occured page not rendering")
             }
         }
     
