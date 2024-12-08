@@ -54,19 +54,37 @@ module.exports={
     })
    },
 
-   getSearchProducts:(item)=>{
-    return new Promise((resolve,reject)=>{
-        if(item=="Mobile" || item=="Mobiles" || item=="mobile" || item=="mobiles" || item=="Accessory" || item=="accessory" || item=="accessories" || item=="Accessories"){
-            product.find({catType:{$regex:item,$options:"i"},visiblity:true}).then((data)=>{
-                resolve(data)
+   getSearchProducts: (item) => {
+    return new Promise((resolve, reject) => {
+        if (!item || typeof item !== "string" || /^[*]+$/.test(item)) {
+            resolve([])
+        }
+
+        const validCategories = [
+            "Mobile", "Mobiles", "mobile", "mobiles",
+            "Accessory", "accessory", "accessories", "Accessories"
+        ];
+
+        const query = validCategories.includes(item)
+            ? { catType: { $regex: item, $options: "i" }, visiblity: true }
+            : { name: { $regex: item, $options: "i" }, visiblity: true }; 
+
+        product.find(query)
+            .then((data) => {
+                console.log(data)
+                if (data.length === 0) {
+                     resolve([]);
+                }
+                resolve(data);
             })
-        }else{
-        product.find({name:{$regex:item,$options:"i"},visiblity:true}).then((data)=>{
-            resolve(data)
-        })
-    }
-    })
-   },
+            .catch((error) => {
+                console.error("Error fetching search results:", error);
+                reject(new Error("An error occurred while fetching search results."));
+            });
+        });
+    },
+
+
 
    sortProductByPrice:(pricerange)=>{
     return new Promise((resolve,reject)=>{
@@ -167,7 +185,10 @@ module.exports={
                     description:'$productDetails.description',
                     stock:'$productDetails.stock',
                     quantity:'$products.quantity',
-                    offerPrice:'$productDetails.offerPrice'
+                    offerPrice:'$productDetails.offerPrice',
+                    couponCode:1,
+                    couponDiscount:1,
+                    couponStatus:1
                 }
             }
         ]).then((data)=>{

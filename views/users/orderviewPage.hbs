@@ -14,10 +14,14 @@
           <p class="text-gray-500">{{data.description}}</p>
           <p class="mt-2 font-medium">Quantity: <span class="text-gray-700">{{data.quantity}}</span></p>
           <p class="mt-1 text-lg font-bold text-gray-800">Rs.{{data.price}}</p>
-          <p class="mt-1 text-md font-bold text-blue-600">Buyable Price Rs.{{data.totalPrice}}</p>
+          <p class="mt-1 text-lg font-bold text-gray-800">Total Price : Rs.{{data.productTotal}}</p>
+          <p class="mt-1 text-lg font-bold text-gray-800">Additional Amount : Rs.150 (For the entire order not for the product)</p>
+          <p class="mt-1 text-md font-bold text-blue-600">Buyable Price Rs.{{data.buyablePrice}}</p>
+          <p class="mt-1 text-lg font-bold text-gray-800">Product Status : {{data.orderStatus}}</p>
+          <p class="mt-1 text-lg font-bold text-gray-800">Payment Method : {{data.paymentMethod}}</p>
+          <p class="mt-1 text-lg font-bold text-red-600">Coupon Used : {{data.couponCode}}</p>
         </div>
       </div>
-      <!-- Repeat above block for each product in the order -->
     </div>
   </div>
 

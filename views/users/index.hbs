@@ -34,9 +34,15 @@
                     {{/if}}
                     <!-- Add to Cart and Buy Now Buttons -->
                     <div class="mt-4 flex items-center justify-between">
+                      {{#if this.isOutOfStock}}
+                        <button class="bg-gray-400 text-white py-1 px-3 rounded-md text-xs hover:bg-gray-400 focus:outline-none  cursor-not-allowed">
+                            Add to Cart
+                        </button>
+                      {{else}}
                         <button onclick="addToCart('{{this._id}}')" class="bg-indigo-600 text-white py-1 px-3 rounded-md text-xs hover:bg-indigo-500 focus:outline-none">
                             Add to Cart
                         </button>
+                        {{/if}}
                         <button class="bg-green-600 text-white py-1 px-3 rounded-md text-xs hover:bg-green-500 focus:outline-none">
                             Buy Now
                         </button>
@@ -90,9 +96,15 @@
                     {{/if}}
                     <!-- Add to Cart and Buy Now Buttons -->
                     <div class="mt-4 flex items-center justify-between">
+                        {{#if this.isOutOfStock}}
+                        <button class="bg-gray-400 text-white py-1 px-3 rounded-md text-xs hover:bg-gray-400 focus:outline-none  cursor-not-allowed">
+                            Add to Cart
+                        </button>
+                        {{else}}
                         <button onclick="addToCart('{{this._id}}')" class="bg-indigo-600 text-white py-1 px-3 rounded-md text-xs hover:bg-indigo-500 focus:outline-none">
                             Add to Cart
                         </button>
+                        {{/if}}
                         <button class="bg-green-600 text-white py-1 px-3 rounded-md text-xs hover:bg-green-500 focus:outline-none">
                             Buy Now
                         </button>
@@ -214,12 +226,12 @@
         cancelButtonText: 'Go to Cart'
       }).then((result) => {
         if (result.dismiss === Swal.DismissReason.cancel) {
-          //location.href = '/product/cartPage';
+          location.href = '/product/cartPage';
         } else {
-          //location.href = '/';
-          var count=document.getElementById("cartCount").innerText
+          location.href = '/';
+          {{!-- var count=document.getElementById("cartCount").innerText
           count=parseInt(count) || 0
-          document.getElementById("cartCount").innerText=count+1
+          document.getElementById("cartCount").innerText=count+1 --}}
         }
       });
     } else {

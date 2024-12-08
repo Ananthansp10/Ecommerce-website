@@ -13,17 +13,17 @@
       <h1 class="text-xl font-bold text-gray-800">My Wallet</h1>
       <div class="flex items-center justify-between mt-4">
         <div>
-          <h2 class="text-3xl font-extrabold text-green-500">{{#if walletAmount}}{{walletAmount}}{{else}}₹0{{/if}}</h2>
+          <h2 class="text-3xl font-extrabold text-green-500">{{#if walletAmount}}₹ {{walletAmount}}{{else}}₹0{{/if}}</h2>
           <p class="text-gray-500">Available Balance</p>
         </div>
-        <div class="space-x-4">
+        {{!-- <div class="space-x-4">
           <button class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">
             Add Funds
           </button>
           <button class="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition">
             Make Payment
           </button>
-        </div>
+        </div> --}}
       </div>
     </div>
 
@@ -40,25 +40,14 @@
           </tr>
         </thead>
         <tbody>
+          {{#each data}}
           <tr class="hover:bg-gray-100 transition">
-            <td class="py-3 px-4 text-gray-700">2024-11-30</td>
-            <td class="py-3 px-4 text-gray-700">Order Payment</td>
-            <td class="py-3 px-4 text-right text-red-500">DEBIT</td>
-            <td class="py-3 px-4 text-right text-red-500">₹1,200</td>
+            <td class="py-3 px-4 text-gray-700">{{this.date}}</td>
+            <td class="py-3 px-4 text-gray-700">{{this.description}}</td>
+            <td class="py-3 px-4 text-right text-red-500">{{this.amountType}}</td>
+            <td class="py-3 px-4 text-right text-red-500">₹{{this.amount}}</td>
           </tr>
-          <tr class="hover:bg-gray-100 transition">
-            <td class="py-3 px-4 text-gray-700">2024-11-28</td>
-            <td class="py-3 px-4 text-gray-700">Funds Added</td>
-            <td class="py-3 px-4 text-right text-green-500">CREDIT</td>
-            <td class="py-3 px-4 text-right text-green-500">₹2,000</td>
-          </tr>
-          <tr class="hover:bg-gray-100 transition">
-            <td class="py-3 px-4 text-gray-700">2024-11-25</td>
-            <td class="py-3 px-4 text-gray-700">Refund</td>
-            <td class="py-3 px-4 text-right text-green-500">CREDIT</td>
-            <td class="py-3 px-4 text-right text-green-500">₹500</td>
-          </tr>
-          <!-- Add more rows as needed -->
+          {{/each}}
         </tbody>
       </table>
     </div>

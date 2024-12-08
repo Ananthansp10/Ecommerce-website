@@ -4,8 +4,8 @@
         <button onclick=location.href='/admin/addoffer' class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
             Add New Offer
         </button>
-        <button onclick=location.href='/admin/productofferlist' class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-         Product Offer List
+        <button onclick=location.href='/admin/offer' class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+         Category Offer List
         </button>
     </div>
 
@@ -57,7 +57,7 @@
 <script>
 
     function applyOffer(offerId){
-        fetch(`/admin/applyoffer/${offerId}`,{
+        fetch(`/admin/applyproductoffer/${offerId}`,{
             method:"POST"
         }).then((response)=>response.json()).then((response)=>{
             if(response.status){
@@ -94,7 +94,7 @@
         cancelButtonText: 'No, cancel!',
     }).then((result) => {
     if (result.isConfirmed) {
-    fetch(`/admin/deleteoffer/${offerId}`,{
+    fetch(`/admin/deleteproductoffer/${offerId}`,{
         method:"POST"
     }).then((response)=>response.json()).then((response)=>{
         if(response.status){

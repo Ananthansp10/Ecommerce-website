@@ -3,6 +3,7 @@ const producthelper=require('../helpers/producthelpers');
 const { response } = require('express');
 const crypto = require('crypto');
 const razorpay=require('../config/razorpay')
+
 module.exports={
 
     loginsection:(req,res)=>{
@@ -59,6 +60,7 @@ module.exports={
 
   signupsubmission: async (req, res) => {
     req.session.email = req.body.email;
+    req.session.referalCode=req.body.referalCode
     try {
       const addUserResponse = await userhelper.addUser(req.body);
       if (addUserResponse.status){
@@ -109,6 +111,7 @@ module.exports={
       const response = await userhelper.signupOtpVerification(req.session.email, otp);
 
       if (response.status) {
+          const checkReferalCode=await userhelper.checkReferal(req.session.referalCode)
           res.status(200).json({status:true,message:response.message})
       } else {
           res.status(400).json({status:false,message:response.message})
@@ -260,7 +263,8 @@ module.exports={
               price: product.price,
               images: product.images,
               isOnWishList:findwish,
-              offerPrice:product.offerPrice ? product.offerPrice :false
+              offerPrice:product.offerPrice ? product.offerPrice :false,
+              isOutOfStock:product.stock==0
             };
           } else {
             return {
@@ -270,7 +274,8 @@ module.exports={
               price: product.price,
               images: product.images,
               isOnWishList:false,
-              offerPrice:product.offerPrice ? product.offerPrice :false
+              offerPrice:product.offerPrice ? product.offerPrice :false,
+              isOutOfStock:product.stock==0
             };
           }
         })
@@ -511,7 +516,8 @@ module.exports={
             description:productDetails.description,
             price:productDetails.price,
             image:productDetails.images,
-            offerPrice:productDetails.offerPrice ? productDetails.offerPrice : false
+            offerPrice:productDetails.offerPrice ? productDetails.offerPrice : false,
+            offerDiscount:productDetails.offerPrice ? productDetails.price-productDetails.offerPrice : 0
           }
           const cartObj={
             userId:req.session.user._id,
@@ -641,9 +647,13 @@ module.exports={
       if(userDetail){
       const cartProducts=await userhelper.getCartProducts(cartId)
       const applyCoupon=await userhelper.addCoupon(userId,couponCode)
-      let cartTotal=totalAmount;
+      let discountTotal=0
+      let couponDiscount=0
+      if(couponCode!="null"){
+        let couponAmount=await userhelper.findCouponAmount(couponCode)
+        couponDiscount=Math.floor(couponAmount/cartProducts.length)
+      }
       const cartProductsObj=cartProducts.map((data)=>{
-        // cartTotal+=data.quantity*data.price
           return{
             productId:data.productId,
             name:data.productName,
@@ -651,10 +661,14 @@ module.exports={
             description:data.description,
             quantity:data.quantity,
             price:data.offerPrice ? data.offerPrice : data.price,
+            discountPrice:data.offerPrice ? (data.offerPrice*data.quantity)-couponDiscount: (data.price*data.quantity)-couponDiscount,
             images:data.images,
             orderStatus:"Placed",
             orderedDate:Date.now()
           }  
+      })
+      cartProducts.map((data)=>{
+        discountTotal+=data.offerDiscount
       })
       const addressDetails=await userhelper.getOrderAddress(addressId,userId)
       const addressObj={
@@ -667,13 +681,18 @@ module.exports={
         pincode:addressDetails[0].pincode,
         landmark:addressDetails[0].landmark,      
       }
+      const randomNumber = Math.floor(100000 + Math.random() * 900000);
+      const orderId=`#${randomNumber}`
       const orderObj={
+        orderId:orderId,
         userId:userId,
         orderedProducts:cartProductsObj,
         address:addressObj,
         totalPrice:totalAmount,
         paymentMethod:payment,
-        couponCode:couponCode==0 ? false :couponCode
+        couponCode:couponCode=="null" ? "No coupon" : couponCode,
+        offerDiscount:discountTotal,
+        orderStatus:"Placed"
       }
       userhelper.placeCartOrder(orderObj,userId).then((response)=>{
         if(response.status===true){
@@ -704,13 +723,14 @@ module.exports={
           productId:data.orderedProducts.productId,
           productName:data.orderedProducts.name,
           description:data.orderedProducts.description,
-          price:data.orderedProducts.price,
-          totalPrice:data.totalPrice,
+          price:data.orderedProducts.price*data.orderedProducts.quantity,
+          totalPrice:data.orderedProducts.price*data.orderedProducts.quantity,
           quantity:data.orderedProducts.quantity,
           images:data.orderedProducts.images,
           orderStatus:data.orderedProducts.orderStatus,
           key:index+1,
-          isDelivered:data.orderedProducts.orderStatus=="Delivered"
+          isDelivered:data.orderedProducts.orderStatus=="Delivered",
+          isReturned:data.orderedProducts.orderStatus=="Return"
         }
       })
       res.render('users/orderPage',{user:req.session.user,data:plainObj})
@@ -733,10 +753,14 @@ module.exports={
         description:orderProducts.orderedProducts[0].description,
         quantity:orderProducts.orderedProducts[0].quantity,
         price:orderProducts.orderedProducts[0].price,
+        buyablePrice:orderProducts.orderedProducts[0].discountPrice,
+        productTotal:orderProducts.orderedProducts[0].price*orderProducts.orderedProducts[0].quantity,
         images:orderProducts.orderedProducts[0].images,
         orderStatus:orderProducts.orderedProducts[0].orderStatus,
         orderedDate:orderProducts.orderedProducts[0].orderedDate,
-        totalPrice:orderProducts.totalPrice
+        totalPrice:orderProducts.totalPrice,
+        paymentMethod:orderProducts.paymentMethod,
+        couponCode:orderProducts.couponCode
       }
       const orderAddress=await userhelper.getOrderSingleProductAddress(req.params.orderId)
       const orderTrackDetails=await userhelper.trackOrderDetails(req.params.orderId,req.params.productId)
@@ -763,16 +787,36 @@ module.exports={
     }
   },
 
-  cartOrderCancel:(req,res)=>{
+  cartOrderCancel:async(req,res)=>{
     try {
-      userhelper.cartOrderCancel(req.params.productId,req.params.orderId).then((response)=>{
-        userhelper.returnProductUpdateQuantity(req.params.productId,req.params.quantity).then((response)=>{
-          if(response.status){
-            res.json({status:true})
-          }else{
-            res.json({status:false})
-          }
+      userhelper.findOrderPaymentMethod(req.params.orderId).then((response)=>{
+        if(response=="Online"){
+          userhelper.addToWallet(req.params.productId,req.params.orderId,req.session.user._id,"Cancelled").then((response)=>{
+            userhelper.updateOrderTotalPrice(req.params.orderId).then((response)=>{
+              userhelper.cartOrderCancel(req.params.productId,req.params.orderId).then((response)=>{
+                userhelper.returnProductUpdateQuantity(req.params.productId,req.params.quantity).then((response)=>{
+                  if(response.status){
+                    res.json({status:true})
+                  }else{
+                    res.json({status:false})
+                  }
+                })
+              })
+            })
+          })
+        }else{
+          userhelper.cartOrderCancel(req.params.productId,req.params.orderId).then((response)=>{
+            userhelper.returnProductUpdateQuantity(req.params.productId,req.params.quantity).then((response)=>{
+              userhelper.updateOrderTotalPrice(req.params.orderId).then((response)=>{
+              if(response.status){
+                res.json({status:true})
+              }else{
+                res.json({status:false})
+              }
+            })
+          })
         })
+        }
       })
     } catch (error) {
       res.status(500).send("Error occured")
@@ -783,7 +827,7 @@ module.exports={
     try {
       userhelper.returnOrder(req.params.productId,req.params.orderId).then((response)=>{
         userhelper.returnProductUpdateQuantity(req.params.productId,req.params.quantity).then((response)=>{
-          userhelper.addToWallet(req.params.productId,req.params.orderId,req.session.user._id).then((response)=>{
+          userhelper.addToWallet(req.params.productId,req.params.orderId,req.session.user._id,"Return").then((response)=>{
             if(response.status){
               res.json({status:true})
             }
@@ -897,9 +941,37 @@ module.exports={
   walletPage:async(req,res)=>{
     try {
       const walletAmount=await userhelper.findWalletAmount(req.session.user._id)
-      res.render('users/walletPage',{walletAmount})
+      const walletHistory=await userhelper.getWalletHistory(req.session.user._id)
+      let plainObj
+      if(walletHistory.length!=0){
+        plainObj=walletHistory.map((data)=>{
+          let date=new Date(data.date).toISOString().split('T')[0]
+          return{
+            date:date,
+            description:data.description,
+            amountType:data.amountType,
+            amount:data.amount
+          }
+        })
+      }
+      res.render('users/walletPage',{walletAmount,data:plainObj})
     } catch (error) {
+      console.log(error)
       res.status(500).send("Error occured page not rendering")
+    }
+  },
+
+  removeCoupon:(req,res)=>{
+    try {
+      userhelper.removeCoupon(req.session.user._id).then((response)=>{
+        if(response.status){
+          res.status(200).json({status:true,message:"Coupon removed"})
+        }else{
+          res.status(200).json({status:false,message:"Coupon not removed"})
+        }
+      })
+    } catch (error) {
+      res.status(500).send("Error occured")
     }
   }
 }

@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const {Schema}=mongoose
 
-const offerSchema = new mongoose.Schema({
+const productOfferSchema = new mongoose.Schema({
   title: {
     type: String,
     required:true
@@ -52,7 +52,7 @@ const offerSchema = new mongoose.Schema({
   },
 });
 
-offerSchema.pre('save', function (next) {
+productOfferSchema.pre('save', function (next) {
   const today = new Date();
   today.setHours(0, 0, 0, 0); 
 
@@ -65,4 +65,4 @@ offerSchema.pre('save', function (next) {
   next();
 });
 
-module.exports = mongoose.model('Offer', offerSchema);
+module.exports = mongoose.model('productOffer', productOfferSchema);

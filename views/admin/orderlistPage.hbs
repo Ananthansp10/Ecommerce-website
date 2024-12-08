@@ -12,7 +12,7 @@
       <thead>
         <tr class="bg-gray-200">
           <th class="py-3 px-4 text-left text-gray-600 font-semibold">SI NO:</th>
-          <th class="py-3 px-4 text-left text-gray-600 font-semibold">Customer</th>
+          <th class="py-3 px-4 text-left text-gray-600 font-semibold">OrderID</th>
           <th class="py-3 px-4 text-left text-gray-600 font-semibold">Order Date</th>
           <th class="py-3 px-4 text-left text-gray-600 font-semibold">Status</th>
           <th class="py-3 px-4 text-left text-gray-600 font-semibold">Total</th>
@@ -23,7 +23,7 @@
         {{#each data}}
         <tr class="border-t border-gray-200 hover:bg-gray-100">
           <td class="py-4 px-4 text-gray-800">{{this.key}}</td>
-          <td class="py-4 px-4 text-gray-800">{{this.userName}}</td>
+          <td class="py-4 px-4 text-gray-800">{{this.ordId}}</td>
           <td class="py-4 px-4 text-gray-800">{{this.orderDate}}</td>
           <td class="py-4 px-4 text-green-600 font-semibold">{{this.orderStatus}}</td>
           <td class="py-4 px-4 text-gray-800">RS. {{this.totalPrice}}</td>

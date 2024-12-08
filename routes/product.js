@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const productcontroller=require('../controllers/productController')
+const userhelper=require('../helpers/usershelpers')
 
 function isAuthenticated(req, res, next) {
     if (req.session.user) {
@@ -10,21 +11,36 @@ function isAuthenticated(req, res, next) {
     }
   }
 
-router.get('/productlist',productcontroller.productList)
+  function checkUserStatus(req,res,next){
+    if(req.session.user){
+      userhelper.checkUserStatus(req.session.user._id).then((response)=>{
+        if(response.status=="Unblock"){
+          next()
+        }else if(response.status=="Block"){
+          req.session.destroy()
+          res.redirect('/users/login')
+        }
+      })
+    }else{
+      next()
+    }
+  }
 
-router.get('/productsByCategory/:cat',productcontroller.productByCategory)
+router.get('/productlist',checkUserStatus,productcontroller.productList)
 
-router.get('/productPage/:id',productcontroller.productPage)
+router.get('/productsByCategory/:cat',checkUserStatus,productcontroller.productByCategory)
 
-router.get('/productSearch',productcontroller.productSearch)
+router.get('/productPage/:id',checkUserStatus,productcontroller.productPage)
+
+router.get('/productSearch',checkUserStatus,productcontroller.productSearch)
 
 router.get('/wishlist',isAuthenticated,productcontroller.wishList)
 
 router.get('/offerSection',productcontroller.offerPage)
 
-router.get('/cartPage',isAuthenticated,productcontroller.cartPage)
+router.get('/cartPage',isAuthenticated,checkUserStatus,productcontroller.cartPage)
 
-router.get('/searchproducts/:item',productcontroller.searchProducts)
+router.get('/searchproducts/:item',checkUserStatus,productcontroller.searchProducts)
 
 router.get('/sortproduct/:value',productcontroller.sortProductByPrice)
 

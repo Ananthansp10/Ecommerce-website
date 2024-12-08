@@ -5,9 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sales Report</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.22/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
 </head>
 <body class="bg-gray-100 min-h-screen">
-  <div class="container mx-auto py-8">
+  <div id="sales-report" class="container mx-auto py-8" style="visibility: visible;">
     <!-- Page Title -->
     <div class="mb-8">
       <h1 class="text-3xl font-bold text-gray-800">Sales Report</h1>
@@ -19,7 +22,7 @@
       <!-- Total Sales -->
       <div class="bg-white shadow-lg rounded-lg p-6">
         <h2 class="text-sm font-medium text-gray-500">Total Sales</h2>
-        <p class="text-3xl font-bold text-gray-800 mt-2">₹{{totalAmount}}</p>
+        <p class="text-3xl font-bold text-gray-800 mt-2">RS {{totalAmount}}</p>
       </div>
       <!-- Total Orders -->
       <div class="bg-white shadow-lg rounded-lg p-6">
@@ -31,55 +34,180 @@
         <h2 class="text-sm font-medium text-gray-500">Products Sold</h2>
         <p class="text-3xl font-bold text-gray-800 mt-2">{{totalProducts}}</p>
       </div>
-    </div>
-
-    <!-- Filters -->
-    <div class="bg-white shadow-lg rounded-lg p-6 mb-8">
-      <div class="flex items-center justify-between">
-        <div>
-          <label for="date-range" class="block text-sm font-medium text-gray-700">Date Range</label>
-          <input type="date" id="date-range" class="mt-1 block w-52 p-2 border border-gray-300 rounded-lg">
-        </div>
-        <div>
-          <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg mt-4">Apply Filter</button>
-        </div>
+      <!--Total Offer Discount-->
+      <div class="bg-white shadow-lg rounded-lg p-6">
+        <h2 class="text-sm font-medium text-gray-500">Total Offer Discount</h2>
+        <p class="text-3xl font-bold text-gray-800 mt-2">{{offerDiscountTotal}}</p>
       </div>
     </div>
 
+    <!-- Filters -->
+<div class="bg-white shadow-lg rounded-lg p-6 mb-8">
+  <div class="flex items-center space-x-4">
+    <div>
+      <label for="start-date" class="block text-sm font-medium text-gray-700">Start Date</label>
+      <input type="date" id="start-date" class="mt-1 block w-52 p-2 border border-gray-300 rounded-lg">
+    </div>
+    <div>
+      <label for="end-date" class="block text-sm font-medium text-gray-700">End Date</label>
+      <input type="date" id="end-date" class="mt-1 block w-52 p-2 border border-gray-300 rounded-lg">
+    </div>
+    <div>
+      <button onclick="filterDate(event)" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg mt-6">Apply Filter</button>
+    </div>
+  </div>
+</div>
+
+
     <!-- Sales Table -->
-    <div class="bg-white shadow-lg rounded-lg p-6">
+    <div class="bg-white shadow-lg rounded-lg p-6 mb-8">
       <h2 class="text-lg font-semibold text-gray-800 mb-4">Sales Data</h2>
       <div class="overflow-x-auto">
-        <table class="w-full table-auto border-collapse">
+        <table class="w-full table-auto border-collapse" id="sales-report-table">
           <thead>
             <tr>
-              <th class="border-b-2 border-gray-300 px-4 py-2 text-left text-sm font-medium text-gray-600">Order ID</th>
-              <th class="border-b-2 border-gray-300 px-4 py-2 text-left text-sm font-medium text-gray-600">Customer</th>
+              <th class="border-b-2 border-gray-300 px-4 py-2 text-left text-sm font-medium text-gray-600">Orders</th>
+              <th class="border-b-2 border-gray-300 px-4 py-2 text-left text-sm font-medium text-gray-600">OrderId</th>
               <th class="border-b-2 border-gray-300 px-4 py-2 text-left text-sm font-medium text-gray-600">Date</th>
               <th class="border-b-2 border-gray-300 px-4 py-2 text-left text-sm font-medium text-gray-600">Amount</th>
-              <th class="border-b-2 border-gray-300 px-4 py-2 text-left text-sm font-medium text-gray-600">Status</th>
+              <th class="border-b-2 border-gray-300 px-4 py-2 text-left text-sm font-medium text-gray-600">Payment Method</th>
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td class="border-b border-gray-300 px-4 py-2 text-sm text-gray-800">#12345</td>
-              <td class="border-b border-gray-300 px-4 py-2 text-sm text-gray-800">John Doe</td>
-              <td class="border-b border-gray-300 px-4 py-2 text-sm text-gray-800">2024-12-01</td>
-              <td class="border-b border-gray-300 px-4 py-2 text-sm text-gray-800">₹1,234</td>
-              <td class="border-b border-gray-300 px-4 py-2 text-sm text-green-500">Completed</td>
+            {{#each orderDetails}}
+            <tr id="sales-table-body">
+              <td class="border-b border-gray-300 px-4 py-2 text-sm text-gray-800">{{this.key}}</td>
+              <td class="border-b border-gray-300 px-4 py-2 text-sm text-gray-800">{{this.orderId}}</td>
+              <td class="border-b border-gray-300 px-4 py-2 text-sm text-gray-800">{{this.date}}</td>
+              <td class="border-b border-gray-300 px-4 py-2 text-sm text-gray-800">RS {{this.total}}</td>
+              <td class="border-b border-gray-300 px-4 py-2 text-sm text-green-500">{{this.status}}</td>
             </tr>
-            <tr>
-              <td class="border-b border-gray-300 px-4 py-2 text-sm text-gray-800">#12346</td>
-              <td class="border-b border-gray-300 px-4 py-2 text-sm text-gray-800">Jane Smith</td>
-              <td class="border-b border-gray-300 px-4 py-2 text-sm text-gray-800">2024-12-01</td>
-              <td class="border-b border-gray-300 px-4 py-2 text-sm text-gray-800">₹2,345</td>
-              <td class="border-b border-gray-300 px-4 py-2 text-sm text-yellow-500">Pending</td>
-            </tr>
-            <!-- More rows as needed -->
+            {{/each}}
           </tbody>
         </table>
       </div>
     </div>
+
+    <!-- Download Buttons -->
+    <div class="flex justify-end gap-4">
+      <button onclick="downloadPDF()" class="bg-purple-500 hover:bg-purple-600 text-white px-6 py-2 rounded-lg">Download as PDF</button>
+      <button onclick="downloadExcel()" class="bg-indigo-500 hover:bg-indigo-600 text-white px-6 py-2 rounded-lg">Download as Excel</button>
+    </div>
   </div>
 </body>
 </html>
+
+<script>
+
+    function downloadPDF() {
+      setTimeout(function() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        // Add summary data to the PDF first
+        doc.setFontSize(14);
+        doc.text("Sales Report", 14, 20);
+        doc.setFontSize(12);
+        doc.text(`Total Sales: ₹{{totalAmount}}`, 14, 30);
+        doc.text(`Total Orders: {{totalOrders}}`, 14, 40);
+        doc.text(`Products Sold: {{totalProducts}}`, 14, 50);
+        doc.text(`Total Offer Discount: ₹{{offerDiscountTotal}}`, 14, 60);
+        
+        // Move the starting Y position for the table
+        let currentY = 70;
+
+        // Generate the table from HTML
+        doc.autoTable({
+          html: '#sales-report-table', // Target the table with ID sales-report-table
+          startY: currentY, // Set starting Y position for the table
+          margin: { top: 10, left: 10, right: 10, bottom: 10 },
+          styles: {
+            fontSize: 10, 
+            cellPadding: 3,  // Increase cell padding for better spacing
+            overflow: 'linebreak',
+            halign: 'center',  // Center-align content horizontally
+          },
+          columnStyles: {
+            0: { cellWidth: 30 },  // Fixed width for the first column
+            1: { cellWidth: 50 },  // Fixed width for the second column
+            2: { cellWidth: 30 },  // Fixed width for the third column
+            3: { cellWidth: 40 },  // Fixed width for the fourth column
+            4: { cellWidth: 50 },  // Fixed width for the fifth column
+          },
+          tableWidth: 'wrap', // Ensure table is not cut off
+          theme: 'grid', // Use grid theme for the table
+        });
+
+        // Save the generated PDF
+        doc.save('sales-report.pdf');
+      }, 500); // A small delay to ensure the content is rendered
+    }
+
+    function downloadExcel() {
+  // Get the table element
+  const table = document.getElementById('sales-report-table');
+
+  // Convert the table to a workbook
+  const wb = XLSX.utils.table_to_book(table, { sheet: 'Sales Report' });
+
+  // Get the worksheet
+  const ws = wb.Sheets['Sales Report'];
+
+  // Adjust column widths to fit the longest content
+  const range = XLSX.utils.decode_range(ws['!ref']); // Get the range of the worksheet
+  for (let col = range.s.c; col <= range.e.c; col++) {
+    let maxWidth = 10; // Set a minimum column width
+    for (let row = range.s.r; row <= range.e.r; row++) {
+      const cellAddress = { r: row, c: col };
+      const cell = ws[XLSX.utils.encode_cell(cellAddress)];
+      if (cell && cell.v) {
+        const cellLength = cell.v.toString().length;
+        maxWidth = Math.max(maxWidth, cellLength);
+      }
+    }
+    const column = XLSX.utils.encode_col(col);
+    ws['!cols'] = ws['!cols'] || [];
+    ws['!cols'][col] = { wch: maxWidth }; // Set column width based on the longest content
+  }
+
+  // Write the Excel file and trigger download
+  XLSX.writeFile(wb, 'sales-report.xlsx');
+}
+
+  function filterDate(e) {
+  e.preventDefault();
+  const fromDate = document.getElementById("start-date").value;
+  const toDate = document.getElementById("end-date").value;
+  const currentDate = new Date();
+
+  let isValid = true;
+
+  if (!fromDate || !toDate) {
+    isValid = false;
+    Swal.fire({
+      icon: 'error',
+      title: 'Missing Dates',
+      text: 'Please select both start and end dates!',
+    }).then(() => {
+      location.reload();
+    });
+  }
+
+  if (new Date(fromDate) > new Date(toDate)) {
+    isValid = false;
+    Swal.fire({
+      icon: 'error',
+      title: 'End date cannot be less than the start date',
+      text: 'Please select an end date greater than the start date.',
+    }).then(() => {
+      location.reload();
+    });
+  }
+
+  if(isValid){
+    location.href=`/admin/datesort/${fromDate}/${toDate}`
+  }
+}
+
+
+</script>

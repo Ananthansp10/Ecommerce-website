@@ -1,5 +1,6 @@
 const offer=require('../databaseSchemas/offerSchema');
 const product=require('../databaseSchemas/productSchema');
+const productOffer=require('../databaseSchemas/productOfferSchema');
 const mongoose=require('mongoose')
 const { ObjectId } = mongoose.Types;
 
@@ -26,6 +27,14 @@ module.exports={
         })
     },
 
+    findAllProductOffer:()=>{
+      return new Promise((resolve,reject)=>{
+          productOffer.find({isActive:true}).then((data)=>{
+              resolve(data)
+          })
+      })
+    },
+
     applyOffer: (offerId) => {
       return new Promise(async (resolve, reject) => {
         try {
@@ -49,7 +58,7 @@ module.exports={
             offerPrice=Math.floor(offerPrice)
     
             const updateResult = await product.updateOne(
-              {_id:new ObjectId(item._id)},
+              {_id:new ObjectId(item._id),price:{$gte:offerDetail.minimumPrice}},
               {
                 $set: {
                   offerPrice: offerPrice,
@@ -79,7 +88,7 @@ module.exports={
             offerPrice=Math.floor(offerPrice)
     
             const updateResult = await product.updateOne(
-              { _id: new ObjectId(item._id) },
+              { _id: new ObjectId(item._id),price:{$gte:offerDetail.minimumPrice}},
               {
                 $set: {
                   offerPrice: offerPrice,
@@ -105,6 +114,17 @@ module.exports={
     deletOffer:(offerId)=>{
       return new Promise(async(resolve,reject)=>{
         const offerDetail=await offer.findOne({_id:new ObjectId(offerId)})
+        if(offerDetail.applicable=="All"){
+          product.updateMany({},{$unset:{offerPrice:""}}).then(()=>{
+            offer.updateOne({_id:new ObjectId(offerId)},{$set:{isActive:false}}).then((data)=>{
+              if(data.acknowledged){
+                resolve({status:true,message:"Offer deleted successfully"})
+              }else{
+                resolve({status:false,message:"Offer not deleted try again"})
+              }
+            })
+          })
+        }else{
         const products=await product.find({catType:{$regex: new RegExp(`^${offerDetail.applicable}$`, 'i')}})
         for(const data of products ){
           const updateResult=await product.updateOne({_id:new ObjectId(data._id)},{$unset:{offerPrice:""}})
@@ -116,9 +136,67 @@ module.exports={
             resolve({status:false,message:"Offer not deleted try again"})
           }
         })
+      }
+      })
+    },
+
+    addProductOffer:(data)=>{
+      return new Promise((resolve,reject)=>{
+        const obj=new productOffer(data)
+        obj.save().then((data)=>{
+          if(data){
+            resolve({status:true})
+          }else{
+            resolve({status:false})
+          }
+        })
+      })
+    },
+
+    applyProductOffer:(offerId)=>{
+      return new Promise(async(resolve,reject)=>{
+        const offerDetail = await productOffer.findOne({ _id: new ObjectId(offerId) });
+          const percentage = parseInt(offerDetail.discountValue.replace('%', ''));
+          const date = new Date();
+    
+          if (new Date(offerDetail.startDate).toISOString().split('T')[0] > new Date(date).toISOString().split('T')[0]) {
+            return resolve({ status: false, message: "Offer not yet started" });
+          }
+    
+          if (new Date(offerDetail.endDate).toISOString().split('T')[0] < new Date(date).toISOString().split('T')[0]) {
+            return resolve({ status: false, message: "Offer Expired" });
+          }
+
+          const products=await product.findOne({name:{$regex: new RegExp(`^${offerDetail.applicable}$`, 'i')}})
+
+          let offerPrice = (percentage / 100) * products.price;
+          offerPrice=Math.floor(offerPrice)
+
+          product.updateOne({name:products.name,price:{$gte:offerDetail.minimumPrice}},{$set:{offerPrice:offerPrice}}).then(()=>{
+            productOffer.updateOne({_id:new ObjectId(offerId)},{$set:{isUsed:true}}).then((data)=>{
+              if(data.acknowledged){
+                resolve({status:true,message:"Offer addedd"})
+              }else{
+                resolve({status:false,message:"Offer not addedd"})
+              }
+            })
+          })
+      })
+    },
+
+    deleteProductOffer:(offerId)=>{
+      return new Promise(async(resolve,reject)=>{
+        const offer=await productOffer.findOne({_id:new ObjectId(offerId)})
+        product.updateOne({name:{$regex: new RegExp(`^${offer.applicable}$`, 'i')}},{$unset:{offerPrice:""}}).then(()=>{
+          productOffer.updateOne({_id:new ObjectId(offerId)},{$set:{isActive:false}}).then((data)=>{
+            if(data.acknowledged){
+              resolve({status:true,message:"Offer deleted"})
+            }else{
+              resolve({status:false,message:"Offer not deleted"})
+            }
+          })
+        })
       })
     }
-    
-  
-      
+          
 }

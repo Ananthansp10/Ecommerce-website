@@ -36,6 +36,20 @@ const couponSchema=new Schema({
     }
 })
 
+couponSchema.pre('find', async function (next) {
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    try {
+        await this.model.updateMany(
+            { endDate: { $lt: now }, isActive: true },
+            { $set: { isActive: false } }
+        );
+    } catch (err) {
+        console.error('Error updating expired coupons in pre-find:', err);
+    }
+    next();
+});
+
 const coupon=mongoose.model('coupon',couponSchema);
 
 module.exports=coupon;

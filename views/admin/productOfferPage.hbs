@@ -24,7 +24,7 @@
       <div class="max-w-7xl mx-auto px-4 py-8">
         <!-- Card -->
         <div class="bg-white shadow-lg rounded-lg p-6">
-          <h2 class="text-xl font-bold mb-4">Add category offer</h2>
+          <h2 class="text-xl font-bold mb-4">Add product offer</h2>
 
           <form class="space-y-6" onsubmit="addOffer(event)">
             <!-- Title -->
@@ -95,7 +95,7 @@
                 type="text" 
                 id="applicableCategory" 
                 class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
-                placeholder="Enter the category"
+                placeholder="Enter the product"
               >
             </div>
             <p id="applicableCategoryError" class="text-sm text-red-500 mt-1 hidden">Applicable category is required.</p>
@@ -261,7 +261,7 @@
     formData.append('image', offerImage);
 
     if(isValid){
-        fetch('/admin/addcategoryoffer',{
+        fetch('/admin/addproductoffer',{
             method:"POST",
             body:formData
         }).then((response)=>response.json()).then((response)=>{

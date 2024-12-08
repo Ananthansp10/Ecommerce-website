@@ -41,11 +41,13 @@
                                 <i class="fas fa-minus"></i>
                             </button>
                             {{/if}}
-                            <input type="text" value="{{this.quantity}}" min="1" class="w-12 ml-0.5 text-center p-2 border-t border-b">
+                            <input type="text" id="quantity" value="{{this.quantity}}" min="1" class="w-12 ml-0.5 text-center p-2 border-t border-b">
                             {{#if this.isIncrementButtonLessThanStock}}
+                            {{#if this.isMaximum}}
                             <button onclick="updateQuantity('{{this.productId}}',1)" class="px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-600 rounded-r-lg transition-colors duration-200">
                                 <i class="fas fa-plus"></i>
                             </button>
+                            {{/if}}
                             {{/if}}
                         </div>
                         <span class="text-lg ml-4 font-semibold">Total : RS {{this.totalPrice}}</span>
@@ -80,11 +82,13 @@
                         Add Coupon
                     </button>
                 </div>
-                 <div class="mt-4 text-right hidden" id="removeCoupon">
-                    <button onclick=location.reload() class="text-red-600 hover:underline">
+                {{#if couponStatus}}
+                 <div class="mt-4 text-right" id="removeCoupon">
+                    <button onclick="removeCoupon()" class="text-red-600 hover:underline">
                         Remove Coupon
                     </button>
                 </div>
+                {{/if}}
             </div>
 
             <div class="flex justify-between mb-2 text-lg font-semibold">
@@ -101,18 +105,22 @@
             </div>
             <div class="flex justify-between mb-4 text-md font-semibold">
                 <span class="font-semibold text-red-600">Coupon Applied</span>
-                <span class="font-semibold text-red-600" id="couponApplied"></span>
+                <span class="font-semibold text-red-600" id="couponApplied">{{couponCode}}</span>
             </div>
             <div class="flex justify-between mb-4 text-md font-semibold">
                 <span class="font-semibold text-red-600">Coupon Discount</span>
-                <span class="font-semibold text-red-600" id="couponDiscount"></span>
+                <span class="font-semibold text-red-600" id="couponDiscount">{{couponDiscount}}</span>
             </div>
             <hr class="mb-4">
             <div class="flex justify-between text-lg font-semibold mb-6">
                 <span>Total</span>
                 <span id="total">{{totalAmount}}</span>
             </div>
+           {{#if outOfStock}}
             <button onclick="goToCheckOut()" class="bg-blue-500 text-white py-2 px-4 w-full rounded-lg hover:bg-blue-600 transition-all">Proceed to Checkout</button>
+           {{else}}
+            <button onclick="goToCheckOut()" class="bg-blue-500 text-white py-2 px-4 w-full rounded-lg hover:bg-blue-600 transition-all">Proceed to Checkout</button>
+            {{/if}}
         </div>
     </div>
 </div>
@@ -149,11 +157,12 @@
 {{/if}}
 
 <script>
-    let couponCode="no"
+    let couponCode=false
     let couponStatus=false
     let totalAmount=document.getElementById("total").innerText
     function applyCoupon() {
         couponCode = document.getElementById('couponCode').value;
+        localStorage.setItem('couponCode', couponCode);
         if (!couponCode) {
             Swal.fire({
                 icon: 'error',
@@ -162,7 +171,7 @@
                 confirmButtonText: 'OK',
             });
         }else{
-        fetch(`/users/applycoupon/${couponCode}/${totalAmount}`, {
+        fetch(`/users/applycoupon/${couponCode}/${totalAmount}`,{
             method: 'POST',
           })
             .then((response) => response.json())
@@ -173,17 +182,10 @@
                         title: 'Coupon Applied',
                         text: `Discount applied successfully! ${data.amount} reduced from the total`,
                         confirmButtonText: 'OK',
-                    }).then(() => {
-                        let total=document.getElementById("total").innerText
-                        total=parseFloat(total)
-                        let diff=total-data.amount
-                        totalAmount=diff
-                        document.getElementById("total").innerText=diff
-                        document.getElementById("couponApplied").innerText=couponCode
-                        document.getElementById("couponDiscount").innerText=data.amount
-                        couponStatus=true
-                        document.getElementById("removeCoupon").classList.remove('hidden')
-                    });
+                    }).then(()=>{
+                        couponStatus=false
+                        location.reload();
+                    })
                 } else {
                     Swal.fire({
                         icon: 'error',
@@ -204,6 +206,7 @@
             });
         }
     }
+
 
     function showCoupons() {
         const modal = document.getElementById('couponModal');
@@ -244,12 +247,11 @@
 
     function selectCoupon(code) {
          if(couponStatus){
+            closeCouponModal()
              Swal.fire({
             icon: 'error',
             title: 'Error',
             text: "Cannot Add the coupon first remove the existing coupon"
-        }).then(()=>{
-             closeCouponModal();
         })
         }else{
         document.getElementById('couponCode').value = code;
@@ -313,7 +315,9 @@
             method:"POST"
         }).then((response)=>{
             if(response.status){
+
                 location.reload();
+
             }else{
                 location.reload();
             }
@@ -321,6 +325,35 @@
     }
 
     function goToCheckOut(){
+        couponCode=localStorage.getItem('couponCode')
+        localStorage.removeItem('couponCode')
         location.href=`/users/checkout/${couponCode}/${totalAmount}`
+    }
+
+    function removeCoupon(){
+        fetch('/users/removecoupon',{
+            method:"POST"
+        }).then((response)=>response.json()).then((response)=>{
+            if(response.status){
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Removed!',
+                    text:response.message,
+                    confirmButtonText: 'OK'
+                }).then(()=>{
+                    localStorage.removeItem('couponCode')
+                    location.reload();
+                })
+            }else{
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text:response.message,
+                    confirmButtonText: 'Close'
+                }).then(()=>{
+                    location.reload();
+                })
+            }
+        })
     }
 </script>

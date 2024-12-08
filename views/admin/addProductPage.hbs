@@ -88,6 +88,12 @@
         </div>
         <div class="mt-2 text-sm text-red-900 bg-red-300 p-2 rounded-md hidden" id="descriptionError"></div>
 
+        <div>
+            <label for="color" class="block text-sm font-medium text-gray-700">Storage</label>
+            <input type="text" name="storage" id="storage" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Enter product storage" />
+        </div>
+        <div class="mt-2 text-sm text-red-900 bg-red-300 p-2 rounded-md hidden" id="storageError"></div>
+
         <!-- Buttons -->
         <div class="flex justify-end space-x-2 md:space-x-4">
             <button type="reset" class="bg-gray-500 text-white px-3 py-2 md:px-4 rounded hover:bg-gray-600" onclick="resetPage()">Reset</button>
@@ -185,7 +191,7 @@
                 const imagePreview = document.getElementById(currentImagePreviewId);
                 imagePreview.src = url;
 
-                formData.append("images", blob);
+                //formData.append("images", blob);
 
                 // Close the modal
                 cropperModal.classList.add('hidden');
@@ -228,6 +234,7 @@
         const image2=document.getElementById("img2").files[0]
         const image3=document.getElementById("img3").files[0]
         const image4=document.getElementById("img4").files[0]
+        const storage=document.getElementById("storage").value
 
         if(!productName){
             document.getElementById("nameError").innerText="Enter the Product Name !"
@@ -271,6 +278,11 @@
             document.getElementById("descriptionError").classList.remove('hidden')
             isValid=false
         }
+        if(!storage){
+            document.getElementById("storageError").innerText="Enter the Product Storage !"
+            document.getElementById("storageError").classList.remove('hidden')
+            isValid=false
+        }
         if(!image1){
             document.getElementById("image1Error").innerText="Choose the Image !"
             document.getElementById("image1Error").classList.remove('hidden')
@@ -299,6 +311,7 @@
         formData.append('stock', stock);
         formData.append('colour', colour);
         formData.append('description', description);
+        formData.append('storage', storage);
 
         // Append files
         formData.append('images', image1);

@@ -24,6 +24,8 @@ router.get('/editProducts/:id',admincontroller.adminEditProductPage)
 
 router.post('/editProducts/:id',upload.array('images', 4),admincontroller.adminEditProductSubmission)
 
+router.post('/deleteproductimage/:productId/:index',admincontroller.deleteProductImage)
+
 router.post('/deleteProduct/:id',admincontroller.adminDeleteProduct)
 
 router.get('/productcategory/:value',admincontroller.productByCategory)
@@ -71,6 +73,20 @@ router.post('/applyoffer/:offerId',offercontroller.applyOffer)
 router.post('/deleteoffer/:offerId',offercontroller.deletOffer)
 
 router.get('/salesreport',admincontroller.salesReportPage)
+
+router.get('/addvariant/:productId/:productName',admincontroller.addVariantPage)
+
+router.get('/productoffer',admincontroller.productOfferPage)
+
+router.post('/addproductoffer',upload.array('image',1),offercontroller.addProductOffer)
+
+router.get('/datesort/:from/:end',admincontroller.getDateData)
+
+router.get('/productofferlist',admincontroller.productOfferListPage)
+
+router.post('/applyproductoffer/:offerId',offercontroller.applyProductOffer)
+
+router.post('/deleteproductoffer/:offerId',offercontroller.deleteProductOffer)
 
 
 module.exports=router;

@@ -57,7 +57,8 @@ module.exports={
                 stock:data.stock,
                 colour:data.colour,
                 description:data.description,
-                images:images
+                images:images,
+                storage:data.storage
             }
             return new Promise((resolve,reject)=>{
                 product.updateOne({_id:new ObjectId(proId)},{$set:editproduct}).then((data)=>{
@@ -76,6 +77,7 @@ module.exports={
                 stock:data.stock,
                 colour:data.colour,
                 description:data.description,
+                storage:data.storage
             }
         return new Promise((resolve,reject)=>{
             product.updateOne({_id:new ObjectId(proId)},{$set:editproduct}).then((data)=>{
@@ -106,14 +108,9 @@ module.exports={
     },
 
     getUser:()=>{
-        let userArray=[];
         return new Promise((resolve,reject)=>{
-            user.find({}).then((data)=>{
-                googleAuth.find({}).then((googleData)=>{
-                    userArray=[...data,...googleData]
-                    console.log(userArray)
-                    resolve(userArray)
-                })
+            user.find().sort({createdAt:-1}).then((data)=>{
+               resolve(data)
             })
         })
     },
@@ -235,45 +232,32 @@ module.exports={
         })
     },
 
+
     findOrders:()=>{
         return new Promise((resolve,reject)=>{
-           orderDetail.aggregate([{
-            $lookup:{
-                from:"users",
-                localField:"userId",
-                foreignField:"_id",
-                as:"userDetails"
-            }
-           },
-           {
-            $unwind:"$userDetails"
-           },
-           {
-            $unwind:"$orderedProducts"
-           },
-           {
-            $group: {
-              _id: "$_id",                         
-              userId:{ $first: "$userId" },         
-              userName:{ $first: "$userDetails.name" },
-              totalPrice:{ $first: "$totalPrice" },   
-              orderDate:{ $first: "$orderedProducts.orderedDate"},
-              orderStatus:{ $first: "$orderedProducts.orderStatus"},      
-            }
-          },
-          {
-            $project: {
-              orderId: "$_id",                   
-              userId: 1,                          
-              userName: 1,                       
-              totalPrice: 1,                                    
-              orderDate: 1, 
-              orderStatus:1                                      
-            }
-          }
-        ]).then((data)=>{
+           orderDetail.aggregate([
+            {
+                $sort:{
+                    orderDate:-1
+                }
+            },
+            // {
+            //     $addFields: {
+            //       totalPrice: {
+            //         $sum: {
+            //           $map: {
+            //             input: "$orderedProducts",
+            //             as: "product",
+            //             in: { $multiply: ["$$product.price", "$$product.quantity"] }
+            //           }
+            //         }
+            //       }
+            //     }
+            //   },
+           ]).then((data)=>{
+            console.log(data)
             resolve(data)
-        })
+           })
         })
     },
 
@@ -325,13 +309,6 @@ module.exports={
             {
                 $unwind:"$orderedProducts"
             },
-            {
-                $project:{
-                    orderDate:"$orderedProducts.orderedDate",
-                    totalPrice:"$totalPrice",
-                    couponCode:"$couponCode"
-                }
-            }
            ]).then((data)=>{
             resolve(data)
            })
@@ -383,7 +360,7 @@ module.exports={
                 const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
                 let date=Date.now();
                 const convertDate = new Date(date).toLocaleDateString('en-GB', options)
-                orderDetail.updateOne({_id:new ObjectId(orderId)},{$set:{'orderedProducts.$[].orderStatus':status,'orderedProducts.$[].shippedDate':convertDate}}).then((data)=>{
+                orderDetail.updateOne({_id:new ObjectId(orderId)},{$set:{'orderedProducts.$[].orderStatus':status,'orderedProducts.$[].shippedDate':convertDate,orderStatus:status}}).then((data)=>{
                     if(data.acknowledged){
                         resolve({status:true})
                     }else{
@@ -395,7 +372,7 @@ module.exports={
                 const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
                 let date=Date.now();
                 const convertDate = new Date(date).toLocaleDateString('en-GB', options)
-                orderDetail.updateOne({_id:new ObjectId(orderId)},{$set:{'orderedProducts.$[].orderStatus':status,'orderedProducts.$[].arrivedDate':convertDate}}).then((data)=>{
+                orderDetail.updateOne({_id:new ObjectId(orderId)},{$set:{'orderedProducts.$[].orderStatus':status,'orderedProducts.$[].arrivedDate':convertDate,orderStatus:status}}).then((data)=>{
                     if(data.acknowledged){
                         resolve({status:true})
                     }else{
@@ -407,7 +384,7 @@ module.exports={
                 const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
                 let date=Date.now();
                 const convertDate = new Date(date).toLocaleDateString('en-GB', options)
-                orderDetail.updateOne({_id:new ObjectId(orderId)},{$set:{'orderedProducts.$[].orderStatus':status,'orderedProducts.$[].deliveredDate':convertDate}}).then((data)=>{
+                orderDetail.updateOne({_id:new ObjectId(orderId)},{$set:{'orderedProducts.$[].orderStatus':status,'orderedProducts.$[].deliveredDate':convertDate,orderStatus:status}}).then((data)=>{
                     if(data.acknowledged){
                         resolve({status:true})
                     }else{
@@ -505,5 +482,72 @@ module.exports={
             })
             resolve(totalProductsCount)
         })
+    },
+
+    getAllOrderDetails:()=>{
+        return new Promise((resolve,reject)=>{
+            orderDetail.find().then((data)=>{
+                console.log(data)
+                let obj=data.map((details,index)=>{
+                    let date=new Date(details.orderDate).toISOString().split('T')[0]
+                    return {
+                        orderId:details.orderId,
+                        total:details.totalPrice,
+                        status:details.paymentMethod,
+                        key:index+1,
+                        date:date
+                    }
+                })
+                resolve(obj)
+            })
+        })
+    },
+
+    getOfferDiscountTotal:()=>{
+        let total=0
+        return new Promise((resolve,reject)=>{
+            orderDetail.find().then((data)=>{
+                console.log(data)
+                data.map((data)=>{
+                    total+=data.offerDiscount
+                })
+                resolve(total)
+            })
+        })
+    },
+
+    deleteProductImage:(productId,index)=>{
+        return new Promise((resolve,reject)=>{
+            product.updateOne({_id:new ObjectId(productId)},{$unset:{[`images.${index}`]:1}}).then(()=>{
+                product.updateOne({_id:new ObjectId(productId)},{$pull:{images:null}}).then((data)=>{
+                    if(data.acknowledged){
+                        resolve({status:true})
+                    }else{
+                        resolve({status:true})
+                    }
+                })
+            })
+        })
+    },
+
+    getProduct:(productId)=>{
+        return new Promise((resolve,reject)=>{
+            product.findOne({_id:new ObjectId(productId)}).then((data)=>{
+                resolve(data)
+            })
+        })
+    },
+
+    getDateData:(from,end)=>{
+        const startDate = new Date(from);
+        const endDate = new Date(end);
+        return new Promise((resolve,reject)=>{
+            endDate.setHours(23, 59, 59, 999);
+            orderDetail.find({orderDate:{$gte:startDate,$lte:endDate}}).then((data)=>{
+                console.log(data)
+                resolve(data)
+            })
+        })
     }
+      
 }

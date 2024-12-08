@@ -52,6 +52,9 @@ const productSchema = new mongoose.Schema({
     visiblity:{
         type:Boolean
     },
+    storage:{
+        type:String,
+    },
     offerPrice:{
         type:Number
     }

@@ -108,7 +108,7 @@ module.exports={
 
     adminProductSubmission:async(req,res)=>{
         try {
-            const{name, catType, price, stock, colour, description} = req.body;
+            const{name, catType, price, stock, colour, description,storage} = req.body;
             const newprice=parseInt(price)
             const newstock=parseInt(stock)
             const imageUrls = req.files.map(file => file.path);
@@ -122,7 +122,8 @@ module.exports={
                 colour,
                 description,
                 images: imageUrls,
-                visiblity: true
+                visiblity: true,
+                storage
             };
     
             const response = await adminhelper.addProduct(newProduct);
@@ -150,7 +151,8 @@ module.exports={
                 stock: productDetails[0].stock,
                 colour: productDetails[0].colour,
                 description: productDetails[0].description,
-                images: productDetails[0].images
+                images: productDetails[0].images,
+                storage:productDetails[0].storage
             };
         
             const categoryOption = {
@@ -201,8 +203,8 @@ module.exports={
                 const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
                 const date = new Date(data.orderDate).toLocaleDateString('en-GB', options);
                 return{
-                    orderId:data.orderId,
-                    userName:data.userName,
+                    orderId:data._id,
+                    ordId:data.orderId,
                     userId:data.userId,
                     orderStatus:data.orderStatus,
                     orderDate:date,
@@ -212,6 +214,7 @@ module.exports={
             })
             res.render('admin/orderlistPage',{admin: true,data:orderObj});
         } catch (error) {
+            console.log(error)
             res.status(500).send('Error rendering order list page');
         }
     },
@@ -234,8 +237,9 @@ module.exports={
                 }
                 const orderSummary=await adminhelper.getorderSummary(req.params.orderId)
                 const orderCount=orderSummary.length;
-                const totalAmount=orderSummary[0].totalPrice
+                let totalAmount=orderSummary[0].totalPrice
                 const couponUsed=orderSummary[0].couponCode
+                const paymentMethod=orderSummary[0].paymentMethod
                 const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
                 const date = new Date(orderSummary[0].orderDate).toLocaleDateString('en-GB', options);
                 const orderDate=date
@@ -262,14 +266,16 @@ module.exports={
                         isPlaced:data.orderStatus=="Placed",
                         isShipped:data.orderStatus=="Shipped",
                         isOutForDelivery:data.orderStatus=="outForDelivery",
-                        isDelivered:data.orderStatus=="Delivered"
+                        isDelivered:data.orderStatus=="Delivered",
+                        status:data.orderStatus
                     }
                 })
-                res.render('admin/orderviewPage',{admin:true,userdata:orderUserDetailsObj,orderCount,couponUsed,totalAmount,orderDate,products:orderProductsObj,status:statusObj});
+                res.render('admin/orderviewPage',{admin:true,userdata:orderUserDetailsObj,orderCount,paymentMethod,couponUsed,totalAmount,orderDate,products:orderProductsObj,status:statusObj});
             }else{
                 const orderSummary=await adminhelper.getorderSummary(req.params.orderId)
                 const orderCount=orderSummary.length;
                 const totalAmount=orderSummary[0].totalPrice
+                const paymentMethod=orderSummary[0].paymentMethod
                 const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
                 const date = new Date(orderSummary[0].orderDate).toLocaleDateString('en-GB', options);
                 const orderDate=date
@@ -292,10 +298,11 @@ module.exports={
                         price:data.price,
                         quantity:data.quantity,
                         images:data.images,
-                        totalPrice:data.price*data.quantity
+                        totalPrice:data.price*data.quantity,
+                        status:data.orderStatus
                     }
                 })
-                res.render('admin/orderviewPage',{admin:true,orderCount,totalAmount,couponUsed,orderDate,products:orderProductsObj,status:statusObj});
+                res.render('admin/orderviewPage',{admin:true,orderCount,totalAmount,couponUsed,paymentMethod,orderDate,products:orderProductsObj,status:statusObj});
             }
         } catch (error) {
             console.log(error)
@@ -581,8 +588,98 @@ module.exports={
                 const totalAmount=await adminhelper.getOrderTotalAmount()
                 const totalOrders=await adminhelper.getOrderTotal()
                 const totalProducts=await adminhelper.getTotalProductsCount()
-                res.render('admin/salesReportPage',{admin:true,totalAmount,totalOrders,totalProducts})
+                const orderDetails=await adminhelper.getAllOrderDetails()
+                const offerDiscountTotal=await adminhelper.getOfferDiscountTotal()
+                res.render('admin/salesReportPage',{admin:true,totalAmount,totalOrders,totalProducts,orderDetails,offerDiscountTotal})
             } catch (error) {
+                res.status(500).send("Error occured page not rendering")
+            }
+        },
+
+        addVariantPage:async(req,res)=>{
+            try {
+               res.render('admin/addVariantPage',{admin:true,id:req.params.productId,name:req.params.productName})
+            } catch (error) {
+                res.status(500).send("Error occured page not rendering")
+            }
+        },
+
+        deleteProductImage:(req,res)=>{
+            try {
+               adminhelper.deleteProductImage(req.params.productId,req.params.index).then((response)=>{
+                if(response.status){
+                    res.status(200).json({status:true})
+                }else{
+                    res.status(400).json({status:false})
+                }
+               })
+            } catch (error) {
+                res.status(500).send("Error occured")
+            }
+        },
+
+        productOfferPage:(req,res)=>{
+            try {
+                res.render('admin/productOfferPage',{admin:true})
+            } catch (error) {
+                res.status(500).send("Error occured page not rendering")
+            }
+        },
+
+        getDateData:async(req,res)=>{
+            try {
+              const data=await adminhelper.getDateData(req.params.from,req.params.end)
+              let totalAmount=0
+              let totalOrders=data.length
+              let totalProducts=0
+              let offerDiscountTotal=0
+              let obj
+              if(data.length!=0){
+                obj=data.map((data,index)=>{
+                    totalAmount+=data.totalPrice
+                    offerDiscountTotal+=data.offerDiscount
+                    data.orderedProducts.map((data)=>{
+                        totalProducts++
+                    })
+                    let date=new Date(data.orderDate).toISOString().split('T')[0]
+                    return{
+                        orderId:data.orderId,
+                        status:data.paymentMethod,
+                        date:date,
+                        total:data.totalPrice,
+                        key:index+1
+                    }
+                  })
+                  res.render('admin/salesReportPage',{admin:true,orderDetails:obj,totalAmount,totalOrders,totalProducts,offerDiscountTotal})
+              }else{
+                res.render('admin/salesReportPage',{admin:true,orderDetails:obj})
+              }
+            } catch (error) {
+               console.log(error)
+               res.status(500).send("Error occured") 
+            }
+        },
+
+        productOfferListPage:async(req,res)=>{
+            try {
+                const offers=await offerhelper.findAllProductOffer()
+                const plainObj=offers.map((data)=>{
+                    return{
+                        title:data.title,
+                        description:data.description,
+                        discountValue:data.discountValue,
+                        image:data.image,
+                        startDate:new Date(data.startDate).toISOString().split('T')[0],
+                        endDate:new Date(data.endDate).toISOString().split('T')[0],
+                        isActive:data.isActive,
+                        category:data.applicable,
+                        offerId:data._id,
+                        isUsed:data.isUsed
+                    }
+                })
+                res.render('admin/productOfferList',{admin:true,offer:plainObj})
+            } catch (error) {
+                console.log(error)
                 res.status(500).send("Error occured page not rendering")
             }
         }

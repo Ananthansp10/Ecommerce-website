@@ -42,13 +42,18 @@
                             <span class="bg-green-100 text-green-600 px-2 py-1 rounded">{{this.catType}}</span>
                         </td>
                         <td class="py-3 px-4">
-                            <button class="bg-yellow-400 text-white px-3 py-1 rounded hover:bg-yellow-500 mr-2" onclick="editProduct('{{this._id}}')">
-                                <i class="fas fa-edit"></i> Edit
-                            </button>
-                            <button class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600" onclick="deleteProduct('{{this._id}}')">
-                                <i class="fas fa-trash"></i> Delete
-                            </button>
-                        </td>
+                        <div class="flex space-x-2">
+                        <button class="bg-yellow-400 text-white px-2 py-1 text-xs rounded hover:bg-yellow-500" onclick="editProduct('{{this._id}}')">
+                        <i class="fas fa-edit"></i> Edit
+                        </button>
+                        {{!-- <button class="bg-green-500 text-white px-2 py-1 text-xs rounded hover:bg-green-600" onclick="addVariant('{{this._id}}','{{this.name}}')">
+                        <i class="fas fa-plus-circle"></i> Add Variant
+                        </button> --}}
+                        <button class="bg-red-500 text-white px-2 py-1 text-xs rounded hover:bg-red-600" onclick="deleteProduct('{{this._id}}')">
+                        <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
+                    </td>
                     </tr>
                     {{/each}}
                 </tbody>
@@ -56,6 +61,8 @@
         </div>
     </div>
 </section>
+
+
 
 <script>
     document.getElementById('categoryFilter').addEventListener('change', function() {
@@ -136,5 +143,9 @@
 
     function findProductByCategory(value){
       window.location.href=`/admin/productcategory/${value.value}`
+    }
+
+    function addVariant(productId,productName){
+        window.location.href=`/admin/addvariant/${productId}/${productName}`
     }
 </script>

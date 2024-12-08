@@ -20,7 +20,7 @@
               Email address
             </label>
             <div class="mt-2">
-              <input id="email" name="email" type="text" autocomplete="email" class="block w-full rounded-md border-gray-300 py-2 text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+              <input id="email" name="email" type="text" autocomplete="email" class="block w-full pl-2 rounded-md border-gray-300 py-2 text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
             </div>
           </div>
            <div class="mt-2 text-sm text-red-600 bg-red-100 p-2 rounded-md hidden" id="emailError"></div>
@@ -38,7 +38,7 @@
               </div>
             </div>
             <div class="mt-2">
-              <input id="password" name="password" type="password" autocomplete="current-password" class="block w-full rounded-md border-gray-300 py-2 text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+              <input id="password" name="password" type="password" autocomplete="current-password" class="block w-full pl-2 rounded-md border-gray-300 py-2 text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
             </div>
           </div>
            <div class="mt-2 text-sm text-red-600 bg-red-100 p-2 rounded-md hidden" id="passwordError"></div>
@@ -155,7 +155,6 @@
       Swal.fire({
       icon: 'error',
       title:response.message,
-      text:"Invalid Password",
       confirmButtonText: 'Try Again'
     }).then(()=>{
       location.reload();

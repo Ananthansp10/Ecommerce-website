@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
 const bcrypt = require('bcrypt');
+const crypto = require('crypto');
 
-// Define the signup schema
 const userSchema = new Schema({
     name: {
         type: String,
@@ -17,15 +17,16 @@ const userSchema = new Schema({
         lowercase: true,
         trim: true,
     },
+    googleId:{
+        type:String
+    },
     password: {
         type: String,
-        required: [true, 'Password is required'],
         minlength: [6, 'Password must be at least 6 characters long'],
         },
 
     confirmPassword: {
         type: String,
-        required: [true, 'Confirm Password is required'],
     },
     verified:{
         type:Boolean
@@ -33,28 +34,47 @@ const userSchema = new Schema({
     status:{
         type:String
     },
+    referralCode:{
+        type:String,
+        unique:true
+    },
     createdAt: {
         type: Date,
         default: Date.now,
     },
-    status:{
-        type:String
-    }
 });
 
-// Hashing the password before saving the user
+// Function to generate a random unique referral code
+const generateReferralCode = async () => {
+    const referralCode = crypto.randomBytes(4).toString('hex').toUpperCase(); 
+
+    const existingUser = await mongoose.model('users').findOne({ referralCode });
+  
+    if (existingUser) {
+      return generateReferralCode();
+    }
+  
+    return referralCode;
+  };
+  
+  userSchema.pre('save', async function (next) {
+    if (this.isNew) {
+      const referralCode = await generateReferralCode();
+      this.referralCode = referralCode;
+    }
+    })
+
+
 userSchema.pre('save', async function (next) {
     if (!this.isModified('password')) return next();
 
-    // Hash the password with bcrypt
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
 
-    // Remove confirmPassword from the database (it's only for validation)
     this.confirmPassword = undefined;
 
     next();
 });
 
-// Export the model
+
 module.exports = mongoose.model('users', userSchema);

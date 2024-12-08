@@ -118,7 +118,8 @@ module.exports={
                 inStock:productDetails.stock>5,
                 limitedStock:productDetails.stock<=5 && productDetails.stock>0,
                 isOnWishList:findwish?findwish:false,
-                offerPrice:productDetails.offerPrice ? productDetails.offerPrice :false
+                offerPrice:productDetails.offerPrice ? productDetails.offerPrice :false,
+                storage:productDetails.storage
             };
             
             const colours = await producthelpers.getColourVariant(productDetails.name);
@@ -182,11 +183,22 @@ module.exports={
             const cartProducts=await producthelpers.getCartProducts(req.session.user._id)
             let totalAmount=150
             let subTotal=0
+            let couponCode
+            let couponDiscount
+            let couponStatus
             let total=cartProducts.map((data)=>{
                 let value=data.offerPrice ? data.offerPrice*data.quantity :data.price*data.quantity
                 totalAmount+=value
                 subTotal+=value
             })
+            if(cartProducts.length!=0){
+            couponCode=cartProducts[0].couponCode ? cartProducts[0].couponCode :""
+            couponDiscount=cartProducts[0].couponDiscount ? cartProducts[0].couponDiscount :""
+            if(couponCode){
+            totalAmount=totalAmount-couponDiscount
+            }
+            couponStatus=cartProducts[0].couponStatus ? cartProducts[0].couponStatus :""
+            }
             const plainObj=cartProducts.map((data)=>{
                 return{
                     _id:data._id,
@@ -203,10 +215,11 @@ module.exports={
                     totalPrice:data.offerPrice ? data.offerPrice*data.quantity : data.price*data.quantity,
                     isQuantityGreaterThanOne:data.quantity>1,
                     isIncrementButtonLessThanStock:data.quantity<data.stock,
-                    isMinimumStockExceded:data.quantity==data.stock
+                    isMinimumStockExceded:data.quantity==data.stock,
+                    isMaximum:data.quantity<5
                 }
             })
-            res.render('users/cartPage', { user: req.session.user,data:plainObj,totalAmount,subTotal,cartLength});
+            res.render('users/cartPage', { user: req.session.user,data:plainObj,totalAmount,subTotal,cartLength,couponCode,couponDiscount,couponStatus});
         } catch (error) {
             console.log(error)
             res.status(500).send('Error rendering cart page');

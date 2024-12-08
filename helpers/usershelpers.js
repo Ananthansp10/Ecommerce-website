@@ -88,6 +88,9 @@ module.exports={
         console.log(otp,email)
         return new Promise(async(resolve,reject)=>{
             const dbOTP= await OTPschema.collection.findOne({email:email})
+            if(!dbOTP){
+                resolve({status:false,message:"OTP Expires"})
+            }
             if(dbOTP.otp==otp){
                 await user.collection.updateOne({email:email},{$set:{verified:true}}).then(()=>{
                     resolve({status:true,message:"User Signed Successfully"})
@@ -124,30 +127,62 @@ module.exports={
         })
     },
 
-    googleAuthUserAdd:(userDetails)=>{
-        const googleUserData={
-            googleId:userDetails.id,
-            name:userDetails.displayName,
-            email:userDetails.emails[0].value,
-            image:userDetails.photos[0].value,
-            verified:true,
-            status:"Unblock"
-        }
+    checkReferal:(referalCode)=>{
         return new Promise(async(resolve,reject)=>{
-            const userDetail=await user.collection.findOne({email:userDetails.emails[0].value})
-            if(userDetail){
-                resolve({status:false,message:"user with this email already exist"})
-            }
-            else{
-                const googleUser=await googleAuthSchema.collection.findOne({email:userDetails.emails[0].value})
-                if(googleUser){
-                    resolve({status:true,message:"user already logedIn",userData:googleUserData})
-                }
-                else{
-                    googleAuthSchema.collection.insertOne(googleUserData).then(()=>{
-                        resolve({status:true,userData:googleUserData})
+            const findUser=await user.findOne({referralCode:referalCode})
+            if(findUser){
+                const userWallet=await wallet.findOne({userId:new ObjectId(findUser._id)})
+                if(userWallet){
+                    const obj={  
+                        description:"Referral",
+                        amountType:"Credit",
+                        amount:100
+                    }
+                    wallet.updateOne({userId:new ObjectId(findUser._id)},{$inc:{balanceAmount:100},$push:{walletHistory:obj}}).then(()=>{
+                        resolve()
                     })
                 }
+                else{
+                    let obj={
+                       userId:findUser._id,
+                       balanceAmount:100,
+                       walletHistory:[
+                        {
+                            description:"Referral",
+                            amountType:"Credit",
+                            amount:100
+                        }
+                       ] 
+                    }
+                    const data=new wallet(obj)
+                    data.save().then(()=>{
+                        resolve()
+                    })
+                }
+            }else{
+                resolve()
+            }
+        })
+    },
+
+    googleAuthUserAdd:(userDetails)=>{
+        const googleUserData={
+            name:userDetails.displayName,
+            email:userDetails.emails[0].value,
+            googleId:userDetails.id,
+            verified:true,
+            status:"Unblock",
+            createdAt:new Date()
+        }
+        return new Promise(async(resolve,reject)=>{
+            const userDetail=await user.collection.findOne({googleId:userDetails.id})
+            if(userDetail){
+                resolve({status:true,userData:userDetail})
+            }
+            else{
+                user.collection.insertOne(googleUserData).then((data)=>{
+                    resolve({status:true,userData:data})
+                })
             }
         })
     },
@@ -356,7 +391,8 @@ module.exports={
                     quantity:data.products[0].quantity,
                     price:data.products[0].price,
                     image:data.products[0].image,
-                    offerPrice:data.products[0].offerPrice
+                    offerPrice:data.products[0].offerPrice,
+                    offerDiscount:data.products[0].offerDiscount
                 }
                 cartDetail.updateOne({userId:new ObjectId(data.userId)},{$push:{products:obj}}).then(()=>{
                     resolve()
@@ -437,7 +473,8 @@ module.exports={
                     images:"$products.image",
                     productName:"$productDetails.name",
                     productCategory:"$productDetails.catType",
-                    offerPrice:"$productDetails.offerPrice"
+                    offerPrice:"$productDetails.offerPrice",
+                    offerDiscount:"$products.offerDiscount"
                 }
             }
         ]).then((data)=>{
@@ -459,7 +496,7 @@ module.exports={
             if(data.paymentMethod=="Cash On Delivery"){
                 const order=new orderDetail(data)
                 order.save().then(()=>{
-                    cartDetail.updateOne({userId:new ObjectId(userId)},{$set:{products:[]}}).then(()=>{
+                    cartDetail.updateOne({userId:new ObjectId(userId)},{$set:{products:[]},$unset:{couponCode:"",couponDiscount:"",couponStatus:""}}).then(()=>{
                         resolve({status:true})
                     })
                 })
@@ -493,15 +530,15 @@ module.exports={
                 }
             },
             {
-                $project:{
-                    orderedProducts:1,
-                    totalPrice:1
-                }
+                $unwind:"$orderedProducts"
             },
             {
-                $unwind:"$orderedProducts"
+                $sort:{
+                    orderDate:-1
+                }
             }
           ]).then((data)=>{
+            console.log(data)
             resolve(data)
           })
            }else{
@@ -519,6 +556,8 @@ module.exports={
                 },
                 {
                     totalPrice: 1,
+                    paymentMethod:1,
+                    couponCode:1,
                     orderedProducts: { 
                         $elemMatch: { productId: new ObjectId(productId) } 
                     }
@@ -570,9 +609,8 @@ module.exports={
     },
 
     cartOrderCancel:(productId,orderId)=>{
-        console.log(productId,orderId)
         return new Promise((resolve,reject)=>{
-            orderDetail.updateOne({_id:new ObjectId(orderId)},{$pull:{orderedProducts:{productId:new ObjectId(productId)}}}).then((data)=>{
+            orderDetail.updateOne({_id:new ObjectId(orderId),'orderedProducts.productId':new ObjectId(productId)},{$set:{'orderedProducts.$.orderStatus':"Cancelled"}}).then((data)=>{
                if(data.acknowledged){
                 orderDetail.findOne({_id:new ObjectId(orderId)}).then((data)=>{
                     if(data.orderedProducts.length==0){
@@ -600,7 +638,7 @@ module.exports={
 
     returnOrder:(productId,orderId)=>{
         return new Promise((resolve,reject)=>{
-            orderDetail.updateOne({_id:new ObjectId(orderId)},{$set:{'orderedProducts.$[].orderStatus':"Return"}}).then((data)=>{
+            orderDetail.updateOne({_id:new ObjectId(orderId),'orderedProducts.productId':new ObjectId(productId)},{$set:{'orderedProducts.$.orderStatus':"Return"}}).then((data)=>{
                 if(data.acknowledged){
                     resolve({status:true})
                 }else{
@@ -767,11 +805,15 @@ module.exports={
                     if(isUsed){
                         resolve({status:false,message:"Coupon cannot add its already used"})
                     }else{
-                        resolve({status:true,amount:findcoupon.discountValue})
+                        cartDetail.updateOne({userId:new ObjectId(userId)},{$set:{couponCode:findcoupon.code,couponDiscount:findcoupon.discountValue,couponStatus:true}}).then(()=>{
+                            resolve({status:true,amount:findcoupon.discountValue})
+                        })
                     }
                 }
                 else{
-                    resolve({status:true,amount:findcoupon.discountValue})
+                    cartDetail.updateOne({userId:new ObjectId(userId)},{$set:{couponCode:findcoupon.code,couponDiscount:findcoupon.discountValue,couponStatus:true}}).then(()=>{
+                        resolve({status:true,amount:findcoupon.discountValue})
+                    })
                 }
             }else{
                 resolve({status:false,message:"No coupon found !"})
@@ -783,14 +825,14 @@ module.exports={
         return new Promise(async(resolve,reject)=>{
             const findUser=await useCoupon.findOne({userId:new ObjectId(userId)})
             if(findUser){
-                if(couponCode=="no"){
+                if(couponCode=="null"){
                     resolve()
                 }
                 useCoupon.updateOne({userId:new ObjectId(userId)},{$push:{usedCoupons:couponCode}}).then(()=>{
                     resolve()
                 })
             }else{
-                if(couponCode=="no"){
+                if(couponCode=="null"){
                     resolve()
                 }else{
                     let obj={
@@ -815,7 +857,7 @@ module.exports={
             const obj=new orderDetail(data)
             obj.save().then((data)=>{
                 if(data){
-                cartDetail.updateOne({userId:new ObjectId(userId)},{$set:{products:[]}}).then(()=>{
+                cartDetail.updateOne({userId:new ObjectId(userId)},{$set:{products:[]},$unset:{couponCode:"",couponDiscount:"",couponStatus:""}}).then(()=>{
                     resolve({status:true})
                 })
                 }else{
@@ -825,31 +867,7 @@ module.exports={
         })
       },
 
-    //   addToWallet:(productId,orderId,userId)=>{
-    //     return new Promise(async(resolve,reject)=>{
-    //         const product=await orderDetail.findOne({_id:new ObjectId(orderId),'orderedProducts.productId':new ObjectId(productId)})
-    //         const orderedProduct = product.orderedProducts.find(p => p.productId.toString() === productId.toString());
-    //         console.log(orderedProduct)
-    //         const userExist=await wallet.findOne({userId:new ObjectId(userId)})
-    //         if(userExist){
-    //             let obj={
-    //                 userId:userId,
-    //                 balanceAmount:orderedProduct.price
-    //             }
-    //             let data=new wallet(obj)
-    //             data.save().then((data)=>{
-    //                 console.log(data)
-    //                 resolve({status:true})
-    //             })
-    //         }else{
-    //             wallet.updateOne({userId:new ObjectId(userId)},{$inc:{balanceAmount:orderedProduct.price}}).then(()=>{
-    //                 resolve({status:true})
-    //             })
-    //         }
-    //     })
-    //   }
-
-    addToWallet: async (productId, orderId, userId) => {
+    addToWallet: async (productId, orderId, userId,type) => {
         return new Promise(async(resolve,reject)=>{
             try {
                 const product = await orderDetail.findOne({
@@ -862,6 +880,12 @@ module.exports={
                 }
             
                 const orderedProduct = product.orderedProducts.find(p => p.productId.toString() === productId.toString());
+                const obj={
+                    date:new Date(),
+                    description:type,
+                    amountType:"Credit",
+                    amount:orderedProduct.discountPrice+150
+                }
             
                 if (!orderedProduct) {
                   return reject(new Error('Product not found in the order'));
@@ -872,13 +896,14 @@ module.exports={
                 if (userExist) {
                   await wallet.updateOne(
                     { userId: new ObjectId(userId) },
-                    { $inc: { balanceAmount: orderedProduct.price } }
+                    { $inc: { balanceAmount: orderedProduct.price+150 },$push:{walletHistory:obj}}
                   );
                   return resolve({ status: true });
                 } else {
                   const newWallet = new wallet({
                     userId: new ObjectId(userId),
-                    balanceAmount: orderedProduct.price
+                    balanceAmount: orderedProduct.price+150,
+                    walletHistory:[obj]
                   });
                   await newWallet.save();
                   return resolve({ status: true });
@@ -900,6 +925,75 @@ module.exports={
             }else{
                 resolve()
             }
+        })
+      },
+
+      removeCoupon:(userId)=>{
+        return new Promise((resolve,reject)=>{
+            cartDetail.updateOne({userId:new ObjectId(userId)},{$unset:{couponCode:"",couponDiscount:"",couponStatus:""}}).then((data)=>{
+                if(data.acknowledged){
+                    resolve({status:true})
+                }else{
+                    resolve({status:false})
+                }
+            })
+        })
+      },
+
+      checkUserStatus:(userId)=>{
+        return new Promise((resolve,reject)=>{
+            user.findOne({_id:new ObjectId(userId)}).then((data)=>{
+                console.log(data)
+                resolve(data)
+            })
+        })
+      },
+
+      findCouponAmount:(couponCode)=>{
+        return new Promise((resolve,reject)=>{
+            couponData.findOne({code:couponCode}).then((data)=>{
+                resolve(data.discountValue)
+            })
+        })
+      },
+
+      updateOrderTotalPrice:(orderId)=>{
+        return new Promise(async(resolve,reject)=>{
+            const order=await orderDetail.findOne({_id:new ObjectId(orderId)})
+            let total=150
+           if(order){
+            order.orderedProducts.map((data)=>{
+                total+=data.discountPrice
+            })
+            orderDetail.updateOne({_id:new ObjectId(orderId)},{$set:{totalPrice:total}}).then((data)=>{
+                if(data.acknowledged){
+                    resolve({status:true})
+                }else{
+                    resolve({status:false})
+                }
+            })
+        }else{
+            resolve({status:true})
+        }
+        })
+      },
+
+      findOrderPaymentMethod:(orderId)=>{
+        return new Promise((resolve,reject)=>{
+            orderDetail.findOne({_id:new ObjectId(orderId)}).then((data)=>{
+                resolve(data.paymentMethod)
+            })
+        })
+      },
+
+      getWalletHistory:(userId)=>{
+        return new Promise(async(resolve,reject)=>{
+          const userFind= await wallet.findOne({userId:new ObjectId(userId)})
+          if(userFind){
+            resolve(userFind.walletHistory)
+          }else{
+            resolve([])
+          }
         })
       }
 }

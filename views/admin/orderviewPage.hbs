@@ -26,10 +26,11 @@
       <!-- Order Summary -->
       <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
         <h3 class="text-lg font-semibold text-gray-700">Order Summary</h3>
-        <p class="text-gray-600">Order Date: {{orderDate}}</p>
-        <p class="text-gray-600">Total Items: {{orderCount}}</p>
-        <p class="text-red-600">Coupon Used: {{#if couponUsed}}{{couponUsed}}{{else}}No coupon used{{/if}}</p>
-        <p class="text-gray-600 font-semibold text-lg">Total Price: RS.{{totalAmount}}</p>
+        <p class="text-gray-600">Order Date : {{orderDate}}</p>
+        <p class="text-gray-600">Total Items : {{orderCount}}</p>
+        <p class="text-red-600">Coupon Used : {{#if couponUsed}}{{couponUsed}}{{else}}No coupon used{{/if}}</p>
+        <p class="text-gray-600 font-semibold text-lg">Total Price : RS. {{totalAmount}}</p>
+         <p class="text-gray-600 font-semibold text-lg">Payment Method : {{paymentMethod}}</p>
       </div>
     </div>
 
@@ -43,12 +44,13 @@
             <img src="{{this.images.[0]}}" alt="Product Image" class="w-20 h-20 object-cover rounded-md">
             <div class="ml-4">
               <p class="font-semibold text-gray-800">{{this.name}}</p>
-              <p class="text-gray-500">Color: {{this.colour}}</p>
-              <p class="text-gray-500">Quantity: {{this.quantity}}</p>
+              <p class="text-gray-500">Color : {{this.colour}}</p>
+              <p class="text-gray-500">Quantity : {{this.quantity}}</p>
             </div>
           </div>
-          <p class="text-gray-600 font-semibold">Price: RS.{{this.price}}</p>
-          <p class="text-gray-600 font-semibold">Total: RS.{{this.totalPrice}}</p>
+          <p class="text-gray-600 font-semibold">Price : RS.{{this.price}}</p>
+          <p class="text-gray-600 font-semibold">Total : RS.{{this.totalPrice}}</p>
+           <p class="text-gray-600 font-semibold">Product Status : {{this.status}}</p>
         </div>
         {{/each}}
       </div>

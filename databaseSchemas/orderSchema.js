@@ -2,6 +2,9 @@ const mongoose=require('mongoose');
 const {Schema}=mongoose;
 
 const orderSchema=new Schema({
+    orderId:{
+        type:String
+    },
     userId:{
         type:Schema.Types.ObjectId,
         ref:'users',
@@ -30,6 +33,10 @@ const orderSchema=new Schema({
         required:true
        },
        price:{
+        type:Number,
+        required:true
+       },
+       discountPrice:{
         type:Number,
         required:true
        },
@@ -93,6 +100,18 @@ const orderSchema=new Schema({
     },
     couponCode:{
         type:String
+    },
+    offerDiscount:{
+        type:Number
+    },
+    orderDate:{
+        type:Date,
+        default:Date.now,
+        required:true
+    },
+    orderStatus:{
+        type:String,
+        required:true
     }
 })
 

@@ -141,6 +141,8 @@
         const endDate=document.getElementById("endDate").value
         const discountValue=document.getElementById("discountValue").value
         const minimumPrice=document.getElementById("minimumPrice").value
+        const currentDate=new Date()
+        const formattedDate=new Date(currentDate.toISOString().split('T')[0])
 
         if(!couponCode && !description && !couponName && !startDate && !endDate && !discountValue && !minimumPrice){
             isValid=false
@@ -154,7 +156,7 @@
             document.getElementById("nameError").classList.remove('hidden')
             isValid=false
         }
-        if(!/^[a-zA-Z]+$/.test(couponName)){
+        if(!/^[a-zA-Z\s]+$/.test(couponName)){
             document.getElementById("nameError").innerText="Only Alphabet is allowed no other character"
             document.getElementById("nameError").classList.remove('hidden')
             isValid=false
@@ -208,6 +210,14 @@
             icon: 'error',
             title: 'Oops...',
             text: 'End date cannot be less than start date',
+        });
+        isValid=false
+        }
+        if(new Date(startDate)< formattedDate || new Date(endDate)< formattedDate){
+            Swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: 'Cannot take the older dates',
         });
         isValid=false
         }
@@ -279,6 +289,8 @@
                 title: "Success!",
                 text:response.message,
                 confirmButtonColor: "#3085d6",
+            }).then(()=>{
+                location.reload();
             })
             }else{
                 Swal.fire({

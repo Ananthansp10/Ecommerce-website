@@ -24,6 +24,22 @@ function userCheck(req,res,next){
       res.redirect('/users/login');
     }
   }
+
+  function checkUserStatus(req,res,next){
+    if(req.session.user){
+      userhelper.checkUserStatus(req.session.user._id).then((response)=>{
+        if(response.status=="Unblock"){
+          next()
+        }else if(response.status=="Block"){
+          req.session.destroy()
+          res.redirect('/users/login')
+        }
+      })
+    }else{
+      next()
+    }
+  }
+  
 //route for login
 
 router.get('/login',userCheck,usercontroller.loginsection)
@@ -115,6 +131,8 @@ router.post('/removefromwish/:productId',usercontroller.removeFromWish)
 router.get('/getallcoupons',usercontroller.getAllCoupon)
 
 router.post('/applycoupon/:couponCode/:totalAmount',usercontroller.applyCoupon)
+
+router.post('/removecoupon',usercontroller.removeCoupon)
 
 router.post('/verify-payment',usercontroller.verifyPayment)
 

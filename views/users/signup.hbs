@@ -19,7 +19,7 @@
             Full Name
           </label>
           <div class="mt-2">
-            <input id="name" name="name" type="text"  class="block w-full rounded-md border-gray-300 py-2 text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+            <input id="name" name="name" type="text"  class="block w-full pl-2 rounded-md border-gray-300 py-2 text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
           </div>
         </div>
         <div class="mt-2 text-sm text-red-600 bg-red-100 p-2 rounded-md hidden" id="nameError"></div>
@@ -30,7 +30,7 @@
             Email address
           </label>
           <div class="mt-2">
-            <input id="email" name="email" type="text" class="block w-full rounded-md border-gray-300 py-2 text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+            <input id="email" name="email" type="text" class="block w-full pl-2 rounded-md border-gray-300 py-2 text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
           </div>
         </div>
         <div class="mt-2 text-sm text-red-600 bg-red-100 p-2 rounded-md hidden" id="emailError"></div>
@@ -41,7 +41,7 @@
             Password
           </label>
           <div class="mt-2">
-            <input id="password" name="password" type="password" class="block w-full rounded-md border-gray-300 py-2 text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+            <input id="password" name="password" type="password" class="block w-full pl-2 rounded-md border-gray-300 py-2 text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
           </div>
         </div>
         <div class="mt-2 text-sm text-red-600 bg-red-100 p-2 rounded-md hidden" id="passwordError"></div>
@@ -52,10 +52,22 @@
             Confirm Password
           </label>
           <div class="mt-2">
-            <input id="confirmPassword" name="confirmPassword" type="password" class="block w-full rounded-md border-gray-300 py-2 text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+            <input id="confirmPassword" name="confirmPassword" type="password" class="block w-full pl-2 rounded-md border-gray-300 py-2 text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
           </div>
         </div>
         <div class="mt-2 text-sm text-red-600 bg-red-100 p-2 rounded-md hidden" id="confirmPasswordError"></div>
+
+        <!-- Referral Code Input -->
+<div>
+  <label for="referralCode" class="block text-sm font-medium leading-6 text-gray-900">
+    Referral Code (Optional)
+  </label>
+  <div class="mt-2">
+    <input id="referalCode" name="referalCode" type="text" class="block w-full pl-2 rounded-md border-gray-300 py-2 text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+  </div>
+</div>
+<div class="mt-2 text-sm text-red-600 bg-red-100 p-2 rounded-md hidden" id="referralCodeError"></div>
+
 
         <!-- Sign-up Button -->
         <div>
@@ -120,6 +132,7 @@
   const email = document.getElementById('email').value.trim();
   const password = document.getElementById('password').value.trim();
   const confirmPassword = document.getElementById('confirmPassword').value.trim();
+  const referalCode=document.getElementById('referalCode').value.trim()
 
   // Name validation
   if(!name){
@@ -184,7 +197,8 @@
         name:name,
         email:email,
         password:password,
-        confirmPassword:confirmPassword
+        confirmPassword:confirmPassword,
+        referalCode:referalCode
       })
     }).then((response)=>response.json()).then((response)=>{
       if(response.status){

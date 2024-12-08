@@ -1,0 +1,94 @@
+<section class="p-8 bg-gray-100 min-h-screen">
+    <div class="max-w-5xl mx-auto bg-white shadow-md rounded-lg">
+        <div class="p-6 border-b border-gray-200">
+            <h2 class="text-2xl font-bold text-gray-700">Add Variants for Product</h2>
+        </div>
+        <form class="p-6 space-y-6" id="variantForm" onsubmit="addVariants(event,'{{id}}')">
+            <!-- Product Information -->
+            <div>
+                <label class="block text-gray-700 font-semibold mb-2" for="productName">Product Name</label>
+                <input type="text" name="name" id="productName" value="{{name}}" disabled
+                    class="w-full bg-gray-200 text-gray-600 p-3 rounded-lg">
+            </div>
+
+            <!-- Color Variants Section -->
+            <div id="colorVariants" class="space-y-6">
+                <div class="bg-gray-50 p-4 rounded-lg border space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-gray-700 font-semibold">Color Variant</h3>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Color Name -->
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2" for="color">Color Name</label>
+                            <input type="text" name="colour" id="colour" placeholder="e.g., Black, White"
+                                class="w-full p-3 border rounded-lg">
+                        </div>
+
+                        <!--storage-->
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2" for="storage">Storage Capacity</label>
+                            <input type="text" id="storage" name="storage" placeholder="Enter the storage capacity"
+                                class="w-full p-3 border rounded-lg">
+                        </div>
+
+                        <!-- Image Upload with Previews -->
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Upload Images</label>
+                            <div class="space-y-2">
+                                <div>
+                                    <input type="file" id="image1" name="images" accept="image/*" onchange="previewSingleImage(this, 1)"
+                                        class="p-2 border rounded w-full">
+                                    <div class="mt-2" id="imagePreview1"></div>
+                                </div>
+                                <div>
+                                    <input type="file" id="image2" name="images" accept="image/*" onchange="previewSingleImage(this, 2)"
+                                        class="p-2 border rounded w-full">
+                                    <div class="mt-2" id="imagePreview2"></div>
+                                </div>
+                                <div>
+                                    <input type="file" id="image3" name="images" accept="image/*" onchange="previewSingleImage(this, 3)"
+                                        class="p-2 border rounded w-full">
+                                    <div class="mt-2" id="imagePreview3"></div>
+                                </div>
+                                <div>
+                                    <input type="file" id="images4" name="images" accept="image/*" onchange="previewSingleImage(this, 4)"
+                                        class="p-2 border rounded w-full">
+                                    <div class="mt-2" id="imagePreview4"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+            <!-- Submit Button -->
+            <button type="submit"
+                class="w-full bg-green-600 text-white p-3 rounded-lg font-semibold hover:bg-green-500">
+                Save Variants
+            </button>
+        </form>
+    </div>
+</section>
+
+<script>
+
+    function previewSingleImage(input, index) {
+        const file = input.files[0];
+        const preview = document.getElementById(`imagePreview${index}`);
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                preview.innerHTML = `<img src="${e.target.result}" class="w-24 h-24 object-cover rounded-md">`;
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function addVariants(e,id){
+        e.preventDefault();
+        isValid=true
+        const name=document.getElementById("productName").value
+        const colour=document.getElementById("colour").value
+        const storage=document.getElementById("storage").value
+    }
+
+</script>
