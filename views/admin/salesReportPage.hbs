@@ -55,6 +55,19 @@
     <div>
       <button onclick="filterDate(event)" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg mt-6">Apply Filter</button>
     </div>
+    <div>
+      <label for="time-filter" class="block text-sm font-medium text-gray-700">Sort By</label>
+      <select id="time-filter" class="mt-1 block w-52 p-2 border border-gray-300 rounded-lg">
+        <option value="">Select Option</option>
+        <option value="daily">Daily</option>
+        <option value="weekly">Weekly</option>
+         <option value="monthly">Monthlly</option>
+        <option value="yearly">Yearly</option>
+      </select>
+    </div>
+    <div>
+      <button onclick="filterOption(event)" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg mt-6">Apply Filter</button>
+    </div>
   </div>
 </div>
 
@@ -207,6 +220,25 @@
   if(isValid){
     location.href=`/admin/datesort/${fromDate}/${toDate}`
   }
+}
+
+function filterOption(e){
+  e.preventDefault();
+  isValid=true
+  const value=document.getElementById("time-filter").value
+  if(!value){
+    isValid=false
+     Swal.fire({
+      icon: 'error',
+      title: 'Missing',
+      text: 'Please select a option',
+    }).then(() => {
+      location.reload();
+    })
+  }
+ if(isValid){
+  location.href=`/admin/sortbyoption/${value}`
+ }
 }
 
 

@@ -57,6 +57,9 @@ const productSchema = new mongoose.Schema({
     },
     offerPrice:{
         type:Number
+    },
+    purchaseCount:{
+        type:Number,
     }
 });
 

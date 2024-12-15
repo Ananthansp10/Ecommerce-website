@@ -17,7 +17,8 @@ const couponData=require('../databaseSchemas/couponSchema');
 const useCoupon=require('../databaseSchemas/couponUsesSchema');
 const wallet=require('../databaseSchemas/walletSchema');
 const razorpay=require('../config/razorpay');
-const mongoose=require('mongoose')
+const mongoose=require('mongoose');
+const category = require('../databaseSchemas/categorySchema');
 const { ObjectId } = mongoose.Types;
 module.exports={
     addUser: (userdata) => {
@@ -84,13 +85,20 @@ module.exports={
         })
     },
 
+    deleteOTP:(email)=>{
+        return new Promise((resolve,reject)=>{
+            otpSchema.deleteOne({email:email}).then(()=>{
+                resolve()
+            })
+        })
+    },
+
     signupOtpVerification:(email,otp)=>{
-        console.log(otp,email)
         return new Promise(async(resolve,reject)=>{
             const dbOTP= await OTPschema.collection.findOne({email:email})
             if(!dbOTP){
                 resolve({status:false,message:"OTP Expires"})
-            }
+            }else{
             if(dbOTP.otp==otp){
                 await user.collection.updateOne({email:email},{$set:{verified:true}}).then(()=>{
                     resolve({status:true,message:"User Signed Successfully"})
@@ -99,6 +107,7 @@ module.exports={
             else{
                 resolve({status:false,message:"User Signup Failed Wrong OTP"})
             }
+        }
         })
     },
 
@@ -117,7 +126,7 @@ module.exports={
             const text=`OTP : ${OTP}`
 
             sendEmail(email,subject,text).then(()=>{
-                OTPschema.collection.updateOne({email:email},{$set:{otp:OTP}}).then(()=>{
+                OTPschema.collection.insertOne({email:email,otp:OTP}).then(()=>{
                     resolve({status:true})
                 }).catch((err)=>{
                     console.log("OTP not send error occured" +err)
@@ -494,14 +503,60 @@ module.exports={
     placeCartOrder:(data,userId)=>{
         return new Promise(async(resolve,reject)=>{
             if(data.paymentMethod=="Cash On Delivery"){
-                const order=new orderDetail(data)
-                order.save().then(()=>{
-                    cartDetail.updateOne({userId:new ObjectId(userId)},{$set:{products:[]},$unset:{couponCode:"",couponDiscount:"",couponStatus:""}}).then(()=>{
-                        resolve({status:true})
-                    })
-                })
-            }else if(data.paymentMethod==="Online"){
+                if(data.totalPrice>1000){
+                    resolve({status:false,message:"Order cannot be placed by COD because total amount is graeter than 1000"})
+                }else{
+                const order = new orderDetail(data)
+                await order.save();
+
+            const updatePromises = data.orderedProducts.map(async (productItem) => {
+            const productData = await product.findOne({ _id: new ObjectId(productItem.productId) })
+            if (productData) {
+                const updateFields = productData.purchaseCount
+                    ? { $inc: { purchaseCount: productItem.quantity } }
+                    : { $set: { purchaseCount: productItem.quantity } }
+                await product.updateOne({ _id: new ObjectId(productData._id) }, updateFields)
+                await category.updateOne({_id:new ObjectId(productData.category)},{$inc:{purchaseCount:productItem.quantity}})
+            }
+        });
+        await Promise.all(updatePromises);
+
+        await cartDetail.updateOne(
+            { userId: new ObjectId(userId) },
+            { $set: { products: [] }, $unset: { couponCode: "", couponDiscount: "", couponStatus: "" } }
+        );
+
+        resolve({ status: true });
+        }
+        }else if(data.paymentMethod==="Online"){
                 try {
+                    const products=data.orderedProducts.map((data)=>{
+                        return{
+                            productId:data.productId,
+                            name:data.name,
+                            catType:data.catType,
+                            description:data.description,
+                            quantity:data.quantity,
+                            price:data.price,
+                            discountPrice:data.discountPrice,
+                            images:data.images,
+                            orderStatus:"Pending",
+                            orderedDate:Date.now()
+                       }  
+                    })
+                    const orderObj={
+                        orderId:data.orderId,
+                        userId:data.userId,
+                        orderedProducts:products,
+                        address:data.address,
+                        totalPrice:data.totalPrice,
+                        paymentMethod:data.paymentMethod,
+                        couponCode:data.couponCode=="null" ? "No coupon" : data.couponCode,
+                        offerDiscount:data.offerDiscount,
+                        orderStatus:"Pending"
+                    }
+                    const order=new orderDetail(orderObj)
+                    await order.save();
                     const razorpayOrder = await razorpay.orders.create({
                         amount: data.totalPrice * 100,
                         currency: "INR",
@@ -510,7 +565,7 @@ module.exports={
 
                     resolve({status: 'PENDING_PAYMENT',
                         orderId: razorpayOrder.id,
-                        key: razorpay.key_id,amount:data.totalPrice*100,data:data})
+                        key: razorpay.key_id,amount:data.totalPrice*100,data:orderObj.orderId})
 
                 } catch (error) {
                     console.log(error)
@@ -608,9 +663,9 @@ module.exports={
         })
     },
 
-    cartOrderCancel:(productId,orderId)=>{
+    cartOrderCancel:(productId,orderId,reason)=>{
         return new Promise((resolve,reject)=>{
-            orderDetail.updateOne({_id:new ObjectId(orderId),'orderedProducts.productId':new ObjectId(productId)},{$set:{'orderedProducts.$.orderStatus':"Cancelled"}}).then((data)=>{
+            orderDetail.updateOne({_id:new ObjectId(orderId),'orderedProducts.productId':new ObjectId(productId)},{$set:{'orderedProducts.$.orderStatus':"Cancelled",'orderedProducts.$.reason':reason}}).then((data)=>{
                if(data.acknowledged){
                 orderDetail.findOne({_id:new ObjectId(orderId)}).then((data)=>{
                     if(data.orderedProducts.length==0){
@@ -853,17 +908,27 @@ module.exports={
       },
 
       addOrder:(data,userId)=>{
-        return new Promise((resolve,reject)=>{
-            const obj=new orderDetail(data)
-            obj.save().then((data)=>{
-                if(data){
-                cartDetail.updateOne({userId:new ObjectId(userId)},{$set:{products:[]},$unset:{couponCode:"",couponDiscount:"",couponStatus:""}}).then(()=>{
-                    resolve({status:true})
-                })
-                }else{
-                    resolve({status:false})
-                }
-            })
+        return new Promise(async(resolve,reject)=>{
+        await orderDetail.updateOne({orderId:data},{$set:{orderStatus:"Placed",'orderedProducts.$[].orderStatus':"Placed"}})
+        const products=await orderDetail.findOne({orderId:data})
+        const updatePromises = products.orderedProducts.map(async (productItem) => {
+            const productData = await product.findOne({ _id: new ObjectId(productItem.productId) })
+            if (productData) {
+                const updateFields = productData.purchaseCount
+                    ? { $inc: { purchaseCount: productItem.quantity } }
+                    : { $set: { purchaseCount: productItem.quantity } }
+                await product.updateOne({ _id: new ObjectId(productData._id) }, updateFields)
+                await category.updateOne({_id:new ObjectId(productData.category)},{$inc:{purchaseCount:productItem.quantity}})
+            }
+        });
+        await Promise.all(updatePromises)
+
+        await cartDetail.updateOne(
+            { userId: new ObjectId(userId) },
+            { $set: { products: [] }, $unset: { couponCode: "", couponDiscount: "", couponStatus: "" } }
+        );
+
+        resolve({ status: true })
         })
       },
 
@@ -988,12 +1053,39 @@ module.exports={
 
       getWalletHistory:(userId)=>{
         return new Promise(async(resolve,reject)=>{
-          const userFind= await wallet.findOne({userId:new ObjectId(userId)})
+          const userFind= await wallet.findOne({userId:new ObjectId(userId)}).sort({date:-1})
           if(userFind){
             resolve(userFind.walletHistory)
           }else{
             resolve([])
           }
+        })
+      },
+
+      updateProductCount:(productId,quantity)=>{
+        return new Promise(async(resolve,reject)=>{
+            const findProduct=await product.findOne({_id:new ObjectId(productId)})
+            product.updateOne({_id:new ObjectId(productId)},{$inc:{purchaseCount:-quantity}}).then(()=>{
+                category.updateOne({_id:new ObjectId(findProduct.category)},{$inc:{purchaseCount:-quantity}}).then(()=>{
+                    resolve()
+                })
+            })
+        })
+      },
+
+      findWishProduct:(orderId)=>{
+        return new Promise((resolve,reject)=>{
+            orderDetail.findOne({orderId:orderId}).then((data)=>{
+                resolve(data)
+            })
+        })
+      },
+
+      findOrder:(orderId)=>{
+        return new Promise((resolve,reject)=>{
+            orderDetail.findOne({_id:new ObjectId(orderId)}).then((data)=>{
+                resolve(data)
+            })
         })
       }
 }

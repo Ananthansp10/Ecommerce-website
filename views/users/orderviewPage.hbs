@@ -176,11 +176,16 @@
     <button onclick="cancelOrder('{{data.productId}}','{{orderId}}',{{data.quantity}})" class="px-6 py-2 bg-red-600 text-white font-medium rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-75">
       Cancel Order
     </button>
+    <button onclick="downloadInvoice()" class="px-6 py-2 bg-green-600 text-white font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75">
+     Print Invoice
+    </button>
     <button class="px-6 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75">
       Contact Support
     </button>
   </div>
 </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
 
 <script>
   function cancelOrder(productId,orderId,quantity) {
@@ -224,4 +229,60 @@
     }
   });
 }
+
+  async function downloadInvoice() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    doc.setTextColor(0, 102, 204);
+    doc.setFontSize(18);
+    doc.text("MOB N ACCESS", 105, 20, { align: "center" }); 
+    
+    doc.setTextColor(255, 87, 34);
+    doc.setFontSize(18);
+    doc.text("Invoice", 105, 40, { align: "center" });
+    
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(12);
+    doc.text(`Order ID: {{orderId}}`, 10, 60);
+    doc.text(`Order Date: {{trackDetails.date}}`, 10, 70);
+
+    const productImageUrl = "{{data.images.[0]}}";
+    if (productImageUrl) {
+        try {
+            doc.addImage(productImageUrl, 'JPEG', 130, 40, 50, 50);
+        } catch (error) {
+            console.error("Error adding image to PDF:", error);
+        }
+    } else {
+        console.log("No image found");
+    }
+
+    doc.setFontSize(14);
+    doc.text("Product Details:", 10, 80);
+    doc.setFontSize(12);
+    doc.text(`Name: {{data.productName}}`, 10, 90);
+    doc.text(`Description: {{data.description}}`,10,100)
+    doc.text(`Quantity: {{data.quantity}}`, 10, 130);
+    doc.text(`Price: Rs. {{data.price}}`, 10, 140);
+    doc.text(`Total Price: Rs. {{data.productTotal}}`, 10, 150);
+    doc.text(`Buyable Price: Rs. {{data.buyablePrice}}`, 10, 160);
+    doc.text(`Order Status: {{data.orderStatus}}`, 10, 170);
+    doc.text(`Payment Method: {{data.paymentMethod}}`, 10, 180);
+    doc.text(`Coupon Code: {{data.couponCode}}`, 10, 190);
+
+    doc.setFontSize(14);
+    doc.text("Shipping Address:", 10, 210);
+    doc.setFontSize(12);
+    doc.text(`Type: {{address.addressType}}`, 10, 220);
+    doc.text(`Address Line 1: {{address.addressLine1}}`, 10, 230);
+    doc.text(`Address Line 2: {{address.addressLine2}}`, 10, 240);
+    doc.text(`City: {{address.city}}`, 10, 250);
+    doc.text(`State: {{address.state}}`, 10, 260);
+    doc.text(`Country: {{address.country}}`, 10, 270);
+    doc.text(`Pincode: {{address.pincode}}`, 10, 280);
+    doc.text(`Landmark: {{address.landmark}}`, 10, 290);
+
+    doc.save(`Invoice_Order_{{orderId}}.pdf`);
+  }
 </script>

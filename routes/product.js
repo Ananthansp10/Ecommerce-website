@@ -48,6 +48,8 @@ router.get('/sortSearchProduct/:value/:item',productcontroller.sortSearchProduct
 
 router.get('/filterproducts/:cat/:price',productcontroller.filterProducts)
 
+router.get('/viewvariant/:productId/:variantId',productcontroller.viewVariant)
+
 
 
 

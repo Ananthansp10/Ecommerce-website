@@ -120,9 +120,9 @@ router.get('/orders',usercontroller.orderPage)
 
 router.get('/vieworder/:productId/:orderId',usercontroller.viewOrderDetailsPage)
 
-router.post('/cartordercancel/:productId/:orderId/:quantity',usercontroller.cartOrderCancel)
+router.post('/cartordercancel/:productId/:orderId/:quantity/:reason',usercontroller.cartOrderCancel)
 
-router.post('/returnorder/:productId/:orderId/:quantity',usercontroller.returnOrder)
+router.post('/returnorder/:productId/:orderId/:quantity/reason',usercontroller.returnOrder)
 
 router.post('/addtowishlist/:productId',usercontroller.addToWishlist)
 
@@ -137,6 +137,8 @@ router.post('/removecoupon',usercontroller.removeCoupon)
 router.post('/verify-payment',usercontroller.verifyPayment)
 
 router.get('/wallet',usercontroller.walletPage)
+
+router.post('/repayment/:orderId',usercontroller.rePayment)
 
 
 //route for google authentication

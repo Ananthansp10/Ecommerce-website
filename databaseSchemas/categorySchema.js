@@ -18,6 +18,10 @@ const categorySchema=new Schema({
 
     isBlock:{
         type:Boolean
+    },
+    purchaseCount:{
+        type:Number,
+        default:0
     }
 })
 

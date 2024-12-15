@@ -14,7 +14,25 @@ module.exports={
     adminDashboardSection:async(req,res)=>{
         try {
             const usersCount=await adminhelper.getUserCount()
-            res.render('admin/dashboardPage', {admin:true,usersCount});
+            const totalAmount=await adminhelper.getOrderTotalAmount()
+            const monthlyAmount=await adminhelper.getMonthlyRevenue()
+            const topProducts=await adminhelper.findTopProducts()
+            const topCategories=await adminhelper.findTopCategories()
+            const plainObj=topProducts.map((data)=>{
+                return{
+                    name:data.name,
+                    images:data.images,
+                    count:data.purchaseCount
+                }
+            })
+            const obj=topCategories.map((data)=>{
+                return{
+                    name:data.name,
+                    count:data.purchaseCount,
+                    image:data.image
+                }
+            })
+            res.render('admin/dashboardPage', {admin:true,usersCount,top:plainObj,cat:obj,totalAmount,monthlyAmount})
         } catch (error) {
             res.status(500).send('Error rendering dashboard page');
         }
@@ -598,9 +616,26 @@ module.exports={
 
         addVariantPage:async(req,res)=>{
             try {
-               res.render('admin/addVariantPage',{admin:true,id:req.params.productId,name:req.params.productName})
+               const isMobile=await adminhelper.getCategory(req.params.productId)
+               console.log(isMobile)
+               res.render('admin/addVariantPage',{admin:true,id:req.params.productId,name:req.params.productName,isMobile})
             } catch (error) {
                 res.status(500).send("Error occured page not rendering")
+            }
+        },
+
+        addVariant:(req,res)=>{
+            try {
+                const imageUrls=req.files.map((file)=>file.path)
+                adminhelper.addVariant(req.body,req.params.productId,imageUrls).then((response)=>{
+                    if(response.status){
+                        res.status(200).json({status:true,message:response.message})
+                    }else{
+                        res.status(400).json({status:false,message:response.message})
+                    }
+                })
+            } catch (error) {
+                res.status(500).send("Error occured")
             }
         },
 
@@ -681,6 +716,36 @@ module.exports={
             } catch (error) {
                 console.log(error)
                 res.status(500).send("Error occured page not rendering")
+            }
+        },
+
+        sortByOption:async(req,res)=>{
+            try {
+                const data=await adminhelper.sortByOption(req.params.value)
+                let totalOrders=data.length
+                let totalAmount=0
+                let totalProducts=0
+                let offerDiscountTotal=0
+                let obj
+                if(data.length!=0){
+                    obj=data.map((data,index)=>{
+                        const date=new Date(data.orderDate).toISOString().split('T')[0]
+                        totalAmount+=data.totalPrice
+                        offerDiscountTotal+=data.offerDiscount
+                        totalProducts+=data.orderedProducts.length
+                        return{
+                            orderId:data.orderId,
+                            status:data.paymentMethod,
+                            date:date,
+                            total:data.totalPrice,
+                            key:index+1
+                        }
+                    })
+                }
+                res.render('admin/salesReportPage',{admin:true,totalOrders,totalAmount,totalProducts,offerDiscountTotal,orderDetails:obj})
+            } catch (error) {
+                console.log(error)
+                res.status(500).send("Error occured")
             }
         }
     

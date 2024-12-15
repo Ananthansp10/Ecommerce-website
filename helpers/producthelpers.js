@@ -1,11 +1,12 @@
 const product=require('../databaseSchemas/productSchema');
 const cartDetail=require('../databaseSchemas/cartSchema');
+const variant=require('../databaseSchemas/variantSchema');
 const mongoose = require('mongoose');
 const { ObjectId } = mongoose.Types; 
 module.exports={
    getProducts:()=>{
     return new Promise((resolve,reject)=>{
-        product.find({visiblity:true}).limit(1).skip(3).limit(4).populate({path:'category',match:{isBlock:false}}).then((products)=>{
+        product.find({visiblity:true}).sort({purchaseCount:-1}).limit(4).populate({path:'category',match:{isBlock:false}}).then((products)=>{
             const filteredProducts=products.filter((products)=>products.category!==null)
             resolve(filteredProducts)
 
@@ -46,10 +47,14 @@ module.exports={
     })
    },
 
-   getColourVariant:(prodName)=>{
+   getColourVariant:(productId)=>{
     return new Promise((resolve,reject)=>{
-        product.find({name:prodName}).then((data)=>{
-            resolve(data)
+        variant.findOne({productId:productId}).then((data)=>{
+            if(data){
+            resolve(data.variants)
+            }else{
+                resolve([])
+            }
         })
     })
    },
@@ -194,6 +199,13 @@ module.exports={
         ]).then((data)=>{
             resolve(data)
         })
+    })
+   },
+
+   viewVariant:(productId,variantId)=>{
+    return new Promise(async(resolve,reject)=>{
+       const findProduct=await variant.findOne({productId:new ObjectId(productId),'variants._id':new ObjectId(variantId)},{'variants.$':1})
+       resolve(findProduct.variants)
     })
    }
 }

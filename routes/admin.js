@@ -76,6 +76,8 @@ router.get('/salesreport',admincontroller.salesReportPage)
 
 router.get('/addvariant/:productId/:productName',admincontroller.addVariantPage)
 
+router.post('/addvariant/:productId',upload.array('images',4),admincontroller.addVariant)
+
 router.get('/productoffer',admincontroller.productOfferPage)
 
 router.post('/addproductoffer',upload.array('image',1),offercontroller.addProductOffer)
@@ -87,6 +89,8 @@ router.get('/productofferlist',admincontroller.productOfferListPage)
 router.post('/applyproductoffer/:offerId',offercontroller.applyProductOffer)
 
 router.post('/deleteproductoffer/:offerId',offercontroller.deleteProductOffer)
+
+router.get('/sortbyoption/:value',admincontroller.sortByOption)
 
 
 module.exports=router;

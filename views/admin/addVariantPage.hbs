@@ -11,6 +11,17 @@
                     class="w-full bg-gray-200 text-gray-600 p-3 rounded-lg">
             </div>
 
+            <!-- Category -->
+        <div>
+            <label for="category" class="block text-sm font-medium text-gray-700">Category</label>
+            <select name="category" id="category" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                <option value="">Select category</option>
+                <option value="mobile">Mobile</option>
+                <option value="accessory">Accessory</option>
+            </select>
+            <p id="categoryError" class="hidden text-red-600 font-medium"></p>
+        </div>
+
             <!-- Color Variants Section -->
             <div id="colorVariants" class="space-y-6">
                 <div class="bg-gray-50 p-4 rounded-lg border space-y-4">
@@ -23,58 +34,99 @@
                             <label class="block text-gray-700 font-semibold mb-2" for="color">Color Name</label>
                             <input type="text" name="colour" id="colour" placeholder="e.g., Black, White"
                                 class="w-full p-3 border rounded-lg">
+                             <p id="colourError" class="hidden text-red-600 font-medium"></p>
                         </div>
 
-                        <!--storage-->
+                        <!-- Storage -->
+                        {{#if isMobile}}
                         <div>
                             <label class="block text-gray-700 font-semibold mb-2" for="storage">Storage Capacity</label>
                             <input type="text" id="storage" name="storage" placeholder="Enter the storage capacity"
                                 class="w-full p-3 border rounded-lg">
+                            <p id="storageError" class="hidden text-red-600 font-medium"></p>
+                        </div>
+                        {{/if}}
+
+                        <!-- Description -->
+                        <div class="col-span-1 md:col-span-2">
+                            <label class="block text-gray-700 font-semibold mb-2" for="description">Description</label>
+                            <textarea id="description" name="description" rows="3" placeholder="Enter a description"
+                                class="w-full p-3 border rounded-lg"></textarea>
+                            <p id="descriptionError" class="hidden text-red-600 font-medium"></p>
+                        </div>
+
+                        <!-- Stock -->
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2" for="stock">Stock</label>
+                            <input type="number" id="stock" name="stock" placeholder="Enter available stock"
+                                class="w-full p-3 border rounded-lg">
+                             <p id="stockError" class="hidden text-red-600 font-medium"></p>
+                        </div>
+
+                         <!-- price -->
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2" for="price">Price</label>
+                            <input type="number" id="price" name="stock" placeholder="Enter the price"
+                                class="w-full p-3 border rounded-lg">
+                             <p id="priceError" class="hidden text-red-600 font-medium"></p>
                         </div>
 
                         <!-- Image Upload with Previews -->
-                        <div>
+                        <div class="col-span-1 md:col-span-2">
                             <label class="block text-gray-700 font-semibold mb-2">Upload Images</label>
                             <div class="space-y-2">
                                 <div>
-                                    <input type="file" id="image1" name="images" accept="image/*" onchange="previewSingleImage(this, 1)"
+                                    <input type="file" id="img1" name="images" accept="image/*" onchange="validateImage(this, 1)"
                                         class="p-2 border rounded w-full">
                                     <div class="mt-2" id="imagePreview1"></div>
+                                    <p id="image1Error" class="hidden text-red-600 font-medium"></p>
                                 </div>
                                 <div>
-                                    <input type="file" id="image2" name="images" accept="image/*" onchange="previewSingleImage(this, 2)"
+                                    <input type="file" id="img2" name="images" accept="image/*" onchange="validateImage(this, 2)"
                                         class="p-2 border rounded w-full">
                                     <div class="mt-2" id="imagePreview2"></div>
+                                    <p id="image2Error" class="hidden text-red-600 font-medium"></p>
                                 </div>
                                 <div>
-                                    <input type="file" id="image3" name="images" accept="image/*" onchange="previewSingleImage(this, 3)"
+                                    <input type="file" id="img3" name="images" accept="image/*" onchange="validateImage(this, 3)"
                                         class="p-2 border rounded w-full">
                                     <div class="mt-2" id="imagePreview3"></div>
+                                    <p id="image3Error" class="hidden text-red-600 font-medium"></p>
                                 </div>
                                 <div>
-                                    <input type="file" id="images4" name="images" accept="image/*" onchange="previewSingleImage(this, 4)"
+                                    <input type="file" id="img4" name="images" accept="image/*" onchange="validateImage(this, 4)"
                                         class="p-2 border rounded w-full">
                                     <div class="mt-2" id="imagePreview4"></div>
+                                    <p id="image4Error" class="hidden text-red-600 font-medium"></p>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-            <!-- Submit Button -->
-            <button type="submit"
-                class="w-full bg-green-600 text-white p-3 rounded-lg font-semibold hover:bg-green-500">
-                Save Variants
-            </button>
+                    <!-- Submit Button -->
+                    <button type="submit"
+                        class="w-full bg-green-600 text-white p-3 rounded-lg font-semibold hover:bg-green-500">
+                        Save Variants
+                    </button>
         </form>
     </div>
 </section>
 
 <script>
 
-    function previewSingleImage(input, index) {
-        const file = input.files[0];
-        const preview = document.getElementById(`imagePreview${index}`);
-        if (file) {
+    function validateImage(input, index){
+        const file=input.files[0]
+        const error=document.getElementById(`image${index}Error`)
+        const preview=document.getElementById(`imagePreview${index}`)
+
+        if(file){
+            const allowedTypes = ['image/jpeg', 'image/png','image/jpg', 'image/gif', 'image/webp'];
+            if(!allowedTypes.includes(file.type)){
+                error.classList.remove('hidden')
+                preview.classList.add('hidden')
+                error.innerText="Only image files (JPEG, PNG, GIF, WebP) are allowed !"
+                input.value=""
+            }
             const reader = new FileReader();
             reader.onload = function (e) {
                 preview.innerHTML = `<img src="${e.target.result}" class="w-24 h-24 object-cover rounded-md">`;
@@ -86,9 +138,132 @@
     function addVariants(e,id){
         e.preventDefault();
         isValid=true
+
         const name=document.getElementById("productName").value
         const colour=document.getElementById("colour").value
         const storage=document.getElementById("storage").value
+        const description=document.getElementById("description").value
+        const stock=document.getElementById("stock").value
+        const price=document.getElementById("price").value
+        const category=document.getElementById("category").value
+        const image1=document.getElementById("img1").files[0]
+        const image2=document.getElementById("img2").files[0]
+        const image3=document.getElementById("img3").files[0]
+        const image4=document.getElementById("img4").files[0]
+
+
+        if(!colour && !description && !stock && !price && !category){
+             isValid=false
+             Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'All fields are required !',
+            }).then(()=>{
+                location.reload();
+            })
+        }
+        if(!colour){
+            document.getElementById("colourError").classList.remove('hidden')
+            document.getElementById("colourError").innerText="This field is required"
+            isValid=false
+        }
+        if(!category){
+            document.getElementById("categoryError").classList.remove('hidden')
+            document.getElementById("categoryError").innerText="This field is required"
+            isValid=false
+        }
+        if(!storage){
+            document.getElementById("storageError").classList.remove('hidden')
+            document.getElementById("storageError").innerText="This field is required"
+            isValid=false
+        }
+        if(!description){
+            document.getElementById("descriptionError").classList.remove('hidden')
+            document.getElementById("descriptionError").innerText="This field is required"
+            isValid=false
+        }
+        if(!stock){
+            document.getElementById("stockError").classList.remove('hidden')
+            document.getElementById("stockError").innerText="This field is required"
+            isValid=false
+        }
+        if(stock<=0){
+            document.getElementById("stockError").classList.remove('hidden')
+            document.getElementById("stockError").innerText="Stock cannot be zero or negative"
+            isValid=false
+        }
+        if(!price){
+            document.getElementById("priceError").classList.remove('hidden')
+            document.getElementById("priceError").innerText="This field is required"
+            isValid=false
+        }
+        if(price<=0){
+            document.getElementById("priceError").classList.remove('hidden')
+            document.getElementById("priceError").innerText="Price cannot be zero or negative"
+            isValid=false
+        }
+        if(!image1){
+            document.getElementById("image1Error").classList.remove('hidden')
+            document.getElementById("image1Error").innerText="Image is required"
+            isValid=false
+        }
+        if(!image2){
+            document.getElementById("image2Error").classList.remove('hidden')
+            document.getElementById("image2Error").innerText="Image is required"
+            isValid=false
+        }
+        if(!image3){
+            document.getElementById("image3Error").classList.remove('hidden')
+            document.getElementById("image3Error").innerText="Image is required"
+            isValid=false
+        }
+        if(!image4){
+            document.getElementById("image4Error").classList.remove('hidden')
+            document.getElementById("image4Error").innerText="Image is required"
+            isValid=false
+        }
+
+        const formData = new FormData();
+
+        formData.append("name", name);
+        formData.append("category", category);
+        formData.append("storage", storage);
+        formData.append("description", description);
+        formData.append("stock", stock);
+        formData.append("price", price);
+        formData.append("colour", colour);
+
+        if (image1) formData.append("images", image1);
+        if (image2) formData.append("images", image2);
+        if (image3) formData.append("images", image3);
+        if (image4) formData.append("images", image4);
+
+        if(isValid){
+            fetch(`/admin/addvariant/${id}`,{
+                method:"POST",
+                body:formData
+            }).then((response)=>response.json()).then((response)=>{
+                if(response.status){
+                    Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: response.message,
+                    confirmButtonText: 'OK'
+                }).then(()=>{
+                    location.href='/admin/products'
+                })
+
+                }else{
+                    Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: response.message,
+                    confirmButtonText: 'Retry'
+                })
+
+                }
+            })
+        }
     }
 
 </script>

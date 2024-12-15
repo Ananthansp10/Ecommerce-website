@@ -60,6 +60,9 @@ const orderSchema=new Schema({
     },
     deliveredDate:{
         type: String,
+    },
+    reason:{
+        type:String
     }
     }],
 
@@ -112,7 +115,7 @@ const orderSchema=new Schema({
     orderStatus:{
         type:String,
         required:true
-    }
+    },
 })
 
 const order=mongoose.model('order',orderSchema);

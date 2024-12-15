@@ -5,6 +5,7 @@ const category=require('../databaseSchemas/categorySchema');
 const googleAuth=require('../databaseSchemas/googleAuthSchemas');
 const orderDetail=require('../databaseSchemas/orderSchema');
 const couponData=require('../databaseSchemas/couponSchema');
+const variant=require('../databaseSchemas/variantSchema');
 const mongoose = require('mongoose');
 const { ObjectId } = mongoose.Types; 
 module.exports={
@@ -486,7 +487,7 @@ module.exports={
 
     getAllOrderDetails:()=>{
         return new Promise((resolve,reject)=>{
-            orderDetail.find().then((data)=>{
+            orderDetail.find().sort({orderDate:-1}).then((data)=>{
                 console.log(data)
                 let obj=data.map((details,index)=>{
                     let date=new Date(details.orderDate).toISOString().split('T')[0]
@@ -543,10 +544,163 @@ module.exports={
         const endDate = new Date(end);
         return new Promise((resolve,reject)=>{
             endDate.setHours(23, 59, 59, 999);
-            orderDetail.find({orderDate:{$gte:startDate,$lte:endDate}}).then((data)=>{
+            orderDetail.find({orderDate:{$gte:startDate,$lte:endDate}}).sort({orderDate:-1}).then((data)=>{
                 console.log(data)
                 resolve(data)
             })
+        })
+    },
+
+    addVariant:(data,productId,imageUrls)=>{
+        return new Promise(async(resolve,reject)=>{
+            data.category=data.category.charAt(0).toUpperCase()+data.category.slice(1)
+            let categoryType=await category.findOne({name:data.category})
+            const images=imageUrls
+            const productObj={
+                name:data.name,
+                catType:data.category,
+                category:categoryType._id,
+                price:data.price,
+                stock:data.stock,
+                colour:data.colour,
+                description:data.description,
+                images: images,
+                visiblity: true,
+                storage:data.storage
+            }
+            const findVariant=await variant.findOne({productId:new ObjectId(productId)})
+            if(findVariant){
+                variant.updateOne({productId:new ObjectId(productId)},{$push:{variants:productObj}}).then((data)=>{
+                    if(data.acknowledged){
+                        resolve({status:true,message:"Product variant addedd successfully"})
+                    }else{
+                        resolve({status:false,message:"Product variant not addedd"})
+                    }
+                })
+            }else{
+                const data={
+                    productId:productId,
+                    variants:[productObj]
+                }
+                const obj=new variant(data)
+                obj.save().then((data)=>{
+                    if(data){
+                        resolve({status:true,message:"Product variant addedd successfully"})
+                    }else{
+                        resolve({status:false,message:"Product variant not addedd"})
+                    }
+                })
+            }
+        })
+    },
+
+    getCategory:(productId)=>{
+        return new Promise((resolve,reject)=>{
+            product.findOne({_id:new ObjectId(productId)}).then((data)=>{
+                if(data.catType=="mobile"){
+                    resolve(true)
+                }else{
+                    resolve(false)
+                }
+            })
+        })
+    },
+
+    findTopProducts:()=>{
+        return new Promise((resolve,reject)=>{
+            product.find({purchaseCount:{$exists:true}}).sort({purchaseCount:-1}).then((data)=>{
+                resolve(data)
+            })
+        })
+    },
+
+    findTopCategories:()=>{
+        return new Promise((resolve,reject)=>{
+            category.find().sort({purchaseCount:-1}).then((data)=>{
+                resolve(data)
+            })
+        })
+    },
+
+    sortByOption:(value)=>{
+        return new Promise((resolve,reject)=>{
+            const date=new Date()
+            const startOfDay = new Date(date.setHours(0, 0, 0, 0))
+            const endOfDay = new Date(date.setHours(23, 59, 59, 999))
+            if(value=="daily"){
+                orderDetail.find({orderDate: {
+                    $gte: startOfDay,
+                    $lte: endOfDay,
+                }}).sort({orderDate:-1}).then((data)=>{
+                    resolve(data)
+                })
+            }else if(value=="monthly"){
+            const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+            const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59, 999);
+
+            orderDetail
+                .find({
+                    orderDate: {
+                        $gte: startOfMonth,
+                        $lte: endOfMonth,
+                    },
+                }).sort({orderDate:-1}).then((data)=>{
+                    resolve(data)
+                })
+            }else if(value=="weekly"){
+            const currentDay = date.getDay()
+            const startOfWeek = new Date(date)
+            startOfWeek.setDate(date.getDate() - currentDay)
+            startOfWeek.setHours(0, 0, 0, 0)
+
+            const endOfWeek = new Date(startOfWeek)
+            endOfWeek.setDate(startOfWeek.getDate() + 6)
+            endOfWeek.setHours(23, 59, 59, 999)
+
+            orderDetail
+                .find({
+                    orderDate: {
+                        $gte: startOfWeek,
+                        $lte: endOfWeek,
+                    },
+                }).sort({orderDate:-1}).then((data)=>{
+                    resolve(data)
+                })
+            }else if(value=="yearly"){
+            const startOfYear = new Date(date.getFullYear(), 0, 1, 0, 0, 0, 0)
+            const endOfYear = new Date(date.getFullYear(), 11, 31, 23, 59, 59, 999)
+
+            orderDetail
+                .find({
+                    orderDate: {
+                        $gte: startOfYear,
+                        $lte: endOfYear,
+                    },
+                }).sort({orderDate:-1}).then((data)=>{
+                    resolve(data)
+                })
+            }
+        })
+    },
+
+    getMonthlyRevenue:()=>{
+        return new Promise((resolve,reject)=>{
+            const date=new Date()
+            let total=0
+            const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+            const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59, 999);
+             orderDetail
+                .find({
+                    orderDate: {
+                        $gte: startOfMonth,
+                        $lte: endOfMonth,
+                    },
+                }).then((data)=>{
+                    data.map((data)=>{
+                        total+=data.totalPrice
+                    })
+                    resolve(total)
+                })
         })
     }
       

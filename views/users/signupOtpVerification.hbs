@@ -117,7 +117,10 @@ function startTimer() {
         text:response.message,
         confirmButtonText: 'Retry or Resend OTP',
       }).then(()=>{
-        location.reload();
+        document.getElementById("first").value=""
+        document.getElementById("second").value=""
+        document.getElementById("third").value=""
+        document.getElementById("fourth").value=""
       })
       }
     }).catch(()=>{

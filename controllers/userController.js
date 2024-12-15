@@ -66,6 +66,9 @@ module.exports={
       if (addUserResponse.status){
         const otpResponse = await userhelper.otpGenerate(req.body.email);
         if (otpResponse.status) {
+          setTimeout(async() => {
+            const deleteOTP=await userhelper.deleteOTP(req.session.email)
+          }, 60000);
           res.status(200).json({status:true,message:otpResponse.message})
         } 
       }else{
@@ -95,6 +98,9 @@ module.exports={
       const response = await userhelper.resendOtpGenerate(req.session.email);
 
       if (response.status) {
+        setTimeout(async() => {
+          const deleteOTP=await userhelper.deleteOTP(req.session.email)
+        }, 60000);
           res.json({success: true,message:"OTP has been resend check it in your email"});
       } else {
           res.json({success: false, message: "Failed to Send OTP please try again"});
@@ -703,6 +709,8 @@ module.exports={
           })
         }else if(response.status==="PENDING_PAYMENT"){
           res.json({status:response.status,orderId:response.orderId,key:response.key,amount:response.amount,data:response.data})
+        }else if(response.status===false){
+          res.json({status:false,message:response.message})
         }
       })
       }else{
@@ -730,7 +738,9 @@ module.exports={
           orderStatus:data.orderedProducts.orderStatus,
           key:index+1,
           isDelivered:data.orderedProducts.orderStatus=="Delivered",
-          isReturned:data.orderedProducts.orderStatus=="Return"
+          isReturned:data.orderedProducts.orderStatus=="Return",
+          isCancelled:data.orderedProducts.orderStatus=="Cancelled",
+          isPending:data.orderedProducts.orderStatus=="Pending"
         }
       })
       res.render('users/orderPage',{user:req.session.user,data:plainObj})
@@ -789,11 +799,12 @@ module.exports={
 
   cartOrderCancel:async(req,res)=>{
     try {
+      const updateProductCount=await userhelper.updateProductCount(req.params.productId,req.params.quantity)
       userhelper.findOrderPaymentMethod(req.params.orderId).then((response)=>{
         if(response=="Online"){
           userhelper.addToWallet(req.params.productId,req.params.orderId,req.session.user._id,"Cancelled").then((response)=>{
             userhelper.updateOrderTotalPrice(req.params.orderId).then((response)=>{
-              userhelper.cartOrderCancel(req.params.productId,req.params.orderId).then((response)=>{
+              userhelper.cartOrderCancel(req.params.productId,req.params.orderId,req.params.reason).then((response)=>{
                 userhelper.returnProductUpdateQuantity(req.params.productId,req.params.quantity).then((response)=>{
                   if(response.status){
                     res.json({status:true})
@@ -805,7 +816,7 @@ module.exports={
             })
           })
         }else{
-          userhelper.cartOrderCancel(req.params.productId,req.params.orderId).then((response)=>{
+          userhelper.cartOrderCancel(req.params.productId,req.params.orderId,req.params.reason).then((response)=>{
             userhelper.returnProductUpdateQuantity(req.params.productId,req.params.quantity).then((response)=>{
               userhelper.updateOrderTotalPrice(req.params.orderId).then((response)=>{
               if(response.status){
@@ -823,8 +834,9 @@ module.exports={
     }
   },
 
-  returnOrder:(req,res)=>{
+  returnOrder:async(req,res)=>{
     try {
+      const updateProductCount=await userhelper.updateProductCount(req.params.productId,req.params.quantity)
       userhelper.returnOrder(req.params.productId,req.params.orderId).then((response)=>{
         userhelper.returnProductUpdateQuantity(req.params.productId,req.params.quantity).then((response)=>{
           userhelper.addToWallet(req.params.productId,req.params.orderId,req.session.user._id,"Return").then((response)=>{
@@ -909,7 +921,7 @@ module.exports={
     }
   },
 
-  verifyPayment:(req,res)=>{
+  verifyPayment:async(req,res)=>{
     const {razorpay_order_id, razorpay_payment_id, razorpay_signature,data} = req.body;
 
     try {
@@ -919,9 +931,10 @@ module.exports={
 
        
         if (generatedSignature === razorpay_signature) {
-          userhelper.addOrder(data,req.session.user._id).then((response)=>{
+          userhelper.addOrder(data,req.session.user._id).then(async(response)=>{
             if(response.status){
-              userhelper.updateProductStock(data.orderedProducts).then((response)=>{
+              const products=await userhelper.findWishProduct(data)
+              userhelper.updateProductStock(products.orderedProducts).then((response)=>{
                 if(response.status){
                   res.json({status:true, message: 'Payment verified successfully!'});
                 }
@@ -970,6 +983,22 @@ module.exports={
           res.status(200).json({status:false,message:"Coupon not removed"})
         }
       })
+    } catch (error) {
+      res.status(500).send("Error occured")
+    }
+  },
+
+  rePayment:async(req,res)=>{
+    try {
+      const data=await userhelper.findOrder(req.params.orderId)
+      const razorpayOrder = await razorpay.orders.create({
+        amount: data.totalPrice * 100,
+        currency: "INR",
+        receipt: `receipt_${new Date().getTime()}`
+    })
+    res.json({status: 'PENDING_PAYMENT',
+      orderId: razorpayOrder.id,
+      key: razorpay.key_id,amount:data.totalPrice*100,data:data.orderId})
     } catch (error) {
       res.status(500).send("Error occured")
     }

@@ -17,9 +17,9 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
-    folder: 'uploads', // folder in Cloudinary where the images will be stored
-    format: async (req, file) => 'jpg', // supports promises, you can adjust format as needed
-    public_id: (req, file) => `${file.originalname.split('.')[0]}-${Date.now()}`, // filename without extension
+    folder: 'uploads',
+    format: async (req, file) =>'jpg',
+    public_id: (req, file) => `${file.originalname.split('.')[0]}-${Date.now()}`,
 },
 });
 

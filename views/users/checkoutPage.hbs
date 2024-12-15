@@ -249,6 +249,15 @@ function placeOrder(cartId, totalAmount,couponCode) {
       });
     }else if(data.status==='PENDING_PAYMENT'){
       initiateRazorpayPayment(data.orderId, data.key,data.amount,data.data);
+    }else if(data.status===false){
+      Swal.fire({
+        icon: 'warning',
+        title: 'Order cannot placed',
+        text:data.message,
+        confirmButtonText: 'Retry'
+      }).then(()=>{
+        location.reload();
+      })
     }
     })
     .catch(error => {

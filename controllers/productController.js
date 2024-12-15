@@ -121,12 +121,21 @@ module.exports={
                 offerPrice:productDetails.offerPrice ? productDetails.offerPrice :false,
                 storage:productDetails.storage
             };
-            
-            const colours = await producthelpers.getColourVariant(productDetails.name);
-            let productColours = colours.map(prod => prod.images);
+            let productColours
+            const colours = await producthelpers.getColourVariant(req.params.id);
+            if(colours.length!=0){
+                    productColours = colours.map((data)=>{
+                    return{
+                        productId:req.params.id,
+                        variantId:data._id,
+                        colours:data.images
+                    }
+                })
+            }
             
             res.render('products/productviewpage', { user: req.session.user, product: plainProduct, colours: productColours,cartLength });
         } catch (error) {
+            console.log(error)
             res.status(500).send('Error retrieving product details');
         }
     },
@@ -385,6 +394,42 @@ module.exports={
            res.render('products/productlist',{user:req.session.user,products:plainProducts,cartLength})
         } catch (error) {
             res.status(500).send("Error occured page not rendering")
+        }
+     },
+
+     viewVariant:async(req,res)=>{
+        try {
+            const productDetails=await producthelpers.viewVariant(req.params.productId,req.params.variantId)
+            const plainProduct = {
+                _id: productDetails[0]._id,
+                name: productDetails[0].name,
+                price: productDetails[0].price,
+                description: productDetails[0].description,
+                images: productDetails[0].images,
+                isMobile:productDetails[0].catType=="mobile",
+                stock: productDetails[0].stock,
+                outOfStock:productDetails[0].stock==0,
+                inStock:productDetails[0].stock>5,
+                limitedStock:productDetails[0].stock<=5 && productDetails[0].stock>0,
+                //isOnWishList:findwish?findwish:false,
+                offerPrice:productDetails[0].offerPrice ? productDetails[0].offerPrice :false,
+                storage:productDetails[0].storage
+            }
+            let productColours
+            const colours = await producthelpers.getColourVariant(req.params.productId);
+            if(colours.length!=0){
+                    productColours = colours.map((data)=>{
+                    return{
+                        productId:req.params.productId,
+                        variantId:data._id,
+                        colours:data.images
+                    }
+                })
+            }
+            res.render('products/productviewpage',{user:req.session.user,product:plainProduct,colours:productColours})
+        } catch (error) {
+            console.log(error)
+            res.status(500).send("Error occured")
         }
      }
 }
