@@ -709,7 +709,7 @@ module.exports={
                     data.map((data)=>{
                         total+=150
                         data.orderedProducts.map((products)=>{
-                            if(products.orderStatus!="Cancelled" && products.orderStatus!="Return" && products.orderStatus!="Pending"){
+                            if(products.orderStatus!=="Cancelled" && products.orderStatus!=="Return" && products.orderStatus!=="Pending"){
                                 total+=products.price*products.quantity
                             }
                         })
@@ -720,115 +720,227 @@ module.exports={
         })
     },
 
-    getSalesChart:()=>{
-        return new Promise((resolve,reject)=>{
-            orderDetail.aggregate([{
-                $group:{
-                    _id:{
-                        year: { $year: { $toDate: "$orderDate" } },
-                        month: { $month: { $toDate: "$orderDate" } }
-                    },
-                    totalRevenue:{
-                        $sum:"$totalPrice"
-                    }
-                }
-              },
-              {
-                $sort:{
-                    "_id.year":1,
-                    "_id.month":1
-                }
-              }
-           ]).then((data)=>{
-                const labels=data.map((data)=>`Month ${data._id.month}, ${data._id.year}`)
-                const values=data.map((data)=>data.totalRevenue)
-                resolve({labels,values})
-            })
-        })
-    },
-
-    sortChart:(value)=>{
-        return new Promise((resolve,reject)=>{
-            if(value=="monthly"){
-                orderDetail.aggregate([{
-                    $group:{
-                        _id:{
-                            year: { $year: { $toDate: "$orderDate" } },
-                            month: { $month: { $toDate: "$orderDate" } }
-                        },
-                        totalRevenue:{
-                            $sum:"$totalPrice"
-                        }
-                    }
-                  },
-                  {
-                    $sort:{
-                        "_id.year":1,
-                        "_id.month":1
-                    }
-                  }
-               ]).then((data)=>{
-                    const labels=data.map((data)=>`Month ${data._id.month}, ${data._id.year}`)
-                    const values=data.map((data)=>data.totalRevenue)
-                    resolve({labels,values,range:"Monthly"})
-                })
-            }else if(value=="daily"){
-                orderDetail.aggregate([{
-                    $group:{
-                        _id: { $dateToString: { format: "%Y-%m-%d", date: { $toDate: "$orderDate" } } },
-                        totalRevenue: { $sum: "$totalPrice" }
+    getSalesChart: () => {
+        return new Promise((resolve, reject) => {
+            orderDetail.aggregate([
+                {
+                    $unwind: "$orderedProducts"
+                },
+                {
+                    $match: {
+                        "orderedProducts.orderStatus": { $nin: ["Cancelled", "Return", "Pending"] }
                     }
                 },
                 {
-                    $sort:{
-                        _id:1
+                    $group: {
+                        _id: {
+                            year: { $year: { $toDate: "$orderDate" } },
+                            month: { $month: { $toDate: "$orderDate" } },
+                            orderId: "$_id"
+                        },
+                        orderRevenue: {
+                            $sum: { $multiply: ["$orderedProducts.price", "$orderedProducts.quantity"] }
+                        }
+                    }
+                },
+                {
+                    $group: {
+                        _id: {
+                            year: "$_id.year",
+                            month: "$_id.month"
+                        },
+                        totalRevenue: {
+                            $sum: { $add: ["$orderRevenue", 150] }
+                        }
+                    }
+                },
+                {
+                    $sort: {
+                        "_id.year": 1,
+                        "_id.month": 1
                     }
                 }
-            ]).then((data)=>{
-                const labels=data.map((data)=>data._id)
-                const values=data.map((data)=>data.totalRevenue)
-                resolve({labels,values,range:"Daily"})
-            })
-            }else if(value=="weekly"){
-                orderDetail.aggregate([{
-                    $group:{
+            ]).then((data) => {
+                const labels = data.map((item) => `Month ${item._id.month}, ${item._id.year}`);
+                const values = data.map((item) => item.totalRevenue);
+                resolve({ labels, values });
+            }).catch((err) => reject(err));
+        });
+    },
+    
+    
+    // sortChart:(value)=>{
+    //     return new Promise((resolve,reject)=>{
+    //         if(value=="monthly"){
+    //             orderDetail.aggregate([{
+    //                 $group:{
+    //                     _id:{
+    //                         year: { $year: { $toDate: "$orderDate" } },
+    //                         month: { $month: { $toDate: "$orderDate" } }
+    //                     },
+    //                     totalRevenue:{
+    //                         $sum:"$totalPrice"
+    //                     }
+    //                 }
+    //               },
+    //               {
+    //                 $sort:{
+    //                     "_id.year":1,
+    //                     "_id.month":1
+    //                 }
+    //               }
+    //            ]).then((data)=>{
+    //                 const labels=data.map((data)=>`Month ${data._id.month}, ${data._id.year}`)
+    //                 const values=data.map((data)=>data.totalRevenue)
+    //                 resolve({labels,values,range:"Monthly"})
+    //             })
+    //         }else if(value=="daily"){
+    //             orderDetail.aggregate([{
+    //                 $group:{
+    //                     _id: { $dateToString: { format: "%Y-%m-%d", date: { $toDate: "$orderDate" } } },
+    //                     totalRevenue: { $sum: "$totalPrice" }
+    //                 }
+    //             },
+    //             {
+    //                 $sort:{
+    //                     _id:1
+    //                 }
+    //             }
+    //         ]).then((data)=>{
+    //             const labels=data.map((data)=>data._id)
+    //             const values=data.map((data)=>data.totalRevenue)
+    //             resolve({labels,values,range:"Daily"})
+    //         })
+    //         }else if(value=="weekly"){
+    //             orderDetail.aggregate([{
+    //                 $group:{
+    //                     _id: {
+    //                         year: { $year: { $toDate: "$orderDate" } },
+    //                         week: { $week: { $toDate: "$orderDate" } }
+    //                     },
+    //                     totalRevenue: { $sum: "$totalPrice" }
+    //                 }
+    //             },
+    //             {
+    //                 $sort:{
+    //                     "_id.year":1,
+    //                     "_id.week":1
+    //                 }
+    //             }
+    //         ]).then((data)=>{
+    //             const labels=data.map((data)=>`Week ${data._id.week}, ${data._id.year}`)
+    //             const values=data.map((data)=>data.totalRevenue)
+    //             resolve({labels,values,range:"Weekly"})
+    //         })
+    //         }else if(value=="yearly"){
+    //             orderDetail.aggregate([{
+    //                 $group:{
+    //                     _id: { year: { $year: { $toDate: "$orderDate" } } },
+    //                     totalRevenue: { $sum: "$totalPrice" } 
+    //                 }
+    //             },
+    //             {
+    //                 $sort:{
+    //                     "_id.year":1
+    //                 }
+    //             }
+    //         ]).then((data)=>{
+    //             const labels=data.map((data)=>data._id.year)
+    //             const values=data.map((data)=>data.totalRevenue)
+    //             resolve({labels,values,range:"Yearly"})
+    //         })
+    //         }
+    //     })
+    // }
+
+    sortChart: (value) => {
+        return new Promise((resolve, reject) => {
+            const basePipeline = [
+                {
+                    $unwind: "$orderedProducts"
+                },
+                {
+                    $match: {
+                        "orderedProducts.orderStatus": { $nin: ["Cancelled", "Return", "Pending"] }
+                    }
+                },
+                {
+                    $group: {
+                        _id: "$_id",
+                        orderRevenue: {
+                            $sum: { $multiply: ["$orderedProducts.price", "$orderedProducts.quantity"] }
+                        },
+                        orderDate: { $first: "$orderDate" }
+                    }
+                },
+                {
+                    $addFields: {
+                        totalRevenue: { $add: ["$orderRevenue", 150] }
+                    }
+                }
+            ];
+
+            let groupStage;
+            let sortStage;
+            let formatLabel;
+    
+            if (value === "daily") {
+                groupStage = {
+                    $group: {
+                        _id: { $dateToString: { format: "%Y-%m-%d", date: { $toDate: "$orderDate" } } },
+                        totalRevenue: { $sum: "$totalRevenue" }
+                    }
+                };
+                sortStage = { $sort: { _id: 1 } };
+                formatLabel = (id) => id;
+            } else if (value === "monthly") {
+                groupStage = {
+                    $group: {
+                        _id: {
+                            year: { $year: { $toDate: "$orderDate" } },
+                            month: { $month: { $toDate: "$orderDate" } }
+                        },
+                        totalRevenue: { $sum: "$totalRevenue" }
+                    }
+                };
+                sortStage = { $sort: { "_id.year": 1, "_id.month": 1 } };
+                formatLabel = (id) => `Month ${id.month}, ${id.year}`;
+            } else if (value === "weekly") {
+                groupStage = {
+                    $group: {
                         _id: {
                             year: { $year: { $toDate: "$orderDate" } },
                             week: { $week: { $toDate: "$orderDate" } }
                         },
-                        totalRevenue: { $sum: "$totalPrice" }
+                        totalRevenue: { $sum: "$totalRevenue" }
                     }
-                },
-                {
-                    $sort:{
-                        "_id.year":1,
-                        "_id.week":1
-                    }
-                }
-            ]).then((data)=>{
-                const labels=data.map((data)=>`Week ${data._id.week}, ${data._id.year}`)
-                const values=data.map((data)=>data.totalRevenue)
-                resolve({labels,values,range:"Weekly"})
-            })
-            }else if(value=="yearly"){
-                orderDetail.aggregate([{
-                    $group:{
+                };
+                sortStage = { $sort: { "_id.year": 1, "_id.week": 1 } };
+                formatLabel = (id) => `Week ${id.week}, ${id.year}`;
+            } else if (value === "yearly") {
+                groupStage = {
+                    $group: {
                         _id: { year: { $year: { $toDate: "$orderDate" } } },
-                        totalRevenue: { $sum: "$totalPrice" } 
+                        totalRevenue: { $sum: "$totalRevenue" }
                     }
-                },
-                {
-                    $sort:{
-                        "_id.year":1
-                    }
-                }
-            ]).then((data)=>{
-                const labels=data.map((data)=>data._id.year)
-                const values=data.map((data)=>data.totalRevenue)
-                resolve({labels,values,range:"Yearly"})
-            })
+                };
+                sortStage = { $sort: { "_id.year": 1 } };
+                formatLabel = (id) => id.year.toString();
             }
-        })
+    
+            const pipeline = [
+                ...basePipeline,
+                groupStage,
+                sortStage
+            ];
+    
+            orderDetail.aggregate(pipeline).then((data) => {
+                const labels = data.map((item) => formatLabel(item._id));
+                const values = data.map((item) => item.totalRevenue);
+                resolve({ labels, values, range: value.charAt(0).toUpperCase() + value.slice(1) });
+            }).catch((err) => reject(err));
+        });
     }
+     
       
 }
