@@ -18,6 +18,7 @@ module.exports={
             const monthlyAmount=await adminhelper.getMonthlyRevenue()
             const topProducts=await adminhelper.findTopProducts()
             const topCategories=await adminhelper.findTopCategories()
+            const salesChart=await adminhelper.getSalesChart()
             const plainObj=topProducts.map((data)=>{
                 return{
                     name:data.name,
@@ -32,8 +33,9 @@ module.exports={
                     image:data.image
                 }
             })
-            res.render('admin/dashboardPage', {admin:true,usersCount,top:plainObj,cat:obj,totalAmount,monthlyAmount})
+            res.render('admin/dashboardPage', {admin:true,usersCount,top:plainObj,cat:obj,totalAmount,monthlyAmount,salesChart: JSON.stringify(salesChart)})
         } catch (error) {
+            console.log(error)
             res.status(500).send('Error rendering dashboard page');
         }
     },
@@ -671,10 +673,18 @@ module.exports={
               let obj
               if(data.length!=0){
                 obj=data.map((data,index)=>{
-                    totalAmount+=data.totalPrice
-                    offerDiscountTotal+=data.offerDiscount
+                    // totalAmount+=data.totalPrice
+                    // offerDiscountTotal+=data.offerDiscount
+                    totalAmount+=150
+                    data.orderedProducts.map((products)=>{
+                        if(products.orderStatus!=="Cancelled" && products.orderStatus!=="Return" && products.orderStatus!=="Pending"){
+                            totalAmount+=products.price*products.quantity
+                        }
+                    })
                     data.orderedProducts.map((data)=>{
-                        totalProducts++
+                        if(data.orderStatus!=="Cancelled" && data.orderStatus!=="Return" && data.orderStatus!=="Pending"){
+                            totalProducts++
+                        }
                     })
                     let date=new Date(data.orderDate).toISOString().split('T')[0]
                     return{
@@ -729,10 +739,17 @@ module.exports={
                 let obj
                 if(data.length!=0){
                     obj=data.map((data,index)=>{
+                        totalAmount+=150
                         const date=new Date(data.orderDate).toISOString().split('T')[0]
-                        totalAmount+=data.totalPrice
+                        data.orderedProducts.map((products)=>{
+                            if(products.orderStatus!=="Cancelled" && products.orderStatus!=="Return" && products.orderStatus!=="Pending"){
+                                totalAmount+=products.price*products.quantity
+                                totalProducts++
+                            }
+                        })
+                        // totalAmount+=data.totalPrice
                         offerDiscountTotal+=data.offerDiscount
-                        totalProducts+=data.orderedProducts.length
+                        // totalProducts+=data.orderedProducts.length
                         return{
                             orderId:data.orderId,
                             status:data.paymentMethod,
@@ -746,6 +763,16 @@ module.exports={
             } catch (error) {
                 console.log(error)
                 res.status(500).send("Error occured")
+            }
+        },
+
+        sortChart:(req,res)=>{
+            try {
+               adminhelper.sortChart(req.params.value).then((data)=>{
+                res.json(data)
+               }) 
+            } catch (error) {
+               res.status(500).send("Error occured") 
             }
         }
     

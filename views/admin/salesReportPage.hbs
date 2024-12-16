@@ -112,10 +112,24 @@
 
 <script>
 
-    function downloadPDF() {
-      setTimeout(function() {
+   function downloadPDF() {
+    setTimeout(function() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
+
+        // Set font and color for the company name
+        doc.setFont("helvetica", "bold"); // Font style
+        doc.setFontSize(16); // Font size
+        doc.setTextColor(0, 0, 255); // Blue color in RGB (0, 0, 255)
+
+        // Add the company name at the top center
+        const companyName = "MOB N ACCESS"; // Replace with your company name
+        const pageWidth = doc.internal.pageSize.width; // Get page width
+        const textWidth = doc.getTextWidth(companyName); // Get text width
+        const centerX = (pageWidth - textWidth) / 2; // Calculate center position
+        doc.text(companyName, centerX, 15); // Add the company name at Y position 15
+
+        doc.setTextColor(0, 0, 0);
 
         // Add summary data to the PDF first
         doc.setFontSize(14);
@@ -125,36 +139,37 @@
         doc.text(`Total Orders: {{totalOrders}}`, 14, 40);
         doc.text(`Products Sold: {{totalProducts}}`, 14, 50);
         doc.text(`Total Offer Discount: ₹{{offerDiscountTotal}}`, 14, 60);
-        
+
         // Move the starting Y position for the table
         let currentY = 70;
 
         // Generate the table from HTML
         doc.autoTable({
-          html: '#sales-report-table', // Target the table with ID sales-report-table
-          startY: currentY, // Set starting Y position for the table
-          margin: { top: 10, left: 10, right: 10, bottom: 10 },
-          styles: {
-            fontSize: 10, 
-            cellPadding: 3,  // Increase cell padding for better spacing
-            overflow: 'linebreak',
-            halign: 'center',  // Center-align content horizontally
-          },
-          columnStyles: {
-            0: { cellWidth: 30 },  // Fixed width for the first column
-            1: { cellWidth: 50 },  // Fixed width for the second column
-            2: { cellWidth: 30 },  // Fixed width for the third column
-            3: { cellWidth: 40 },  // Fixed width for the fourth column
-            4: { cellWidth: 50 },  // Fixed width for the fifth column
-          },
-          tableWidth: 'wrap', // Ensure table is not cut off
-          theme: 'grid', // Use grid theme for the table
+            html: '#sales-report-table', // Target the table with ID sales-report-table
+            startY: currentY, // Set starting Y position for the table
+            margin: { top: 10, left: 5, right: 5, bottom: 10 }, // Adjust margins
+            styles: {
+                fontSize: 10, 
+                cellPadding: 3, // Increase cell padding for better spacing
+                overflow: 'linebreak', // Wrap long content
+                halign: 'center', // Center-align content
+            },
+            columnStyles: {
+                0: { halign: 'center' }, // Dynamically adjust column widths
+                1: { halign: 'center' },
+                2: { halign: 'center' },
+                3: { halign: 'center' },
+                4: { halign: 'center' },
+            },
+            tableWidth: 'auto', // Scale table to fit page width
+            theme: 'grid', // Use grid theme for the table
+            pageBreak: 'auto', // Automatically create page breaks
         });
 
         // Save the generated PDF
         doc.save('sales-report.pdf');
-      }, 500); // A small delay to ensure the content is rendered
-    }
+    }, 500); // A small delay to ensure the content is rendered
+}
 
     function downloadExcel() {
   // Get the table element

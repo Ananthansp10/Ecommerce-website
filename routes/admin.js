@@ -92,5 +92,7 @@ router.post('/deleteproductoffer/:offerId',offercontroller.deleteProductOffer)
 
 router.get('/sortbyoption/:value',admincontroller.sortByOption)
 
+router.post('/sortchart/:value',admincontroller.sortChart)
+
 
 module.exports=router;

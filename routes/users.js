@@ -122,7 +122,7 @@ router.get('/vieworder/:productId/:orderId',usercontroller.viewOrderDetailsPage)
 
 router.post('/cartordercancel/:productId/:orderId/:quantity/:reason',usercontroller.cartOrderCancel)
 
-router.post('/returnorder/:productId/:orderId/:quantity/reason',usercontroller.returnOrder)
+router.post('/returnorder/:productId/:orderId/:quantity/:reason',usercontroller.returnOrder)
 
 router.post('/addtowishlist/:productId',usercontroller.addToWishlist)
 

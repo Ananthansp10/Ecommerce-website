@@ -461,7 +461,13 @@ module.exports={
             const orders =await orderDetail.find()
             let total=0
             orders.map((data)=>{
-                total+=data.totalPrice
+                data.orderedProducts.map((products)=>{
+                    total+=150
+                    if(products.orderStatus!=="Cancelled" && products.orderStatus!=="Return" && products.orderStatus!=="Pending"){
+                        total+=products.price*products.quantity
+                    }
+                })
+                //total+=data.totalPrice
             })
             resolve(total)
         })
@@ -479,7 +485,12 @@ module.exports={
             const orders =await orderDetail.find()
             let totalProductsCount=0
             orders.map((data)=>{
-                totalProductsCount+=data.orderedProducts.length
+                data.orderedProducts.map((products)=>{
+                    if(products.orderStatus!=="Cancelled" && products.orderStatus!=="Return" && products.orderStatus!=="Pending"){
+                        totalProductsCount++
+                    }
+                })
+                //totalProductsCount+=data.orderedProducts.length
             })
             resolve(totalProductsCount)
         })
@@ -488,7 +499,6 @@ module.exports={
     getAllOrderDetails:()=>{
         return new Promise((resolve,reject)=>{
             orderDetail.find().sort({orderDate:-1}).then((data)=>{
-                console.log(data)
                 let obj=data.map((details,index)=>{
                     let date=new Date(details.orderDate).toISOString().split('T')[0]
                     return {
@@ -697,10 +707,127 @@ module.exports={
                     },
                 }).then((data)=>{
                     data.map((data)=>{
-                        total+=data.totalPrice
+                        total+=150
+                        data.orderedProducts.map((products)=>{
+                            if(products.orderStatus!="Cancelled" && products.orderStatus!="Return" && products.orderStatus!="Pending"){
+                                total+=products.price*products.quantity
+                            }
+                        })
+                        //total+=data.totalPrice
                     })
                     resolve(total)
                 })
+        })
+    },
+
+    getSalesChart:()=>{
+        return new Promise((resolve,reject)=>{
+            orderDetail.aggregate([{
+                $group:{
+                    _id:{
+                        year: { $year: { $toDate: "$orderDate" } },
+                        month: { $month: { $toDate: "$orderDate" } }
+                    },
+                    totalRevenue:{
+                        $sum:"$totalPrice"
+                    }
+                }
+              },
+              {
+                $sort:{
+                    "_id.year":1,
+                    "_id.month":1
+                }
+              }
+           ]).then((data)=>{
+                const labels=data.map((data)=>`Month ${data._id.month}, ${data._id.year}`)
+                const values=data.map((data)=>data.totalRevenue)
+                resolve({labels,values})
+            })
+        })
+    },
+
+    sortChart:(value)=>{
+        return new Promise((resolve,reject)=>{
+            if(value=="monthly"){
+                orderDetail.aggregate([{
+                    $group:{
+                        _id:{
+                            year: { $year: { $toDate: "$orderDate" } },
+                            month: { $month: { $toDate: "$orderDate" } }
+                        },
+                        totalRevenue:{
+                            $sum:"$totalPrice"
+                        }
+                    }
+                  },
+                  {
+                    $sort:{
+                        "_id.year":1,
+                        "_id.month":1
+                    }
+                  }
+               ]).then((data)=>{
+                    const labels=data.map((data)=>`Month ${data._id.month}, ${data._id.year}`)
+                    const values=data.map((data)=>data.totalRevenue)
+                    resolve({labels,values,range:"Monthly"})
+                })
+            }else if(value=="daily"){
+                orderDetail.aggregate([{
+                    $group:{
+                        _id: { $dateToString: { format: "%Y-%m-%d", date: { $toDate: "$orderDate" } } },
+                        totalRevenue: { $sum: "$totalPrice" }
+                    }
+                },
+                {
+                    $sort:{
+                        _id:1
+                    }
+                }
+            ]).then((data)=>{
+                const labels=data.map((data)=>data._id)
+                const values=data.map((data)=>data.totalRevenue)
+                resolve({labels,values,range:"Daily"})
+            })
+            }else if(value=="weekly"){
+                orderDetail.aggregate([{
+                    $group:{
+                        _id: {
+                            year: { $year: { $toDate: "$orderDate" } },
+                            week: { $week: { $toDate: "$orderDate" } }
+                        },
+                        totalRevenue: { $sum: "$totalPrice" }
+                    }
+                },
+                {
+                    $sort:{
+                        "_id.year":1,
+                        "_id.week":1
+                    }
+                }
+            ]).then((data)=>{
+                const labels=data.map((data)=>`Week ${data._id.week}, ${data._id.year}`)
+                const values=data.map((data)=>data.totalRevenue)
+                resolve({labels,values,range:"Weekly"})
+            })
+            }else if(value=="yearly"){
+                orderDetail.aggregate([{
+                    $group:{
+                        _id: { year: { $year: { $toDate: "$orderDate" } } },
+                        totalRevenue: { $sum: "$totalPrice" } 
+                    }
+                },
+                {
+                    $sort:{
+                        "_id.year":1
+                    }
+                }
+            ]).then((data)=>{
+                const labels=data.map((data)=>data._id.year)
+                const values=data.map((data)=>data.totalRevenue)
+                resolve({labels,values,range:"Yearly"})
+            })
+            }
         })
     }
       

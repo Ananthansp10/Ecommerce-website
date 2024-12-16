@@ -691,9 +691,9 @@ module.exports={
         })
     },
 
-    returnOrder:(productId,orderId)=>{
+    returnOrder:(productId,orderId,reason)=>{
         return new Promise((resolve,reject)=>{
-            orderDetail.updateOne({_id:new ObjectId(orderId),'orderedProducts.productId':new ObjectId(productId)},{$set:{'orderedProducts.$.orderStatus':"Return"}}).then((data)=>{
+            orderDetail.updateOne({_id:new ObjectId(orderId),'orderedProducts.productId':new ObjectId(productId)},{$set:{'orderedProducts.$.orderStatus':"Return",'orderedProducts.$.reason':reason}}).then((data)=>{
                 if(data.acknowledged){
                     resolve({status:true})
                 }else{
