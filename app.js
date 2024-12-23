@@ -86,7 +86,7 @@ app.use('/users', usersRouter);
 app.use('/admin', adminRouter);
 app.use('/product',productRouter);
 
-const port=5000;
+const port=3000;
 
 app.listen(port,()=>{
     console.log("server started")
