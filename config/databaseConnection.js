@@ -7,7 +7,7 @@ const mongoURL='mongodb://127.0.0.1:27017/ecommerce'
 //     console.log("database not connected",+err)
 // })
 
-mongoose.connect('mongodb://127.0.0.1:27017/ecommerce', {
+mongoose.connect('mongodb+srv://appu34870:butPLicStT5iptlP@cluster0.ky5sr.mongodb.net/', {
     useNewUrlParser: true,
     useUnifiedTopology: true
   })
