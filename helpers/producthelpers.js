@@ -42,6 +42,7 @@ module.exports={
    viewProductDetails:(proId)=>{
     return new Promise((resolve,reject)=>{
         product.findOne({_id:new ObjectId(proId)}).then((data)=>{
+            console.log(data)
             resolve(data)
         })
     })

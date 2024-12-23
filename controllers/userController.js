@@ -211,6 +211,7 @@ module.exports={
   userDetailsPage:async(req,res)=>{
     try {
       const userData=await userhelper.getuserData(req.session.user._id)
+      const referalCode=await userhelper.getReferalCode(req.session.user._id)
       if(userData){
         const plainObj={
           name:userData.name,
@@ -219,12 +220,12 @@ module.exports={
           userId:userData.userId,
           available:false
         }
-        res.render('users/userdetailsPage', { user: req.session.user,userdata:plainObj})
+        res.render('users/userdetailsPage', { user: req.session.user,userdata:plainObj,referalCode})
       }else{
         const plainObj={
           available:true
         }
-        res.render('users/userdetailsPage', { user: req.session.user,userdata:plainObj})
+        res.render('users/userdetailsPage', { user: req.session.user,userdata:plainObj,referalCode})
       }
   } catch (error) {
       console.error("Error in userDetailsPage:", error);
@@ -727,20 +728,31 @@ module.exports={
       if(fullOrders.length!=0){
       const plainObj=fullOrders.map((data,index)=>{
         return{
-          orderId:data._id,
-          productId:data.orderedProducts.productId,
-          productName:data.orderedProducts.name,
-          description:data.orderedProducts.description,
-          price:data.orderedProducts.price*data.orderedProducts.quantity,
-          totalPrice:data.orderedProducts.price*data.orderedProducts.quantity,
-          quantity:data.orderedProducts.quantity,
-          images:data.orderedProducts.images,
-          orderStatus:data.orderedProducts.orderStatus,
           key:index+1,
-          isDelivered:data.orderedProducts.orderStatus=="Delivered",
-          isReturned:data.orderedProducts.orderStatus=="Return",
-          isCancelled:data.orderedProducts.orderStatus=="Cancelled",
-          isPending:data.orderedProducts.orderStatus=="Pending"
+          _id:data._id,
+          orderId:data.orderId,
+          isNotReturned:data.orderedProducts.every((product)=>product.orderStatus!="Return"),
+          isNotDelivered:data.orderedProducts.every((product)=>product.orderStatus!="Delivered"),
+          isCheck:data.orderedProducts.some((product)=>product.orderStatus=="Placed" || product.orderStatus=="Shipped" || product.orderStatus=="outForDelivery" || product.orderStatus=="Delivered") && data.orderedProducts.length>=1 ? true :false,
+          isPending:data.orderStatus=="Pending",
+          products:data.orderedProducts.map((product)=>{
+            return{
+              productId:product.productId,
+              name:product.name,
+              quantity:product.quantity,
+              totalPrice:product.price*product.quantity,
+              image:product.images,
+              category:product.catType,
+              isPlaced:product.orderStatus=="Placed",
+              isShipped:product.orderStatus=="Shipped",
+              isOutForDelivery:product.orderStatus=="outForDelivery",
+              isPending:product.orderStatus=="Pending",
+              isDelivered:product.orderStatus=="Delivered",
+              isCancelled:product.orderStatus=="Cancelled",
+              isReturned:product.orderStatus=="Return",
+              isNotPending:product.orderStatus!="Pending",
+            }
+          })
         }
       })
       res.render('users/orderPage',{user:req.session.user,data:plainObj})
@@ -755,44 +767,56 @@ module.exports={
 
   viewOrderDetailsPage:async(req,res)=>{
     try {
-      const orderProducts=await userhelper.getSingleProductFromOrder(req.params.orderId,req.params.productId)
-      const orderProductsObj={
-        productId:orderProducts.orderedProducts[0].productId,
-        productName:orderProducts.orderedProducts[0].name,
-        catType:orderProducts.orderedProducts[0].catType,
-        description:orderProducts.orderedProducts[0].description,
-        quantity:orderProducts.orderedProducts[0].quantity,
-        price:orderProducts.orderedProducts[0].price,
-        buyablePrice:orderProducts.orderedProducts[0].discountPrice,
-        productTotal:orderProducts.orderedProducts[0].price*orderProducts.orderedProducts[0].quantity,
-        images:orderProducts.orderedProducts[0].images,
-        orderStatus:orderProducts.orderedProducts[0].orderStatus,
-        orderedDate:orderProducts.orderedProducts[0].orderedDate,
-        totalPrice:orderProducts.totalPrice,
-        paymentMethod:orderProducts.paymentMethod,
-        couponCode:orderProducts.couponCode
-      }
+      const order=await userhelper.getSingleProductFromOrder(req.params.orderId)
+      const date=new Date(order.orderDate).toISOString().split('T')[0]
+      const orderObj={
+          _id:order._id,
+          orderId:order.orderId,
+          orderItems:order.orderedProducts.length,
+          orderStatus:order.orderStatus,
+          orderDate:date,
+          products:order.orderedProducts.map((product)=>{
+            let expectDate=new Date(product.orderedDate)
+            expectDate.setDate(expectDate.getDate()+7)
+            let formatExpectDate=new Date(expectDate).toISOString().split("T")[0]
+            return{
+              name:product.name,
+              category:product.catType,
+              productStatus:product.orderStatus,
+              price:product.price,
+              quantity:product.quantity,
+              image:product.images,
+              expectedDate:formatExpectDate,
+              deliveredDate:product.deliveredDate
+            }
+          })
+        }
       const orderAddress=await userhelper.getOrderSingleProductAddress(req.params.orderId)
-      const orderTrackDetails=await userhelper.trackOrderDetails(req.params.orderId,req.params.productId)
+      const orderTrackDetails=await userhelper.trackOrderDetails(req.params.orderId)
       const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
-      const date = new Date(orderTrackDetails[0].orderDate).toLocaleDateString('en-GB', options);
-      const orderDate = new Date(orderTrackDetails[0].orderDate)
+      const orderDate = new Date(orderTrackDetails.orderDate)
       orderDate.setDate(orderDate.getDate() + 7)
       const expectedDate = orderDate.toLocaleDateString('en-GB', options)
       const orderTrackObj={
-        status:orderTrackDetails[0].orderStatus,
+        status:orderTrackDetails.orderStatus,
         date:date,
-        isPlaced:orderTrackDetails[0].orderStatus=="Placed",
-        isShipped:orderTrackDetails[0].orderStatus=="Shipped",
-        isOutForDelivery:orderTrackDetails[0].orderStatus=="outForDelivery",
-        isDelivered:orderTrackDetails[0].orderStatus=="Delivered",
-        shippedDate:orderTrackDetails[0].shippedDate,
-        arrivedDate:orderTrackDetails[0].arrivedDate,
-        deliveredDate:orderTrackDetails[0].deliveredDate,
-        expectedDate:expectedDate
+        isPlaced:orderTrackDetails.orderStatus=="Placed",
+        isShipped:orderTrackDetails.orderStatus=="Shipped",
+        isOutForDelivery:orderTrackDetails.orderStatus=="outForDelivery",
+        isDelivered:orderTrackDetails.orderStatus=="Delivered",
+        isPending:orderTrackDetails.orderStatus=="Pending",
+        shippedDate:orderTrackDetails.orderedProducts[0].shippedDate,
+        arrivedDate:orderTrackDetails.orderedProducts[0].arrivedDate,
+        deliveredDate:orderTrackDetails.orderedProducts[0].deliveredDate,
+        placedDate:new Date(orderTrackDetails.orderDate).toISOString().split('T')[0],
+        expectedDate:expectedDate,
+        paymentMethod:orderTrackDetails.paymentMethod,
+        subTotal:orderTrackDetails.totalPrice-150,
+        totalPrice:orderTrackDetails.totalPrice,
       }
-      res.render('users/orderviewPage',{user:req.session.user,data:orderProductsObj,address:orderAddress,trackDetails:orderTrackObj,orderId:req.params.orderId})
+      res.render('users/orderviewPage',{user:req.session.user,address:orderAddress,data:orderObj,track:orderTrackObj})
     } catch (error) {
+      console.log(error)
       res.status(500).send("Error occured page not rendering")
     }
   },
@@ -834,6 +858,20 @@ module.exports={
     }
   },
 
+  fullOrderCancel:(req,res)=>{
+    try {
+      userhelper.fullOrderCancel(req.params.orderId,req.params.reason).then((response)=>{
+        if(response.status){
+          res.status(200).json({status:true,message:response.message})
+        }else{
+          res.status(400).json({status:false,message:response.message})
+        }
+      })
+    } catch (error) {
+      res.status(500).send("Error occured")
+    }
+  },
+
   returnOrder:async(req,res)=>{
     try {
       const updateProductCount=await userhelper.updateProductCount(req.params.productId,req.params.quantity)
@@ -847,7 +885,7 @@ module.exports={
         })
       })
     } catch (error) {
-      res.status(500).send("Error occured")
+      res.status(500).send(`Error occured ${error}`)
     }
   },
 
@@ -933,7 +971,7 @@ module.exports={
         if (generatedSignature === razorpay_signature) {
           userhelper.addOrder(data,req.session.user._id).then(async(response)=>{
             if(response.status){
-              const products=await userhelper.findWishProduct(data)
+              const products=await userhelper.findRepayOrder(data)
               userhelper.updateProductStock(products.orderedProducts).then((response)=>{
                 if(response.status){
                   res.json({status:true, message: 'Payment verified successfully!'});
@@ -967,7 +1005,7 @@ module.exports={
           }
         })
       }
-      res.render('users/walletPage',{walletAmount,data:plainObj})
+      res.render('users/walletPage',{walletAmount,data:plainObj,user:req.session.user})
     } catch (error) {
       console.log(error)
       res.status(500).send("Error occured page not rendering")

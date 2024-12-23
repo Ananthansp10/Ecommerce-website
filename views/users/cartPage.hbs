@@ -116,8 +116,8 @@
                 <span>Total</span>
                 <span id="total">{{totalAmount}}</span>
             </div>
-           {{#if outOfStock}}
-            <button onclick="goToCheckOut()" class="bg-blue-500 text-white py-2 px-4 w-full rounded-lg hover:bg-blue-600 transition-all">Proceed to Checkout</button>
+           {{#if out}}
+            <button onclick="showOutOfStockMessage()" class="bg-gray-500 text-white py-2 px-4 w-full rounded-lg hover:bg-gray-600 transition-all cursor-not-allowed">Proceed to Checkout</button>
            {{else}}
             <button onclick="goToCheckOut()" class="bg-blue-500 text-white py-2 px-4 w-full rounded-lg hover:bg-blue-600 transition-all">Proceed to Checkout</button>
             {{/if}}
@@ -355,5 +355,14 @@
                 })
             }
         })
+    }
+
+    function showOutOfStockMessage(){
+        Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text:'Remove the Out Of Stock product to go to checkout',
+                confirmButtonText: 'Close'
+            })
     }
 </script>

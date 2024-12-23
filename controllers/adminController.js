@@ -177,7 +177,7 @@ module.exports={
         
             const categoryOption = {
                 isMobile: productDetails[0].catType === "mobile",
-                isAccessories: productDetails[0].catType === "accessories"
+                isAccessories: productDetails[0].catType === "accessory"
             };
             
             res.render('admin/editProductPage', { admin: true, product: productObj, categoryOption });

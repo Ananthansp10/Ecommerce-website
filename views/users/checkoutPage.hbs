@@ -376,7 +376,7 @@ function verifyPayment(paymentResponse,data) {
                 text: 'There was an issue verifying your payment. Please try again.',
                 confirmButtonText: 'OK'
             }).then(()=>{
-              location.reload();
+              location.href='/users/orders';
             })
         }
     })

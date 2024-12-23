@@ -118,11 +118,13 @@ router.post('/placecartorder',usercontroller.placeCartOrder)
 
 router.get('/orders',usercontroller.orderPage)
 
-router.get('/vieworder/:productId/:orderId',usercontroller.viewOrderDetailsPage)
+router.get('/vieworder/:orderId',usercontroller.viewOrderDetailsPage)
 
-router.post('/cartordercancel/:productId/:orderId/:quantity/:reason',usercontroller.cartOrderCancel)
+router.post('/cartordercancel/:orderId/:productId/:quantity/:reason',usercontroller.cartOrderCancel)
 
-router.post('/returnorder/:productId/:orderId/:quantity/:reason',usercontroller.returnOrder)
+router.post('/fullordercancel/:orderId/:reason',usercontroller.fullOrderCancel)
+
+router.post('/returnorder/:orderId/:productId/:quantity/:reason',usercontroller.returnOrder)
 
 router.post('/addtowishlist/:productId',usercontroller.addToWishlist)
 

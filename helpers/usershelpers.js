@@ -19,6 +19,7 @@ const wallet=require('../databaseSchemas/walletSchema');
 const razorpay=require('../config/razorpay');
 const mongoose=require('mongoose');
 const category = require('../databaseSchemas/categorySchema');
+const variant=require('../databaseSchemas/variantSchema');
 const { ObjectId } = mongoose.Types;
 module.exports={
     addUser: (userdata) => {
@@ -269,6 +270,18 @@ module.exports={
         return new Promise((resolve,reject)=>{
             userDetail.findOne({userId:new ObjectId(userId)}).then((data)=>{
                 resolve(data)
+            })
+        })
+    },
+
+    getReferalCode:(userId)=>{
+        return new Promise((resolve,reject)=>{
+            user.findOne({_id:new ObjectId(userId)}).then((data)=>{
+                if(data.referralCode){
+                    resolve(data.referralCode)
+                }else{
+                    resolve()
+                }
             })
         })
     },
@@ -575,54 +588,46 @@ module.exports={
         })
     },
 
+    // getOrders:(userId)=>{
+    //     return new Promise(async(resolve,reject)=>{
+    //        const userOrder=await orderDetail.findOne({userId:new ObjectId(userId)})
+    //        if(userOrder){
+    //         orderDetail.aggregate([{
+    //             $match:{
+    //                 userId:new ObjectId(userId)
+    //             }
+    //         },
+    //         {
+    //             $unwind:"$orderedProducts"
+    //         },
+    //         {
+    //             $sort:{
+    //                 orderDate:-1
+    //             }
+    //         }
+    //       ]).then((data)=>{
+    //         console.log(data)
+    //         resolve(data)
+    //       })
+    //        }else{
+    //         resolve([])
+    //        }
+    //     })
+    // },
+
     getOrders:(userId)=>{
-        return new Promise(async(resolve,reject)=>{
-           const userOrder=await orderDetail.findOne({userId:new ObjectId(userId)})
-           if(userOrder){
-            orderDetail.aggregate([{
-                $match:{
-                    userId:new ObjectId(userId)
-                }
-            },
-            {
-                $unwind:"$orderedProducts"
-            },
-            {
-                $sort:{
-                    orderDate:-1
-                }
-            }
-          ]).then((data)=>{
-            console.log(data)
-            resolve(data)
-          })
-           }else{
-            resolve([])
-           }
+        return new Promise((resolve,reject)=>{
+            orderDetail.find({userId:new ObjectId(userId)}).sort({orderDate:-1}).then((data)=>{
+                resolve(data)
+            })
         })
     },
 
-    getSingleProductFromOrder: (orderId, productId) => {
+    getSingleProductFromOrder: (orderId) => {
         return new Promise((resolve, reject) => {
-            orderDetail.findOne(
-                { 
-                    _id: new ObjectId(orderId), 
-                    'orderedProducts.productId': new ObjectId(productId) 
-                },
-                {
-                    totalPrice: 1,
-                    paymentMethod:1,
-                    couponCode:1,
-                    orderedProducts: { 
-                        $elemMatch: { productId: new ObjectId(productId) } 
-                    }
-                }
-            ).then((data) => {
-                console.log(data);
-                resolve(data);
-            }).catch((error) => {
-                reject(error);
-            });
+           orderDetail.findOne({_id:new ObjectId(orderId)}).then((data)=>{
+            resolve(data)
+           })
         });
     },
     
@@ -634,32 +639,11 @@ module.exports={
         })
     },
 
-    trackOrderDetails:(orderId,productId)=>{
+    trackOrderDetails:(orderId)=>{
         return new Promise((resolve,reject)=>{
-            orderDetail.aggregate([{
-                $match:{
-                    _id:new ObjectId(orderId),
-                }
-            },
-            {
-                $unwind:"$orderedProducts"
-            },
-            {
-                $match:{"orderedProducts.productId":new ObjectId(productId)}
-            },
-            {
-                $project:{
-                    orderStatus:"$orderedProducts.orderStatus",
-                    orderDate:"$orderedProducts.orderedDate",
-                    shippedDate:"$orderedProducts.shippedDate",
-                    arrivedDate:"$orderedProducts.arrivedDate",
-                    deliveredDate:"$orderedProducts.deliveredDate"
-                }
-            }
-        ]).then((data)=>{
-            console.log(data)
+          orderDetail.findOne({_id:new ObjectId(orderId)}).then((data)=>{
             resolve(data)
-        })
+          })
         })
     },
 
@@ -679,6 +663,18 @@ module.exports={
                }else{
                 resolve({status:false})
                }
+            })
+        })
+    },
+
+    fullOrderCancel:(orderId,reason)=>{
+        return new Promise((resolve,reject)=>{
+            orderDetail.updateOne({_id:new ObjectId(orderId)},{$set:{'orderedProducts.$[].orderStatus':"Cancelled",orderStatus:"Cancelled",'orderedProducts.$[].reason':reason}}).then((data)=>{
+                if(data.acknowledged){
+                    resolve({status:true,message:"Order has been cancelled"})
+                }else{
+                    resolve({status:false,message:"Order has not been cancelled"})
+                }
             })
         })
     },
@@ -1053,8 +1049,9 @@ module.exports={
 
       getWalletHistory:(userId)=>{
         return new Promise(async(resolve,reject)=>{
-          const userFind= await wallet.findOne({userId:new ObjectId(userId)}).sort({date:-1})
-          if(userFind){
+          const userFind= await wallet.findOne({userId:new ObjectId(userId)})
+          if(userFind && userFind.walletHistory){
+            userFind.walletHistory.sort((a,b)=>new Date(b.date)-new Date(a.date))
             resolve(userFind.walletHistory)
           }else{
             resolve([])
@@ -1073,7 +1070,7 @@ module.exports={
         })
       },
 
-      findWishProduct:(orderId)=>{
+      findRepayOrder:(orderId)=>{
         return new Promise((resolve,reject)=>{
             orderDetail.findOne({orderId:orderId}).then((data)=>{
                 resolve(data)

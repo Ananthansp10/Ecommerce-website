@@ -185,21 +185,27 @@ module.exports={
 
     cartPage:async(req,res)=>{
         try {
-            let cartLength=0;
+            let cartLength = 0;
             if(req.session.user){
-                cartLength=await producthelpers.getCartLength(req.session.user._id)
+                cartLength = await producthelpers.getCartLength(req.session.user._id)
             }
-            const cartProducts=await producthelpers.getCartProducts(req.session.user._id)
-            let totalAmount=150
-            let subTotal=0
+            const cartProducts = await producthelpers.getCartProducts(req.session.user._id)
+            let totalAmount = 150
+            let subTotal = 0
             let couponCode
             let couponDiscount
             let couponStatus
-            let total=cartProducts.map((data)=>{
-                let value=data.offerPrice ? data.offerPrice*data.quantity :data.price*data.quantity
-                totalAmount+=value
-                subTotal+=value
+            let outOfStock = false
+
+            cartProducts.forEach((data) => {
+                let value = data.offerPrice ? data.offerPrice*data.quantity : data.price*data.quantity
+                totalAmount += value
+                subTotal += value
+                if(data.stock === 0) {
+                    outOfStock =true
+                }
             })
+
             if(cartProducts.length!=0){
             couponCode=cartProducts[0].couponCode ? cartProducts[0].couponCode :""
             couponDiscount=cartProducts[0].couponDiscount ? cartProducts[0].couponDiscount :""
@@ -228,7 +234,7 @@ module.exports={
                     isMaximum:data.quantity<5
                 }
             })
-            res.render('users/cartPage', { user: req.session.user,data:plainObj,totalAmount,subTotal,cartLength,couponCode,couponDiscount,couponStatus});
+            res.render('users/cartPage', { user: req.session.user,data:plainObj,totalAmount,subTotal,cartLength,couponCode,out:outOfStock,couponDiscount,couponStatus});
         } catch (error) {
             console.log(error)
             res.status(500).send('Error rendering cart page');
@@ -420,8 +426,7 @@ module.exports={
             if(colours.length!=0){
                     productColours = colours.map((data)=>{
                     return{
-                        productId:req.params.productId,
-                        variantId:data._id,
+                        _id:data._id,
                         colours:data.images
                     }
                 })

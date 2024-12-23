@@ -1,4 +1,4 @@
-{{#if data}}
+{{!-- {{#if data}}
 <div class="container mx-auto p-8">
   <!-- Order Header -->
   <h1 class="text-2xl font-semibold mb-6">Your Orders</h1>
@@ -9,10 +9,10 @@
       <thead>
         <tr>
           <th class="w-16 py-2">SI No</th>
-          <th class="w-24 py-2">Image</th>
-          <th class="py-2">Product Name</th>
+          <th class="w-24 py-2">OrderId</th>
           <th class="py-2">Quantity</th>
-          <th class="py-2">Price</th>
+          <th class="py-2">Total Price</th>
+           <th class="py-2">Payment Method</th>
           <th class="py-2">Order Status</th>
           <th class="py-2">Actions</th>
         </tr>
@@ -21,12 +21,10 @@
         {{#each data}}
         <tr class="border-t">
           <td class="text-center py-4">{{this.key}}</td>
-          <td class="flex justify-center py-2">
-            <img src="{{this.images.[0]}}" alt="Product Image" class="w-12 h-12 object-cover rounded-lg">
-          </td>
-          <td class="text-center py-2">{{this.productName}}</td>
+          <td class="text-center py-2">{{this.orderId}}</td>
           <td class="text-center py-2">{{this.quantity}}</td>
-          <td class="text-center py-2">Rs. {{this.price}}</td>
+          <td class="text-center py-2">Rs. {{this.totalPrice}}</td>
+          <td class="text-center py-2">{{this.paymentMethod}}</td>
           <td class="text-center py-2">{{this.orderStatus}}</td>
           <td class="text-center py-2 space-x-2">
             <button onclick="viewOrderDetails('{{this.productId}}','{{this.orderId}}')" class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75">
@@ -48,7 +46,7 @@
             </button>
             {{else}}
             {{#if this.isPending}}
-            <button onclick="repayment('{{this.productId}}','{{this.orderId}}',{{this.quantity}})" class="px-4 py-2 bg-red-600 text-white font-semibold rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-75">
+            <button onclick="repayment('{{this.orderId}}',{{this.quantity}})" class="px-4 py-2 bg-red-600 text-white font-semibold rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-75">
               Repay
             </button>
             {{else}}
@@ -213,7 +211,7 @@
     window.location.href =`/users/vieworder/${productId}/${orderId}`;
   }
 
-  function repayment(productId,orderId,quantity){
+  function repayment(orderId,quantity){
     fetch(`/users/repayment/${orderId}`,{
       method:"POST"
     }).then((response)=>response.json()).then((response)=>{
@@ -312,4 +310,432 @@ function verifyPayment(paymentResponse,data) {
     });
 }
 
-</script>
+</script> --}}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body class="bg-gray-100">
+  <div class="px-8 mb-5">
+    <h1 class="text-2xl font-bold mb-4 mt-3">Order Details</h1>
+    {{#if data}}
+    <div class="space-y-4">
+      {{#each data}}
+      <div class="bg-white shadow rounded-lg overflow-hidden p-4 space-y-4">
+        <div class="border-b pb-2 flex justify-between items-center">
+          <p class="text-sm font-semibold">Order no: {{this.orderId}}</p>
+          <div class="flex space-x-2">
+            <button 
+              onclick="location.href='/users/vieworder/{{this._id}}'" 
+              class="border border-blue-500 hover:bg-gray-300 text-sm font-medium py-2 px-4 rounded-lg">
+              View Details
+            </button>
+            {{#if this.isPending}}
+            <button 
+              onclick="repayment('{{this._id}}')" 
+              class="border border-red-500 hover:bg-red-100 text-sm font-medium py-2 px-4 rounded-lg text-red-600">
+              Repay
+            </button>
+            {{else}}
+            {{#if this.isNotReturned}}
+            {{#if this.isNotDelivered}}
+            {{#if this.isCheck}}
+            <button 
+              onclick="cancelOrder('{{this._id}}')" 
+              class="border border-red-500 hover:bg-red-100 text-sm font-medium py-2 px-4 rounded-lg text-red-600">
+              Cancel Order
+            </button>
+            {{/if}}
+            {{/if}}
+            {{/if}}
+            {{/if}}
+          </div>
+        </div>
+        
+        {{#each this.products}}
+        <div class="grid grid-cols-12 gap-4 items-center">
+          <div class="col-span-5 flex items-center space-x-4">
+            <img src="{{this.image.[0]}}" alt="Product Image" class="w-16 h-16 rounded-lg">
+            <div>
+              <p class="text-base font-semibold">{{this.name}}</p>
+              <p class="text-sm text-gray-600">Category: {{this.category}}</p>
+              <p class="text-sm text-gray-600">Qty: {{this.quantity}}</p>
+              <p class="text-sm font-medium text-gray-800">Total: RS {{this.totalPrice}}</p>
+            </div>
+          </div>
+          
+          {{#if this.isPlaced}}
+          <div class="col-span-3 flex items-center space-x-2">
+            <span class="w-3 h-3 rounded-full bg-blue-500"></span>
+            <p class="text-sm font-medium">Placed</p>
+          </div>
+          {{/if}}
+          {{#if this.isShipped}}
+          <div class="col-span-3 flex items-center space-x-2">
+            <span class="w-3 h-3 rounded-full bg-yellow-500"></span>
+            <p class="text-sm font-medium">Shipped</p>
+          </div>
+          {{/if}}
+          {{#if this.isOutForDelivery}}
+          <div class="col-span-3 flex items-center space-x-2">
+            <span class="w-3 h-3 rounded-full bg-yellow-500"></span>
+            <p class="text-sm font-medium">Out For Delivery</p>
+          </div>
+          {{/if}}
+          {{#if this.isDelivered}}
+          <div class="col-span-3 flex items-center space-x-2">
+            <span class="w-3 h-3 rounded-full bg-green-500"></span>
+            <p class="text-sm font-medium">Delivered</p>
+          </div>
+          {{/if}}
+          {{#if this.isPending}}
+          <div class="col-span-3 flex items-center space-x-2">
+            <span class="w-3 h-3 rounded-full bg-red-500"></span>
+            <p class="text-sm font-medium">Pending</p>
+          </div>
+          {{/if}}
+          {{#if this.isCancelled}}
+          <div class="col-span-3 flex items-center space-x-2">
+            <span class="w-3 h-3 rounded-full bg-red-500"></span>
+            <p class="text-sm font-medium">Cancelled</p>
+          </div>
+          {{/if}}
+          {{#if this.isReturned}}
+          <div class="col-span-3 flex items-center space-x-2">
+            <span class="w-3 h-3 rounded-full bg-red-500"></span>
+            <p class="text-sm font-medium">Returned</p>
+          </div>
+          {{/if}}
+          {{#if this.isDelivered}}
+          {{#if this.isReturned}}
+           <div class="col-span-4 flex space-x-2 justify-end">
+            <button onclick="openReasonModal('Return','{{this.productId}}','{{../_id}}',{{this.quantity}})" class="border border-red-500 hover:bg-red-100 text-sm font-medium py-2 px-4 rounded-lg text-red-600 hidden">
+              Return Product
+            </button>
+          </div>
+          {{else}}
+          <div class="col-span-4 flex space-x-2 justify-end">
+            <button onclick="openReasonModal('Return','{{this.productId}}','{{../_id}}',{{this.quantity}})" class="border border-red-500 hover:bg-red-100 text-sm font-medium py-2 px-4 rounded-lg text-red-600">
+              Return Product
+            </button>
+          </div>
+          {{/if}}
+          {{else}}
+          {{#if this.isCancelled}}
+          <div class="col-span-4 flex space-x-2 justify-end">
+            <button onclick="openReasonModal('Cancel','{{this.productId}}','{{../_id}}',{{this.quantity}})" class="border border-red-500 hover:bg-red-100 text-sm font-medium py-2 px-4 rounded-lg text-red-600 hidden">
+              Cancel Product
+            </button>
+          </div>
+          {{else}}
+          {{#if this.isNotPending}}
+          <div class="col-span-4 flex space-x-2 justify-end">
+            <button onclick="openReasonModal('Cancel','{{this.productId}}','{{../_id}}',{{this.quantity}})" class="border border-red-500 hover:bg-red-100 text-sm font-medium py-2 px-4 rounded-lg text-red-600">
+              Cancel Product
+            </button>
+          </div>
+          {{/if}}
+          {{/if}}
+          {{/if}}
+        </div>
+        {{/each}}
+      </div>
+      {{/each}}
+    </div>
+    {{else}}
+      <div class="flex flex-col items-center justify-center bg-gray-50">
+      <div class="text-center">
+       <svg class="w-20 h-20 text-gray-400 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M9 21V9m0 0l-6 6m6-6l6 6m3-6v12" />
+    </svg>
+    <h2 class="mt-6 text-2xl font-semibold text-gray-700">No Orders Found</h2>
+    <p class="mt-2 text-gray-500">You haven’t placed any orders yet. Browse our products and start shopping!</p>
+    <a href="/product/productlist" class="mt-6 inline-block px-6 py-2 text-sm font-medium text-white bg-blue-500 rounded-lg shadow-md hover:bg-blue-600 focus:ring focus:ring-blue-300">
+      Shop Now
+    </a>
+  </div>
+</div>
+{{/if}}
+  </div>
+  <!-- Modal -->
+  <div id="reason-modal" class="hidden fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center">
+    <div class="bg-white p-4 rounded-lg w-full max-w-md">
+      <h2 class="text-xl font-semibold mb-4">Select Reason</h2>
+      <form>
+        <div class="space-y-2">
+          <label class="flex items-center">
+            <input type="radio" name="reason" value="Damaged product" class="mr-2">
+            Damaged product
+          </label>
+          <label class="flex items-center">
+            <input type="radio" name="reason" value="Received wrong item" class="mr-2">
+            Received wrong item
+          </label>
+          <label class="flex items-center">
+            <input type="radio" name="reason" value="No longer needed" class="mr-2">
+            No longer needed
+          </label>
+          <label class="flex items-center">
+            <input type="radio" name="reason" value="Other" class="mr-2">
+            Other
+          </label>
+        </div>
+        <div class="mt-4 flex justify-end space-x-2">
+          <button type="button" onclick="closeReasonModal()" class="px-4 py-2 rounded-lg border">Cancel</button>
+          <button type="button" onclick="submitReason()" class="px-4 py-2 rounded-lg bg-blue-500 text-white">Submit</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal for Order Confirmation -->
+<div id="orderSuccessModal" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden">
+  <div class="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full text-center">
+    
+    <!-- Spinner Animation -->
+    <div id="spinner" class="text-blue-500 text-5xl mb-4 animate-spin">
+      <span class="spinner">&#x21bb;</span>
+    </div>
+    
+    <!-- Checkmark Animation (hidden initially) -->
+    <div id="checkmark" class="text-green-500 text-5xl mb-4 hidden">
+      <span>✔</span>
+    </div>
+    
+    <!-- Modal Text Content -->
+    <h3 class="text-xl font-semibold mb-4">Order Placed Successfully!</h3>
+    <p class="text-gray-700 mb-4">Your order has been placed. Thank you for shopping with us.</p>
+    <button onclick="redirectToOrders()" class="w-full py-3 px-4 bg-blue-600 text-white font-semibold rounded-md shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75">
+      View Orders
+    </button>
+  </div>
+</div>
+
+<!-- Add CSS for Spinner and Checkmark Animation -->
+<style>
+  .spinner {
+    display: inline-block;
+    font-size: 3rem;
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  @keyframes checkmark-animation {
+    0% { opacity: 0; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1.2); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+
+  .checkmark {
+    display: inline-block;
+    font-size: 3rem;
+    animation: checkmark-animation 0.5s ease forwards;
+  }
+</style>
+</body>
+</html>
+
+<script>
+    let currentAction
+    let currentProductId
+    let currentOrderId
+    let quantity;
+    let fullOrderId;
+
+    function openReasonModal(action,productId,orderId,qty){
+      console.log(action, productId, orderId, qty);
+      currentAction = action;
+      currentProductId = productId;
+      currentOrderId = orderId;
+      quantity=qty;
+      document.getElementById('reason-modal').classList.remove('hidden');
+    }
+
+    function closeReasonModal() {
+      document.getElementById('reason-modal').classList.add('hidden');
+    }
+
+    function submitReason() {
+      const reason = document.querySelector('input[name="reason"]:checked').value;
+      closeReasonModal();
+      if(!reason){
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Please select a reason before submitting!',
+        });
+      }else{
+      if(currentAction=="Cancel"){
+        fetch(`/users/cartordercancel/${currentOrderId}/${currentProductId}/${quantity}/${reason}`,{
+          method:"POST"
+        }).then((response)=>response.json()).then((data)=>{
+          if(data.status){
+             Swal.fire({
+             icon: 'success',
+             title: 'Success',
+             text: `The product has been ${currentAction}led`,
+          }).then(()=>{
+            location.reload();
+          })
+          }else{
+            Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: `Failed, the product has not ${currentAction}led`,
+          });
+        }
+        })
+      }else if(currentAction=="Return"){
+        fetch(`/users/returnorder/${currentOrderId}/${currentProductId}/${quantity}/${reason}`,{
+          method:"POST"
+        }).then((response)=>response.json()).then((data)=>{
+          if(data.status){
+             Swal.fire({
+             icon: 'success',
+             title: 'Success',
+             text: `The product has been ${currentAction}ed`,
+          }).then(()=>{
+            location.reload();
+          })
+          }else{
+            Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: `Failed, the product has not ${currentAction}led`,
+          });
+        }
+        })
+      }else{
+        fetch(`/users/fullordercancel/${fullOrderId}/${reason}`,{
+        method:"POST",
+      }).then((response)=>response.json()).then((response)=>{
+        if(response.status){
+           Swal.fire({
+             icon: 'success',
+             title: 'Success',
+             text: response.message,
+          }).then(()=>{
+            location.reload();
+          })
+        }else{
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: response.message,
+          });
+        }
+      })
+      }
+    }
+    }
+
+    function cancelOrder(orderId){
+      document.getElementById('reason-modal').classList.remove('hidden');
+      fullOrderId=orderId;
+    }
+
+    function showOrderSuccessModal() {
+    const modal = document.getElementById('orderSuccessModal');
+    const spinner = document.getElementById('spinner');
+    const checkmark = document.getElementById('checkmark');
+
+    modal.classList.remove('hidden');
+    spinner.classList.remove('hidden');
+    checkmark.classList.add('hidden');
+
+    setTimeout(() => {
+      spinner.classList.add('hidden');
+      checkmark.classList.remove('hidden');
+    }, 2000);
+  }
+
+    function repayment(orderId){
+    fetch(`/users/repayment/${orderId}`,{
+      method:"POST"
+    }).then((response)=>response.json()).then((response)=>{
+      if(response.status=='PENDING_PAYMENT'){
+        initiateRazorpayPayment(response.orderId, response.key,response.amount,response.data);
+      }
+    })
+  }
+
+  function initiateRazorpayPayment(orderId, key,amount,data) {
+    var options = {
+        key: key, 
+        amount:amount, 
+        currency: 'INR',
+        name: 'MOB N ACCESS',
+        description: 'Order Payment',
+        order_id: orderId, 
+        handler: function(response) {
+            verifyPayment(response,data);
+        },
+        prefill: {
+            name: 'John Doe',
+            email: 'john@example.com',
+            contact: '9999999999'
+        },
+        theme: {
+            color: '#F37254'
+        }
+    };
+
+    var rzp = new Razorpay(options);
+    rzp.open();
+}
+
+function verifyPayment(paymentResponse,data) {
+    fetch('/users/verify-payment', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            razorpay_order_id: paymentResponse.razorpay_order_id,
+            razorpay_payment_id: paymentResponse.razorpay_payment_id,
+            razorpay_signature: paymentResponse.razorpay_signature,
+            data:data
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Payment Verified',
+                text: 'Your payment was verified successfully!',
+                confirmButtonText: 'OK'
+            }).then(() => {
+                showOrderSuccessModal();
+                window.location.href = '/users/orders';
+            })
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Payment Verification Failed',
+                text: 'There was an issue verifying your payment. Please try again.',
+                confirmButtonText: 'OK'
+            }).then(()=>{
+              location.reload();
+            })
+        }
+    })
+    .catch(error => {
+        console.error('Error verifying payment:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Verification Error',
+            text: 'An error occurred during payment verification. Please try again later.',
+            confirmButtonText: 'OK'
+        });
+    });
+}
+  </script>
