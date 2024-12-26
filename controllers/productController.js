@@ -127,7 +127,7 @@ module.exports={
                     productColours = colours.map((data)=>{
                     return{
                         productId:req.params.id,
-                        variantId:data._id,
+                        _id:data._id,
                         colours:data.images
                     }
                 })
@@ -421,13 +421,14 @@ module.exports={
                 offerPrice:productDetails[0].offerPrice ? productDetails[0].offerPrice :false,
                 storage:productDetails[0].storage
             }
-            let productColours
             const colours = await producthelpers.getColourVariant(req.params.productId);
+            console.log(colours)
             if(colours.length!=0){
                     productColours = colours.map((data)=>{
                     return{
                         _id:data._id,
-                        colours:data.images
+                        colours:data.images,
+                        productId:req.params.productId
                     }
                 })
             }

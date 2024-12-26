@@ -50,7 +50,7 @@ module.exports={
 
    getColourVariant:(productId)=>{
     return new Promise((resolve,reject)=>{
-        variant.findOne({productId:productId}).then((data)=>{
+        variant.findOne({productId:new ObjectId(productId)}).then((data)=>{
             if(data){
             resolve(data.variants)
             }else{
@@ -164,7 +164,7 @@ module.exports={
     return new Promise((resolve,reject)=>{
         cartDetail.aggregate([{
             $match:{
-                userId:new ObjectId(userId)
+                userId:new ObjectId(userId),
             }
            },
             {
