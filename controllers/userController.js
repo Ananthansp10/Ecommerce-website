@@ -432,6 +432,7 @@ module.exports={
   addAddressFromCart:(req,res)=>{
     try {
       const{addressType,addressLine1,addressLine2,city,state,country,pincode,landmark}=req.body
+      console.log(req.body.addressType)
       const userId=req.session.user._id
       const addressObj={
         addressType,
@@ -443,8 +444,12 @@ module.exports={
         pincode,
         landmark,
       }
-      userhelper.addAddress(userId,addressObj).then(()=>{
-        res.redirect('/users/checkout')
+      userhelper.addAddress(userId,addressObj).then((response)=>{
+        if(response.status){
+          res.status(200).json({status:true})
+        }else{
+          res.status(400).json({status:false})
+        }
       })
     } catch (error) {
       res.status(500).send("Error occured")

@@ -308,7 +308,7 @@ module.exports={
             if(userAddress){
                 userAddress.address.push(data)
                 await userAddress.save().then(()=>{
-                    resolve()
+                    resolve({status:true})
                 })
             }else{
             const dataObj=new addressDetail({
@@ -316,7 +316,7 @@ module.exports={
                 address:[data]
             })
             dataObj.save().then(()=>{
-                resolve()
+                resolve({status:true})
             })
         }
         })

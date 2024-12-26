@@ -52,7 +52,7 @@ passport.deserializeUser((user, done) => {
 passport.use(new googleStrategy({
     clientID:process.env.CLIENT_ID, 
     clientSecret:process.env.CLIENT_SECRET,
-    callbackURL: 'http://localhost:5000/users/auth/google/callback'
+    callbackURL:process.env.CALLBACK_URL
   },
     (accessToken, refreshToken, profile, done) => {
       // The Google profile is received here

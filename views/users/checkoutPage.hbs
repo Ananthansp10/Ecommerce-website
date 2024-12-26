@@ -69,7 +69,7 @@
 
     <!-- Add Address Form (Hidden initially) -->
     <div id="add-address-form" class="space-y-4 mt-4 hidden">
-      <form action="/users/addAddressFromCart" method="POST" class="space-y-6">
+      <form onsubmit="addAddress(event)" class="space-y-6">
 
       <!-- Address Type -->
       <div>
@@ -84,7 +84,7 @@
       <!-- Address Line 1 -->
       <div>
         <label for="address-line1" class="block text-sm font-medium text-gray-600">Address Line 1</label>
-        <input type="text" id="address-line1" name="addressLine1" class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-200 focus:outline-none" placeholder="House number, Street, Colony" required>
+        <input type="text" id="address-line1" name="addressLine1" class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-200 focus:outline-none" placeholder="House number, Street, Colony">
       </div>
 
       <!-- Address Line 2 -->
@@ -96,25 +96,25 @@
       <!-- City -->
       <div>
         <label for="city" class="block text-sm font-medium text-gray-600">City</label>
-        <input type="text" id="city" name="city" class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-200 focus:outline-none" placeholder="Enter your city" required>
+        <input type="text" id="city" name="city" class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-200 focus:outline-none" placeholder="Enter your city">
       </div>
 
       <!-- State -->
       <div>
         <label for="state" class="block text-sm font-medium text-gray-600">State</label>
-        <input type="text" id="state" name="state" class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-200 focus:outline-none" placeholder="Enter your state" required>
+        <input type="text" id="state" name="state" class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-200 focus:outline-none" placeholder="Enter your state">
       </div>
 
       <!-- Country -->
       <div>
         <label for="country" class="block text-sm font-medium text-gray-600">Country</label>
-        <input type="text" id="country" name="country" class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-200 focus:outline-none" placeholder="Enter your country" required>
+        <input type="text" id="country" name="country" class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-200 focus:outline-none" placeholder="Enter your country">
       </div>
 
       <!-- Pincode -->
       <div>
         <label for="pincode" class="block text-sm font-medium text-gray-600">Pincode</label>
-        <input type="text" id="pincode" name="pincode" class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-200 focus:outline-none" placeholder="Enter your pincode" required>
+        <input type="text" id="pincode" name="pincode" class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-200 focus:outline-none" placeholder="Enter your pincode">
       </div>
 
       <!-- Landmark -->
@@ -346,10 +346,10 @@ function placeOrder(cartId, totalAmount,couponCode) {
 
 function verifyPayment(paymentResponse,data) {
     fetch('/users/verify-payment', {
-        method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
+        method: 'POST',
         body: JSON.stringify({
             razorpay_order_id: paymentResponse.razorpay_order_id,
             razorpay_payment_id: paymentResponse.razorpay_payment_id,
@@ -391,5 +391,55 @@ function verifyPayment(paymentResponse,data) {
     });
 }
 
+function addAddress(e){
 
+  e.preventDefault();
+
+  const addressType=document.getElementById("address-type").value
+  const addressLine1=document.getElementById("address-line1").value
+  const addressLine2=document.getElementById("address-line2").value
+  const city=document.getElementById("city").value
+  const state=document.getElementById("state").value
+  const country=document.getElementById("country").value
+  const pincode=document.getElementById("pincode").value
+  const landmark=document.getElementById("landmark").value
+  isValid=true
+
+  if(!addressType || !addressLine1 || !addressLine2 || !city || !state || !country || !pincode || !landmark){
+
+    isValid=false
+
+    Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Fill the missing field ',
+            confirmButtonText: 'OK'
+        });
+  }
+
+  if(isValid){
+    fetch('/users/addAddressFromCart',{
+      headers:{
+        'Content-Type':'application/json'
+      },
+      method:"POST",
+      body:JSON.stringify({
+        addressType:addressType,
+        addressLine1:addressLine1,
+        addessLine2:addressLine2,
+        city:city,
+        state:state,
+        country:country,
+        pincode:pincode,
+        landmark:landmark
+      })
+    }).then((response)=>response.json()).then((response)=>{
+      if(response.status){
+        location.reload();
+      }else{
+        location.reload();
+      }
+    })
+  }
+}
 </script>
