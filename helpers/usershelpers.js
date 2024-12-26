@@ -204,7 +204,7 @@ module.exports={
             const text=`OTP : ${OTP}`
 
             sendEmail(email,subject,text).then(()=>{
-                OTPschema.collection.updateOne({email:email},{$set:{otp:OTP}}).then(()=>{
+                OTPschema.collection.insertOne({email:email,otp:OTP}).then(()=>{
                     resolve({status:true})
                 }).catch((err)=>{
                     console.log("OTP not send error occured" +err)
@@ -217,12 +217,16 @@ module.exports={
     forgotPasswordOtpVerification:(otp,email)=>{
         return new Promise(async(resolve,reject)=>{
            const dbOTP=await OTPschema.collection.findOne({email:email})
+           if(dbOTP){
            if(dbOTP.otp==otp){
              resolve({status:true})
            }
            else{
-            resolve({status:false,message:"OTP you enterd is wrong"})
+            resolve({status:false,message:"OTP you entered is wrong"})
            }
+        }else{
+            resolve({status:false,message:"OTP expired"})
+        }
         })
     },
 
@@ -230,11 +234,77 @@ module.exports={
         const salt = await bcrypt.genSalt(10);
         passwords.newPassword = await bcrypt.hash(passwords.newPassword, salt);
         return new Promise((resolve,reject)=>{
-            user.collection.updateOne({email:email},{$set:{password:passwords.newPassword}}).then(()=>{
-                resolve()
+            user.collection.updateOne({email:email},{$set:{password:passwords.newPassword}}).then((data)=>{
+                if(data.acknowledged){
+                    resolve({status:true})
+                }else{
+                resolve({status:false})
+                }
             })
         })
     },
+
+    changeUserNewPassword: (passwords, email) => {
+        return new Promise((resolve, reject) => {
+          bcrypt
+            .genSalt(10)
+            .then((salt) => {
+              console.log("Salt generated.");
+              return bcrypt.hash(passwords.newPassword, salt);
+            })
+            .then((newHashedPassword) => {
+      
+              user.collection
+                .findOne({ email: email })
+                .then((findUser) => {
+      
+                  if (!findUser) {
+                    resolve({ status: false, message: "User not found" });
+                    return;
+                  }
+                  bcrypt
+                    .compare(passwords.oldPassword, findUser.password)
+                    .then((isMatch) => {
+                      console.log("Password match result:", isMatch);
+      
+                      if (!isMatch) {
+                        resolve({ status: false, message: "Old password is incorrect" });
+                        return;
+                      }
+                      user.collection
+                        .updateOne({ email: email }, { $set: { password: newHashedPassword } })
+                        .then((response) => {
+                          console.log("Password update response:", response);
+      
+                          if (response.acknowledged) {
+                            resolve({ status: true, message: "Password updated successfully" });
+                          } else {
+                            resolve({ status: false, message: "Password update failed, try again" });
+                          }
+                        })
+                        .catch((err) => {
+                          console.error("Error updating password:", err);
+                          reject({ status: false, message: "An error occurred, please try again later" });
+                        });
+                    })
+                    .catch((err) => {
+                      console.error("Error comparing passwords:", err);
+                      reject({ status: false, message: "An error occurred while comparing passwords" });
+                    });
+                })
+                .catch((err) => {
+                  console.error("Error finding user:", err);
+                  reject({ status: false, message: "An error occurred while finding the user" });
+                });
+            })
+            .catch((err) => {
+              console.error("Error hashing new password:", err);
+              reject({ status: false, message: "An error occurred while hashing the new password" });
+            });
+        });
+      },
+      
+      
 
     addUserDetails:(data)=>{
         return new Promise((resolve,reject)=>{

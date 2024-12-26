@@ -79,6 +79,10 @@ router.get('/resetPassword',usercontroller.resetPasswordPage)
 //route for reset password submission
 router.post('/resetPassword',usercontroller.resetPasswordSubmission)
 
+router.get('/userresetpassword',usercontroller.userResetPage)
+
+router.post('/userresetpassword',usercontroller.userResetSubmission)
+
 //route for user logout
 router.get('/logout',usercontroller.logoutSection)
 

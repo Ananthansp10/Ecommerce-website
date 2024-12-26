@@ -144,6 +144,9 @@ module.exports={
 
       if (response.status) {
           req.session.email = req.body.email;
+          setTimeout(async() => {
+            const deleteOTP=await userhelper.deleteOTP(req.session.email)
+          }, 60000);
           res.redirect("/users/forgottenPassword-Otp-Verification");
       } else {
           res.redirect('/users/forgottenPassword');
@@ -190,12 +193,36 @@ module.exports={
 
   resetPasswordSubmission:async(req,res)=>{
     try {
-      await userhelper.changePassword(req.body, req.session.email);
-      res.redirect('/users/login');
+     userhelper.changePassword(req.body, req.session.email).then((response)=>{
+      if(response.status){
+        res.status(200).json({status:true})
+      }else{
+        res.status(400).json({status:false})
+      }
+     })
   } catch (error) {
       console.error("Error in resetPasswordSubmission:", error);
       res.redirect('/users/resetPassword');
   }
+  },
+
+  userResetSubmission:async(req,res)=>{
+    userhelper.changeUserNewPassword(req.body, req.session.user.email).then((response)=>{
+      if(response.status){
+        req.session.destroy();
+        res.status(200).json({status:true,message:response.message})
+      }else{
+        res.status(400).json({status:false,message:response.message})
+      }
+    })
+  },
+
+  userResetPage:(req,res)=>{
+    try {
+      res.render('users/resetPasswordPage')
+    } catch (error) {
+      res.status(500).send("Error occured page not rendering")
+    }
   },
 
   logoutSection:(req,res)=>{
