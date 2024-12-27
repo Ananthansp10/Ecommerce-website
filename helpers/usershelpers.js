@@ -719,7 +719,10 @@ module.exports={
 
     cartOrderCancel:(productId,orderId,reason)=>{
         return new Promise((resolve,reject)=>{
-            orderDetail.updateOne({_id:new ObjectId(orderId),'orderedProducts.productId':new ObjectId(productId)},{$set:{'orderedProducts.$.orderStatus':"Cancelled",'orderedProducts.$.reason':reason}}).then((data)=>{
+            orderDetail.updateOne(
+                { _id: new ObjectId(orderId) },
+                { $pull: { orderedProducts: { productId: new ObjectId(productId) } } }
+              ).then((data)=>{
                if(data.acknowledged){
                 orderDetail.findOne({_id:new ObjectId(orderId)}).then((data)=>{
                     if(data.orderedProducts.length==0){
