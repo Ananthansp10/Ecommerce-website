@@ -3,6 +3,7 @@ const router=express.Router();
 const upload=require('../config/cloudinary');
 const admincontroller=require('../controllers/adminController');
 const offercontroller=require('../controllers/offerController');
+const admin = require('../databaseSchemas/adminSchema');
 
 router.get('/',admincontroller.adminLogin,admincontroller.adminDashboardSection)
 
@@ -13,6 +14,8 @@ router.post('/blockuser/:id/:status',admincontroller.userControl)
 router.get('/login',admincontroller.adminLoginPage)
 
 router.post('/login',admincontroller.adminLoginSubmission)
+
+router.get('/logout',admincontroller.adminLogout)
 
 router.get('/products',admincontroller.adminLogin,admincontroller.adminProductPage)
 

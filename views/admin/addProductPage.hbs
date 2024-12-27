@@ -278,11 +278,11 @@
             document.getElementById("descriptionError").classList.remove('hidden')
             isValid=false
         }
-        if(!storage){
+        {{!-- if(!storage){
             document.getElementById("storageError").innerText="Enter the Product Storage !"
             document.getElementById("storageError").classList.remove('hidden')
             isValid=false
-        }
+        } --}}
         if(!image1){
             document.getElementById("image1Error").innerText="Choose the Image !"
             document.getElementById("image1Error").classList.remove('hidden')
@@ -311,7 +311,9 @@
         formData.append('stock', stock);
         formData.append('colour', colour);
         formData.append('description', description);
+        if(storage){
         formData.append('storage', storage);
+        }
 
         // Append files
         formData.append('images', image1);

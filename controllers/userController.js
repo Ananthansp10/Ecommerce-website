@@ -227,8 +227,10 @@ module.exports={
 
   logoutSection:(req,res)=>{
     try {
-      req.session.destroy();
-      res.redirect('/');
+      if(req.session.user){
+        delete req.session.user;
+        res.redirect('/')
+      }
   } catch (error) {
       console.error("Error in logoutSection:", error);
       res.redirect('/');

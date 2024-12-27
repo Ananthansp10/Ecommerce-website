@@ -99,6 +99,17 @@ module.exports={
         }
     },
 
+    adminLogout:(req,res)=>{
+        try {
+            if(req.session.adminLoggedIn){
+                delete req.session.adminLoggedIn;
+                res.redirect('/admin/login')
+            }
+        } catch (error) {
+            res.status(500).send("Error occured")
+        }
+    },
+
     adminProductPage:async(req,res)=>{
         try {
             const products = await adminhelper.getProducts();
@@ -395,7 +406,7 @@ module.exports={
 
         addcategoryPage:(req,res)=>{
             try {
-                res.render('admin/categoryaddpage',{admin:true})
+                res.render('admin/categoryaddPage',{admin:true})
             } catch (error) {
                 res.status(500).send("Error rendering category add page")
             }

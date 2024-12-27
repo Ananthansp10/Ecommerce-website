@@ -35,7 +35,10 @@ module.exports={
 
     getProducts:()=>{
         return new Promise((resolve,reject)=>{
-            product.find({visiblity:true}).then((products)=>{
+            product.find({visiblity:true}).populate({
+                path: 'category',
+                match: { visiblity: true }
+            }).then((products)=>{
                 resolve(products)
             })
         })
@@ -618,7 +621,7 @@ module.exports={
 
     findTopProducts:()=>{
         return new Promise((resolve,reject)=>{
-            product.find({purchaseCount:{$exists:true}}).sort({purchaseCount:-1}).then((data)=>{
+            product.find({purchaseCount:{$exists:true},visiblity:true}).sort({purchaseCount:-1}).then((data)=>{
                 resolve(data)
             })
         })
@@ -626,7 +629,7 @@ module.exports={
 
     findTopCategories:()=>{
         return new Promise((resolve,reject)=>{
-            category.find().sort({purchaseCount:-1}).then((data)=>{
+            category.find({visiblity:true}).sort({purchaseCount:-1}).then((data)=>{
                 resolve(data)
             })
         })
