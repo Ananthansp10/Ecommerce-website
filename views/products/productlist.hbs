@@ -63,7 +63,7 @@
              <button onclick="showOutOfStock()" class="flex-1 py-2 px-4 rounded-md focus:outline-none focus:ring focus:ring-indigo-200 bg-gray-400 text-white cursor-not-allowed">Buy Now</button>
             <button onclick="showOutOfStock()" class="flex-1 py-2 px-4 rounded-md focus:outline-none focus:ring focus:ring-green-200 bg-gray-400 text-white cursor-not-allowed">Add to Cart</button>
             {{else}}
-            <button class="flex-1 bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring focus:ring-indigo-200">Buy Now</button>
+            <button onclick="viewproduct('{{this._id}}')" class="flex-1 bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring focus:ring-indigo-200">Buy Now</button>
             <button onclick="addToCart('{{this._id}}')" class="flex-1 bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring focus:ring-green-200">Add to Cart</button>
             {{/if}}
           </div>
@@ -95,6 +95,7 @@
     function viewproduct(id){
         window.location.href = `/product/productPage/${id}`;
     }
+
 
     function showOutOfStock(){
     Swal.fire({

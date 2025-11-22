@@ -43,7 +43,7 @@
                             Add to Cart
                         </button>
                         {{/if}}
-                        <button class="bg-green-600 text-white py-1 px-3 rounded-md text-xs hover:bg-green-500 focus:outline-none">
+                        <button onclick="goToProductPreview('{{this._id}}')" class="bg-green-600 text-white py-1 px-3 rounded-md text-xs hover:bg-green-500 focus:outline-none">
                             Buy Now
                         </button>
                     </div>
@@ -302,6 +302,10 @@ function addToWishList(productId){
       }
     }
   })
+}
+
+function goToProductPreview(id){
+  window.location.href=`/product/productPage/${id}`
 }
 
 function removeFromWish(productId) {
