@@ -1,6 +1,6 @@
 const { promises } = require('nodemailer/lib/xoauth2');
 const user=require('../databaseSchemas/usersSchemas')
-const bcrypt=require('bcrypt')
+const bcrypt=require('bcryptjs')
 const {generateOTP}=require('../utils/sendEmail')
 const {sendEmail}=require('../utils/sendEmail')
 const OTPschema=require('../databaseSchemas/otpSchema');

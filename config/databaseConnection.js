@@ -6,17 +6,6 @@ mongoose.connect(mongoURL).then(()=>{
 }).catch((err)=>{
     console.log("database not connected",+err)
 })
-
-// mongoose.connect(mongoURL, {
-//     useNewUrlParser: true,
-//     useUnifiedTopology: true
-//   })
-//     .then(() => {
-//       console.log('Connected to MongoDB');
-//     })
-//     .catch((err) => {
-//       console.error('Database connection error:', err);
-//     });
   
 
 module.exports=mongoose;
