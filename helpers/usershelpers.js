@@ -4,7 +4,6 @@ const bcrypt=require('bcryptjs')
 const {generateOTP}=require('../utils/sendEmail')
 const {sendEmail}=require('../utils/sendEmail')
 const OTPschema=require('../databaseSchemas/otpSchema');
-const { promise } = require('bcrypt/promises');
 const otpSchema = require('../databaseSchemas/otpSchema');
 const googleAuthSchema=require('../databaseSchemas/googleAuthSchemas');
 const userDetail=require('../databaseSchemas/userDetailSchema');
